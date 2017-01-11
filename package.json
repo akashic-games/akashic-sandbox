@@ -1,0 +1,67 @@
+{
+  "name": "@akashic/akashic-sandbox",
+  "version": "0.10.1",
+  "description": "Standalone runner for Akashic games",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "typings install && npm run build",
+    "start": "npm run build && node bin/run",
+    "build": "gulp browserify && npm run build:client && npm run build:server",
+    "lint": "gulp lint",
+    "build:client": "tsc -p src/client",
+    "build:server": "tsc -p src/server",
+    "test": "gulp lint test"
+  },
+  "author": "DWANGO Co., Ltd.",
+  "license": "MIT",
+  "bin": {
+    "akashic-sandbox": "./bin/run"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "js",
+    "css",
+    "views",
+    "thirdparty"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akashic-games/akashic-sandbox.git"
+  },
+  "publishConfig": {
+    "@akashic:registry": "http://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "commander": "^2.8.0",
+    "debug": "^2.1.3",
+    "ect": "^0.5.9",
+    "express": "^4.12.3",
+    "express-session": "^1.11.3",
+    "serve-favicon": "^2.2.0"
+  },
+  "devDependencies": {
+    "@akashic/akashic-engine": "~1.10.0",
+    "browserify": "^13.0.0",
+    "del": "^1.1.1",
+    "gulp": "^3.8.11",
+    "gulp-expect-file": "0.0.7",
+    "gulp-jasmine": "^2.3.0",
+    "gulp-rename": "~1.2.2",
+    "gulp-shell": "^0.5.2",
+    "gulp-tslint": "4.3.2",
+    "gulp-uglify": "~2.0.0",
+    "gulp-util": "^3.0.7",
+    "jasmine-terminal-reporter": "^1.0.1",
+    "supertest": "^1.2.0",
+    "tslint": "^3.10.2",
+    "typescript": "^1.7.5",
+    "typings": "1.0.4",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "optionalDependencies": {
+    "@akashic/game-driver": "~0.7.0",
+    "@akashic/pdi-browser": "~0.7.0",
+    "@akashic/game-storage": "0.0.4"
+  }
+}

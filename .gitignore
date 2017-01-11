@@ -1,0 +1,9 @@
+.idea
+node_modules
+npm-debug.log
+lib/*
+js/Game.js
+js/akashic-engine.js
+js/SandboxScriptAsset.js
+typings/index.d.ts
+typings/globals
