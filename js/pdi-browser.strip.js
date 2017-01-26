@@ -21,6 +21,34 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var NullAmflowClient_1 = require("./NullAmflowClient");
+        exports.NullAmflowClient = NullAmflowClient_1.NullAmflowClient;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./NullAmflowClient": 3,
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 32,
+        "./plugin/AudioPluginRegistry": 33,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 36,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 40,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), CanvasSurface_1 = require("./canvas/CanvasSurface"), RenderingHelper_1 = require("./canvas/RenderingHelper"), InputHandlerLayer_1 = require("./InputHandlerLayer"), WebGLPrimarySurface_1 = require("./canvas/WebGLPrimarySurface"), ContainerController = function() {
@@ -1773,18 +1801,23 @@ require = function e(t, n, r) {
                 audio.autoplay = !1, audio.preload = "none", audio.src = this.path;
                 var handlers = {
                     success: function() {
-                        _this._detachAll(audio, handlers), _this.data = audio, loader._onAssetLoad(_this);
+                        _this._detachAll(audio, handlers), _this.data = audio, loader._onAssetLoad(_this), 
+                        window.clearInterval(_this._intervalId);
                     },
                     error: function() {
-                        _this._detachAll(audio, handlers), _this.data = audio, loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("HTMLAudioAsset loading error"));
+                        _this._detachAll(audio, handlers), _this.data = audio, loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("HTMLAudioAsset loading error")), 
+                        window.clearInterval(_this._intervalId);
                     }
                 };
-                this._attachAll(audio, handlers), audio.preload = "auto", audio.load();
+                this._attachAll(audio, handlers), audio.preload = "auto", this._intervalCount = 0, 
+                this._intervalId = window.setInterval(function() {
+                    4 === audio.readyState ? handlers.success() : (++_this._intervalCount, 600 === _this._intervalCount && handlers.error());
+                }, 100), audio.load();
             }, HTMLAudioAsset.prototype.createInstance = function() {
                 var audio = new Audio(this.data.src), ret = new HTMLAudioAsset(this.id, this.path, this.duration, this._system);
                 return ret.data = audio, ret;
             }, HTMLAudioAsset.prototype._assetPathFilter = function(path) {
-                return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : void 0;
+                return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("mp4") !== -1 ? g.PathUtil.addExtname(path, "mp4") : HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : void 0;
             }, HTMLAudioAsset.prototype._attachAll = function(audio, handlers) {
                 handlers.success && audio.addEventListener("canplaythrough", handlers.success, !1), 
                 handlers.error && (audio.addEventListener("stalled", handlers.error, !1), audio.addEventListener("error", handlers.error, !1), 
@@ -1862,7 +1895,7 @@ require = function e(t, n, r) {
             }, HTMLAudioPlugin.prototype._detectSupportedFormats = function() {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
-                    for (var supportedExtensions = [ "ogg", "aac" ], i = 0, len = supportedExtensions.length; i < len; i++) {
+                    for (var supportedExtensions = [ "ogg", "mp4", "aac" ], i = 0, len = supportedExtensions.length; i < len; i++) {
                         var ext = supportedExtensions[i], supported = "no" !== audioElement.canPlayType("audio/" + ext) && "" !== audioElement.canPlayType("audio/" + ext);
                         supported && supportedFormats.push(ext);
                     }
@@ -1900,6 +1933,7 @@ require = function e(t, n, r) {
                 });
             }, WebAudioAsset.prototype._assetPathFilter = function(path) {
                 if (WebAudioAsset.supportedFormats.indexOf("ogg") !== -1) return g.PathUtil.addExtname(path, "ogg");
+                if (WebAudioAsset.supportedFormats.indexOf("mp4") !== -1) return g.PathUtil.addExtname(path, "mp4");
                 if (WebAudioAsset.supportedFormats.indexOf("aac") !== -1) return g.PathUtil.addExtname(path, "aac");
                 throw new Error("not available ogg or aac, The UA supported formats are " + WebAudioAsset.supportedFormats);
             }, WebAudioAsset.supportedFormats = [], WebAudioAsset;
@@ -1994,7 +2028,7 @@ require = function e(t, n, r) {
             }, WebAudioPlugin.prototype._detectSupportedFormats = function() {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
-                    for (var supportedExtensions = [ "ogg", "aac" ], i = 0, len = supportedExtensions.length; i < len; i++) {
+                    for (var supportedExtensions = [ "ogg", "mp4", "aac" ], i = 0, len = supportedExtensions.length; i < len; i++) {
                         var ext = supportedExtensions[i], supported = "no" !== audioElement.canPlayType("audio/" + ext) && "" !== audioElement.canPlayType("audio/" + ext);
                         supported && supportedFormats.push(ext);
                     }
@@ -2044,33 +2078,5 @@ require = function e(t, n, r) {
     } ],
     42: [ function(require, module, exports) {
         "use strict";
-    }, {} ],
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var NullAmflowClient_1 = require("./NullAmflowClient");
-        exports.NullAmflowClient = NullAmflowClient_1.NullAmflowClient;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./NullAmflowClient": 3,
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 32,
-        "./plugin/AudioPluginRegistry": 33,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 36,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 40,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ]
+    }, {} ]
 }, {}, []);
