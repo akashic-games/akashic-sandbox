@@ -647,8 +647,8 @@ require = function e(t, n, r) {
                 return glyphArea || (result = createGlyphRenderedSurface(code, this.fontSize, this.fontFamily, this.baselineHeight, this._marginW, this._marginH, !0, this._cacheImageData, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly), 
                 glyphArea = calcGlyphArea(result.imageData), glyphArea.advanceWidth = result.advanceWidth, 
                 this._glyphAreas[code] = glyphArea), isGlyphAreaEmpty(glyphArea) ? (result && result.surface.destroy(), 
-                new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, (void 0), (!0))) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this.fontFamily, this.baselineHeight, this._marginW, this._marginH, this._cacheImageData, this._cacheImageData, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly)), 
-                new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, (!0)));
+                new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, void 0, !0)) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this.fontFamily, this.baselineHeight, this._marginW, this._marginH, this._cacheImageData, this._cacheImageData, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly)), 
+                new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, !0));
             }, GlyphFactory;
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;

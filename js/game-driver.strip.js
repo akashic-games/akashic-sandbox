@@ -21,6 +21,40 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/game-driver": [ function(require, module, exports) {
+        "use strict";
+        var EventIndex = require("./EventIndex");
+        exports.EventIndex = EventIndex;
+        var LoopMode_1 = require("./LoopMode");
+        exports.LoopMode = LoopMode_1.default;
+        var LoopRenderMode_1 = require("./LoopRenderMode");
+        exports.LoopRenderMode = LoopRenderMode_1.default;
+        var ExecutionMode_1 = require("./ExecutionMode");
+        exports.ExecutionMode = ExecutionMode_1.default;
+        var GameDriver_1 = require("./GameDriver");
+        exports.GameDriver = GameDriver_1.GameDriver;
+        var Game_1 = require("./Game");
+        exports.Game = Game_1.Game;
+        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
+        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
+        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
+        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
+        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
+        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
+        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
+        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
+    }, {
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameDriver": 7,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./auxiliary/DummyPassiveAmflowClient": 19,
+        "./auxiliary/MemoryAmflowClient": 20,
+        "./auxiliary/ReplayAmflowProxy": 21,
+        "./auxiliary/SimpleProfiler": 22
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), Clock = function() {
@@ -600,13 +634,14 @@ require = function e(t, n, r) {
                 this._skipTicksAtOnce = conf.skipTicksAtOnce || GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE, 
                 this._skipThreshold = conf.skipThreshold || GameLoop.DEFAULT_SKIP_THRESHOLD, this._jumpTryThreshold = conf.jumpTryThreshold || GameLoop.DEFAULT_JUMP_TRY_THRESHOLD, 
                 this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold || GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD, 
+                this._pollingTickThreshold = conf._pollingTickThreshold || GameLoop.DEFAULT_POLLING_TICK_THRESHOLD, 
                 this._playbackRate = conf.playbackRate || 1;
                 var loopRenderMode = null != conf.loopRenderMode ? conf.loopRenderMode : LoopRenderMode_1.default.AfterRawFrame;
                 this._loopRenderMode = null, this._loopMode = conf.loopMode, this._amflow = param.amflow, 
                 this._game = param.game, this._eventBuffer = param.eventBuffer, this._executionMode = param.executionMode, 
                 this._sceneTickMode = null, this._sceneLocalMode = null, this._targetAge = null != conf.targetAge ? conf.targetAge : null, 
                 this._waitingStartPoint = !1, this._lastRequestedStartPointAge = -1, this._waitingNextTick = !1, 
-                this._skipping = !1, param.profiler ? this._clock = new ProfilerClock_1.ProfilerClock({
+                this._skipping = !1, this._lastPollingTickTime = 0, param.profiler ? this._clock = new ProfilerClock_1.ProfilerClock({
                     fps: param.game.fps,
                     scaleFactor: this._playbackRate,
                     platform: param.platform,
@@ -714,15 +749,15 @@ require = function e(t, n, r) {
                     var skipStopGap = this._loopMode === LoopMode_1.default.Realtime ? 0 : 1;
                     gap <= skipStopGap && this._stopSkipping();
                 } else gap > this._skipThreshold && this._startSkipping();
-                if (gap <= 0) return 0 === gap && this._loopMode !== LoopMode_1.default.Replay && this._sceneTickMode === g.TickGenerationMode.Manual && (this._tickBuffer.requestTicks(), 
-                this._waitingNextTick = !0), void (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick());
+                if (gap <= 0) return 0 === gap && (0 === this._tickBuffer.currentAge && this._loopMode !== LoopMode_1.default.Replay && this._sceneTickMode === g.TickGenerationMode.Manual && this._tickBuffer.requestTicks(), 
+                this._startWaitingNextTick()), void (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick());
                 var loopCount = !this._skipping && gap <= this._delayIgnoreThreshold ? 1 : Math.min(gap, this._skipTicksAtOnce), pevs = this._eventBuffer.readLocalEvents();
                 if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
                 for (var i = 0; i < loopCount; ++i) {
                     var tick = this._tickBuffer.consume(), consumedAge = -1;
                     if ("number" == typeof tick) consumedAge = tick, sceneChanged = game.tick(!0); else {
                         if (null == tick) {
-                            this._tickBuffer.requestTicks(), this._waitingNextTick = !0;
+                            this._tickBuffer.requestTicks(), this._startWaitingNextTick();
                             break;
                         }
                         consumedAge = tick[0];
@@ -740,7 +775,7 @@ require = function e(t, n, r) {
                     }
                 }
             }, GameLoop.prototype._onGotNextFrameTick = function() {
-                this._waitingNextTick && this._loopMode !== LoopMode_1.default.FrameByFrame && (this._waitingNextTick = !1);
+                this._waitingNextTick && this._loopMode !== LoopMode_1.default.FrameByFrame && this._stopWaitingNextTick();
             }, GameLoop.prototype._onGotStartPoint = function(err, startPoint) {
                 if (this._waitingStartPoint = !1, err) throw new Error();
                 var targetAge = this._loopMode === LoopMode_1.default.Realtime ? this._tickBuffer.knownLatestAge : this._targetAge;
@@ -779,9 +814,19 @@ require = function e(t, n, r) {
             }, GameLoop.prototype._onGameOperationPluginOperated = function(op) {
                 var pev = this._eventConverter.makePlaylogOperationEvent(op);
                 this._eventBuffer.onEvent(pev);
+            }, GameLoop.prototype._onPollingTick = function() {
+                var time = +new Date();
+                time - this._lastPollingTickTime > this._pollingTickThreshold && (this._lastPollingTickTime = time, 
+                this._tickBuffer.requestTicks());
+            }, GameLoop.prototype._startWaitingNextTick = function() {
+                this._waitingNextTick = !0, this._clock.rawFrameTrigger.handle(this, this._onPollingTick), 
+                this._lastPollingTickTime = +new Date();
+            }, GameLoop.prototype._stopWaitingNextTick = function() {
+                this._waitingNextTick = !1, this._clock.rawFrameTrigger.remove(this, this._onPollingTick);
             }, GameLoop.DEFAULT_DELAY_IGNORE_THERSHOLD = 6, GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE = 100, 
             GameLoop.DEFAULT_SKIP_THRESHOLD = 3e4, GameLoop.DEFAULT_JUMP_TRY_THRESHOLD = 9e4, 
-            GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop;
+            GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop.DEFAULT_POLLING_TICK_THRESHOLD = 1e4, 
+            GameLoop;
         }();
         exports.GameLoop = GameLoop;
     }, {
@@ -893,10 +938,17 @@ require = function e(t, n, r) {
                     return ret;
                 }
                 var assets = configuration.assets;
-                if (assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].path = resolvePath(basePath, assets[p].path));
-                return configuration.globalScripts && (configuration.globalScripts = configuration.globalScripts.map(function(s) {
-                    return resolvePath(basePath, s);
-                })), configuration;
+                if (configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
+                    if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
+                    assets[path] = {
+                        type: /\.json$/i.test(path) ? "text" : "script",
+                        virtualPath: path,
+                        path: resolvePath(basePath, path),
+                        global: !0
+                    };
+                }), delete configuration.globalScripts), assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
+                assets[p].path = resolvePath(basePath, assets[p].path));
+                return configuration;
             }
             function _mergeObject(target, source) {
                 for (var ks = Object.keys(source), i = 0, len = ks.length; i < len; ++i) {
@@ -2072,39 +2124,5 @@ require = function e(t, n, r) {
         }, process.umask = function() {
             return 0;
         };
-    }, {} ],
-    "@akashic/game-driver": [ function(require, module, exports) {
-        "use strict";
-        var EventIndex = require("./EventIndex");
-        exports.EventIndex = EventIndex;
-        var LoopMode_1 = require("./LoopMode");
-        exports.LoopMode = LoopMode_1.default;
-        var LoopRenderMode_1 = require("./LoopRenderMode");
-        exports.LoopRenderMode = LoopRenderMode_1.default;
-        var ExecutionMode_1 = require("./ExecutionMode");
-        exports.ExecutionMode = ExecutionMode_1.default;
-        var GameDriver_1 = require("./GameDriver");
-        exports.GameDriver = GameDriver_1.GameDriver;
-        var Game_1 = require("./Game");
-        exports.Game = Game_1.Game;
-        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
-        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
-        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
-        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
-        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
-        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
-        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
-        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
-    }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameDriver": 7,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./auxiliary/DummyPassiveAmflowClient": 19,
-        "./auxiliary/MemoryAmflowClient": 20,
-        "./auxiliary/ReplayAmflowProxy": 21,
-        "./auxiliary/SimpleProfiler": 22
-    } ]
+    }, {} ]
 }, {}, []);
