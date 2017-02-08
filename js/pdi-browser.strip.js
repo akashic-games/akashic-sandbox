@@ -21,37 +21,9 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var NullAmflowClient_1 = require("./NullAmflowClient");
-        exports.NullAmflowClient = NullAmflowClient_1.NullAmflowClient;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./NullAmflowClient": 3,
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 32,
-        "./plugin/AudioPluginRegistry": 33,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 36,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 40,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ],
     1: [ function(require, module, exports) {
         "use strict";
-        var g = require("@akashic/akashic-engine"), CanvasSurface_1 = require("./canvas/CanvasSurface"), RenderingHelper_1 = require("./canvas/RenderingHelper"), InputHandlerLayer_1 = require("./InputHandlerLayer"), WebGLPrimarySurface_1 = require("./canvas/WebGLPrimarySurface"), ContainerController = function() {
+        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./canvas/RenderingHelper"), InputHandlerLayer_1 = require("./InputHandlerLayer"), ContainerController = function() {
             function ContainerController() {
                 this.container = null, this.surface = null, this.inputHandlerLayer = null, this.rootView = null, 
                 this.defaultSize = null, this.pointEventTrigger = new g.Trigger(), this._rendererReq = null, 
@@ -93,7 +65,7 @@ require = function e(t, n, r) {
                     width: this._rendererReq.primarySurfaceWidth,
                     height: this._rendererReq.primarySurfaceHeight,
                     disablePreventDefault: this._disablePreventDefault
-                }), this.surface = RenderingHelper_1.RenderingHelper.usedWebGL(this._rendererReq.rendererCandidates) ? new WebGLPrimarySurface_1.WebGLPrimarySurface(this._rendererReq.primarySurfaceWidth, this._rendererReq.primarySurfaceHeight) : new CanvasSurface_1.CanvasSurface(this._rendererReq.primarySurfaceWidth, this._rendererReq.primarySurfaceHeight, this._rendererReq.rendererCandidates), 
+                }), this.surface = RenderingHelper_1.RenderingHelper.createPrimarySurface(this._rendererReq.primarySurfaceWidth, this._rendererReq.primarySurfaceHeight, this._rendererReq.rendererCandidates), 
                 this.surface.setParentElement(this.inputHandlerLayer.view), this.container.appendChild(this.inputHandlerLayer.view), 
                 this.defaultSize = {
                     width: this.surface.width,
@@ -104,9 +76,7 @@ require = function e(t, n, r) {
         exports.ContainerController = ContainerController;
     }, {
         "./InputHandlerLayer": 2,
-        "./canvas/CanvasSurface": 12,
         "./canvas/RenderingHelper": 15,
-        "./canvas/WebGLPrimarySurface": 23,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     2: [ function(require, module, exports) {
@@ -137,8 +107,8 @@ require = function e(t, n, r) {
         }();
         exports.InputHandlerLayer = InputHandlerLayer;
     }, {
-        "./handler/MouseHandler": 30,
-        "./handler/TouchHandler": 31,
+        "./handler/MouseHandler": 31,
+        "./handler/TouchHandler": 32,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     3: [ function(require, module, exports) {
@@ -286,8 +256,8 @@ require = function e(t, n, r) {
         "./RafLooper": 5,
         "./ResourceFactory": 6,
         "./asset/XHRTextAsset": 10,
-        "./plugin/AudioPluginManager": 32,
-        "./plugin/AudioPluginRegistry": 33
+        "./plugin/AudioPluginManager": 33,
+        "./plugin/AudioPluginRegistry": 34
     } ],
     5: [ function(require, module, exports) {
         "use strict";
@@ -317,7 +287,7 @@ require = function e(t, n, r) {
             }
             for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
             d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
-        }, g = require("@akashic/akashic-engine"), HTMLImageAsset_1 = require("./asset/HTMLImageAsset"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), XHRScriptAsset_1 = require("./asset/XHRScriptAsset"), RenderingHelper_1 = require("./canvas/RenderingHelper"), CanvasSurface_1 = require("./canvas/CanvasSurface"), WebGLBackSurface_1 = require("./canvas/WebGLBackSurface"), GlyphFactory_1 = require("./canvas/GlyphFactory"), SurfaceAtlas_1 = require("./canvas/SurfaceAtlas"), ResourceFactory = function(_super) {
+        }, g = require("@akashic/akashic-engine"), HTMLImageAsset_1 = require("./asset/HTMLImageAsset"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), XHRScriptAsset_1 = require("./asset/XHRScriptAsset"), RenderingHelper_1 = require("./canvas/RenderingHelper"), GlyphFactory_1 = require("./canvas/GlyphFactory"), SurfaceAtlas_1 = require("./canvas/SurfaceAtlas"), ResourceFactory = function(_super) {
             function ResourceFactory(param) {
                 _super.call(this), this._audioPluginManager = param.audioPluginManager, this._platform = param.platform;
             }
@@ -334,11 +304,7 @@ require = function e(t, n, r) {
             }, ResourceFactory.prototype.createScriptAsset = function(id, assetPath) {
                 return new XHRScriptAsset_1.XHRScriptAsset(id, assetPath);
             }, ResourceFactory.prototype.createSurface = function(width, height) {
-                if (RenderingHelper_1.RenderingHelper.usedWebGL(this._rendererCandidates)) {
-                    var renderer = this._platform.getPrimarySurface().renderer();
-                    return new WebGLBackSurface_1.WebGLBackSurface(width, height, renderer);
-                }
-                return new CanvasSurface_1.CanvasSurface(width, height, this._rendererCandidates);
+                return RenderingHelper_1.RenderingHelper.createBackSurface(width, height, this._platform, this._rendererCandidates);
             }, ResourceFactory.prototype.createGlyphFactory = function(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly) {
                 return new GlyphFactory_1.GlyphFactory(fontFamily, fontSize, baseline, RenderingHelper_1.RenderingHelper.usedWebGL(this._rendererCandidates), fontColor, strokeWidth, strokeColor, strokeOnly);
             }, ResourceFactory.prototype.createSurfaceAtlas = function(width, height) {
@@ -350,11 +316,9 @@ require = function e(t, n, r) {
         "./asset/HTMLImageAsset": 8,
         "./asset/XHRScriptAsset": 9,
         "./asset/XHRTextAsset": 10,
-        "./canvas/CanvasSurface": 12,
         "./canvas/GlyphFactory": 14,
         "./canvas/RenderingHelper": 15,
         "./canvas/SurfaceAtlas": 18,
-        "./canvas/WebGLBackSurface": 20,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     7: [ function(require, module, exports) {
@@ -445,7 +409,7 @@ require = function e(t, n, r) {
         }(g.ScriptAsset);
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
-        "../utils/XHRLoader": 41,
+        "../utils/XHRLoader": 42,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     10: [ function(require, module, exports) {
@@ -470,7 +434,7 @@ require = function e(t, n, r) {
         }(g.TextAsset);
         exports.XHRTextAsset = XHRTextAsset;
     }, {
-        "../utils/XHRLoader": 41,
+        "../utils/XHRLoader": 42,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     11: [ function(require, module, exports) {
@@ -647,8 +611,8 @@ require = function e(t, n, r) {
                 return glyphArea || (result = createGlyphRenderedSurface(code, this.fontSize, this.fontFamily, this.baselineHeight, this._marginW, this._marginH, !0, this._cacheImageData, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly), 
                 glyphArea = calcGlyphArea(result.imageData), glyphArea.advanceWidth = result.advanceWidth, 
                 this._glyphAreas[code] = glyphArea), isGlyphAreaEmpty(glyphArea) ? (result && result.surface.destroy(), 
-                new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, (void 0), (!0))) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this.fontFamily, this.baselineHeight, this._marginW, this._marginH, this._cacheImageData, this._cacheImageData, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly)), 
-                new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, (!0)));
+                new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, void 0, !0)) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this.fontFamily, this.baselineHeight, this._marginW, this._marginH, this._cacheImageData, this._cacheImageData, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly)), 
+                new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, !0));
             }, GlyphFactory;
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;
@@ -658,7 +622,7 @@ require = function e(t, n, r) {
     } ],
     15: [ function(require, module, exports) {
         "use strict";
-        var RenderingHelper, g = require("@akashic/akashic-engine");
+        var RenderingHelper, g = require("@akashic/akashic-engine"), SurfaceFactory_1 = require("./shims/SurfaceFactory");
         !function(RenderingHelper) {
             function toPowerOfTwo(x) {
                 if (0 !== (x & x - 1)) {
@@ -765,11 +729,19 @@ require = function e(t, n, r) {
             function transformCoordinateSystem(matrix, height) {
                 matrix[1] *= -1, matrix[3] *= -1, matrix[5] = -matrix[5] + height;
             }
+            function createPrimarySurface(width, height, rendererCandidates) {
+                return SurfaceFactory_1.SurfaceFactory.createPrimarySurface(width, height, rendererCandidates);
+            }
+            function createBackSurface(width, height, platform, rendererCandidates) {
+                return SurfaceFactory_1.SurfaceFactory.createBackSurface(width, height, platform, rendererCandidates);
+            }
             RenderingHelper.toPowerOfTwo = toPowerOfTwo, RenderingHelper.clamp = clamp, RenderingHelper.toTextFromCompositeOperation = toTextFromCompositeOperation, 
             RenderingHelper.toCompositeOperationFromText = toCompositeOperationFromText, RenderingHelper.drawSystemTextByContext2D = drawSystemTextByContext2D, 
-            RenderingHelper.usedWebGL = usedWebGL, RenderingHelper.transformCoordinateSystem = transformCoordinateSystem;
+            RenderingHelper.usedWebGL = usedWebGL, RenderingHelper.transformCoordinateSystem = transformCoordinateSystem, 
+            RenderingHelper.createPrimarySurface = createPrimarySurface, RenderingHelper.createBackSurface = createBackSurface;
         }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
     }, {
+        "./shims/SurfaceFactory": 29,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     16: [ function(require, module, exports) {
@@ -1606,6 +1578,28 @@ require = function e(t, n, r) {
     }, {} ],
     29: [ function(require, module, exports) {
         "use strict";
+        var SurfaceFactory, RenderingHelper_1 = require("../RenderingHelper"), CanvasSurface_1 = require("../CanvasSurface"), WebGLPrimarySurface_1 = require("../WebGLPrimarySurface"), WebGLBackSurface_1 = require("../WebGLBackSurface");
+        !function(SurfaceFactory) {
+            function createPrimarySurface(width, height, rendererCandidates) {
+                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? new WebGLPrimarySurface_1.WebGLPrimarySurface(width, height) : new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
+            }
+            function createBackSurface(width, height, platform, rendererCandidates) {
+                if (RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates)) {
+                    var renderer = platform.getPrimarySurface().renderer();
+                    return new WebGLBackSurface_1.WebGLBackSurface(width, height, renderer);
+                }
+                return new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
+            }
+            SurfaceFactory.createPrimarySurface = createPrimarySurface, SurfaceFactory.createBackSurface = createBackSurface;
+        }(SurfaceFactory = exports.SurfaceFactory || (exports.SurfaceFactory = {}));
+    }, {
+        "../CanvasSurface": 12,
+        "../RenderingHelper": 15,
+        "../WebGLBackSurface": 20,
+        "../WebGLPrimarySurface": 23
+    } ],
+    30: [ function(require, module, exports) {
+        "use strict";
         var g = require("@akashic/akashic-engine"), InputAbstractHandler = (require("@akashic/akashic-pdi"), 
         function() {
             function InputAbstractHandler(inputView, disablePreventDefault) {
@@ -1663,9 +1657,9 @@ require = function e(t, n, r) {
         exports.InputAbstractHandler = InputAbstractHandler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 42
+        "@akashic/akashic-pdi": 43
     } ],
-    30: [ function(require, module, exports) {
+    31: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -1701,9 +1695,9 @@ require = function e(t, n, r) {
         }(InputAbstractHandler_1.InputAbstractHandler);
         exports.MouseHandler = MouseHandler;
     }, {
-        "./InputAbstractHandler": 29
+        "./InputAbstractHandler": 30
     } ],
-    31: [ function(require, module, exports) {
+    32: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -1747,9 +1741,9 @@ require = function e(t, n, r) {
         exports.TouchHandler = TouchHandler;
     }, {
         "../RuntimeInfo": 7,
-        "./InputAbstractHandler": 29
+        "./InputAbstractHandler": 30
     } ],
-    32: [ function(require, module, exports) {
+    33: [ function(require, module, exports) {
         "use strict";
         var AudioPluginManager = function() {
             function AudioPluginManager() {
@@ -1769,7 +1763,7 @@ require = function e(t, n, r) {
         }();
         exports.AudioPluginManager = AudioPluginManager;
     }, {} ],
-    33: [ function(require, module, exports) {
+    34: [ function(require, module, exports) {
         "use strict";
         var audioPlugins = [];
         exports.AudioPluginRegistry = {
@@ -1784,7 +1778,7 @@ require = function e(t, n, r) {
             }
         };
     }, {} ],
-    34: [ function(require, module, exports) {
+    35: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -1832,7 +1826,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    35: [ function(require, module, exports) {
+    36: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -1867,7 +1861,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    36: [ function(require, module, exports) {
+    37: [ function(require, module, exports) {
         "use strict";
         var HTMLAudioAsset_1 = require("./HTMLAudioAsset"), HTMLAudioPlayer_1 = require("./HTMLAudioPlayer"), HTMLAudioPlugin = function() {
             function HTMLAudioPlugin() {
@@ -1905,10 +1899,10 @@ require = function e(t, n, r) {
         }();
         exports.HTMLAudioPlugin = HTMLAudioPlugin;
     }, {
-        "./HTMLAudioAsset": 34,
-        "./HTMLAudioPlayer": 35
+        "./HTMLAudioAsset": 35,
+        "./HTMLAudioPlayer": 36
     } ],
-    37: [ function(require, module, exports) {
+    38: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -1940,11 +1934,11 @@ require = function e(t, n, r) {
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
     }, {
-        "../../utils/XHRLoader": 41,
-        "./WebAudioHelper": 38,
+        "../../utils/XHRLoader": 42,
+        "./WebAudioHelper": 39,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    38: [ function(require, module, exports) {
+    39: [ function(require, module, exports) {
         (function(global) {
             "use strict";
             var WebAudioHelper, AudioContext = global.AudioContext || global.webkitAudioContext, singleContext = null;
@@ -1965,7 +1959,7 @@ require = function e(t, n, r) {
             }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
         }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {} ],
-    39: [ function(require, module, exports) {
+    40: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -2001,10 +1995,10 @@ require = function e(t, n, r) {
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
     }, {
-        "./WebAudioHelper": 38,
+        "./WebAudioHelper": 39,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    40: [ function(require, module, exports) {
+    41: [ function(require, module, exports) {
         "use strict";
         var WebAudioAsset_1 = require("./WebAudioAsset"), WebAudioPlayer_1 = require("./WebAudioPlayer"), WebAudioPlugin = function() {
             function WebAudioPlugin() {
@@ -2038,10 +2032,10 @@ require = function e(t, n, r) {
         }();
         exports.WebAudioPlugin = WebAudioPlugin;
     }, {
-        "./WebAudioAsset": 37,
-        "./WebAudioPlayer": 39
+        "./WebAudioAsset": 38,
+        "./WebAudioPlayer": 40
     } ],
-    41: [ function(require, module, exports) {
+    42: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), XHRLoader = function() {
             function XHRLoader(options) {
@@ -2076,7 +2070,35 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    42: [ function(require, module, exports) {
+    43: [ function(require, module, exports) {
         "use strict";
-    }, {} ]
+    }, {} ],
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var NullAmflowClient_1 = require("./NullAmflowClient");
+        exports.NullAmflowClient = NullAmflowClient_1.NullAmflowClient;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./NullAmflowClient": 3,
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 33,
+        "./plugin/AudioPluginRegistry": 34,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 37,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 41,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ]
 }, {}, []);
