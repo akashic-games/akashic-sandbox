@@ -60,7 +60,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "optionalDependencies": {
-    "@akashic/game-driver": "~0.7.0",
+    "@akashic/game-driver": "~0.7.1",
     "@akashic/pdi-browser": "~0.7.4",
     "@akashic/game-storage": "0.0.4"
   }
