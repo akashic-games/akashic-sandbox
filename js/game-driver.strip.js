@@ -938,10 +938,17 @@ require = function e(t, n, r) {
                     return ret;
                 }
                 var assets = configuration.assets;
-                if (assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].path = resolvePath(basePath, assets[p].path));
-                return configuration.globalScripts && (configuration.globalScripts = configuration.globalScripts.map(function(s) {
-                    return resolvePath(basePath, s);
-                })), configuration;
+                if (configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
+                    if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
+                    assets[path] = {
+                        type: /\.json$/i.test(path) ? "text" : "script",
+                        virtualPath: path,
+                        path: resolvePath(basePath, path),
+                        global: !0
+                    };
+                }), delete configuration.globalScripts), assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
+                assets[p].path = resolvePath(basePath, assets[p].path));
+                return configuration;
             }
             function _mergeObject(target, source) {
                 for (var ks = Object.keys(source), i = 0, len = ks.length; i < len; ++i) {
@@ -1737,8 +1744,10 @@ require = function e(t, n, r) {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     23: [ function(require, module, exports) {
-        "use strict";
-    }, {} ],
+        arguments[4][4][0].apply(exports, arguments);
+    }, {
+        dup: 4
+    } ],
     24: [ function(require, module, exports) {}, {} ],
     25: [ function(require, module, exports) {
         (function(process, global) {
