@@ -55,7 +55,7 @@
     "jasmine-terminal-reporter": "^1.0.1",
     "supertest": "^1.2.0",
     "tslint": "^3.10.2",
-    "typescript": "^1.7.5",
+    "typescript": "^2.1.6",
     "typings": "1.0.4",
     "vinyl-source-stream": "^1.1.0"
   },
