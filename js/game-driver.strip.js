@@ -21,41 +21,10 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
-    "@akashic/game-driver": [ function(require, module, exports) {
-        "use strict";
-        var EventIndex = require("./EventIndex");
-        exports.EventIndex = EventIndex;
-        var LoopMode_1 = require("./LoopMode");
-        exports.LoopMode = LoopMode_1.default;
-        var LoopRenderMode_1 = require("./LoopRenderMode");
-        exports.LoopRenderMode = LoopRenderMode_1.default;
-        var ExecutionMode_1 = require("./ExecutionMode");
-        exports.ExecutionMode = ExecutionMode_1.default;
-        var GameDriver_1 = require("./GameDriver");
-        exports.GameDriver = GameDriver_1.GameDriver;
-        var Game_1 = require("./Game");
-        exports.Game = Game_1.Game;
-        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
-        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
-        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
-        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
-        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
-        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
-        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
-        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
-    }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameDriver": 7,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./auxiliary/DummyPassiveAmflowClient": 19,
-        "./auxiliary/MemoryAmflowClient": 20,
-        "./auxiliary/ReplayAmflowProxy": 21,
-        "./auxiliary/SimpleProfiler": 22
-    } ],
     1: [ function(require, module, exports) {
+        "use strict";
+    }, {} ],
+    2: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), Clock = function() {
             function Clock(param) {
@@ -90,14 +59,13 @@ require = function e(t, n, r) {
                 this._waitTime = 1e3 / realFps, this._waitTimeDoubled = Math.max(2e3 / realFps | 0, 1), 
                 this._waitTimeMax = Math.max(scaleFactor * (1e3 * this._maxFramePerOnce / realFps) | 0, 1), 
                 this._skipFrameWaitTime = this._waitTime * Clock.ANTICIPATE_RATE | 0, this._realMaxFramePerOnce = this._maxFramePerOnce * scaleFactor;
-            }, Clock.ANTICIPATE_RATE = .8, Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD = 150, 
-            Clock;
+            }, Clock;
         }();
-        exports.Clock = Clock;
+        Clock.ANTICIPATE_RATE = .8, Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD = 150, exports.Clock = Clock;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    2: [ function(require, module, exports) {
+    3: [ function(require, module, exports) {
         "use strict";
         var g = (require("@akashic/playlog"), require("@akashic/akashic-pdi"), require("@akashic/akashic-engine")), PointEventResolver_1 = (require("./EventIndex"), 
         require("./PointEventResolver")), EventBuffer = function() {
@@ -210,13 +178,13 @@ require = function e(t, n, r) {
         }();
         exports.EventBuffer = EventBuffer;
     }, {
-        "./EventIndex": 4,
-        "./PointEventResolver": 13,
+        "./EventIndex": 5,
+        "./PointEventResolver": 14,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 23,
-        "@akashic/playlog": 24
+        "@akashic/akashic-pdi": 1,
+        "@akashic/playlog": 29
     } ],
-    3: [ function(require, module, exports) {
+    4: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), EventConverter = (require("@akashic/playlog"), 
         require("./EventIndex"), function() {
@@ -329,14 +297,16 @@ require = function e(t, n, r) {
         }());
         exports.EventConverter = EventConverter;
     }, {
-        "./EventIndex": 4,
+        "./EventIndex": 5,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 24
+        "@akashic/playlog": 29
     } ],
-    4: [ function(require, module, exports) {
-        "use strict";
-    }, {} ],
     5: [ function(require, module, exports) {
+        arguments[4][1][0].apply(exports, arguments);
+    }, {
+        dup: 1
+    } ],
+    6: [ function(require, module, exports) {
         "use strict";
         var ExecutionMode;
         !function(ExecutionMode) {
@@ -345,7 +315,7 @@ require = function e(t, n, r) {
             value: !0
         }), exports.default = ExecutionMode;
     }, {} ],
-    6: [ function(require, module, exports) {
+    7: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -355,11 +325,12 @@ require = function e(t, n, r) {
             d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
         }, g = require("@akashic/akashic-engine"), Game = function(_super) {
             function Game(param) {
-                _super.call(this, param.configuration, param.resourceFactory, param.assetBase, param.player.id, param.operationPluginViewInfo), 
-                this.agePassedTrigger = new g.Trigger(), this.skippingChangedTrigger = new g.Trigger(), 
-                this.player = param.player, this.raiseEventTrigger = new g.Trigger(), this.raiseTickTrigger = new g.Trigger(), 
-                this.snapshotTrigger = new g.Trigger(), this.isSnapshotSaver = !!param.isSnapshotSaver, 
-                this._eventFilterFuncs = null, this._notifyPassedAgeTable = {}, this._gameArgs = param.gameArgs;
+                var _this = _super.call(this, param.configuration, param.resourceFactory, param.assetBase, param.player.id, param.operationPluginViewInfo) || this;
+                return _this.agePassedTrigger = new g.Trigger(), _this.skippingChangedTrigger = new g.Trigger(), 
+                _this.abortTrigger = new g.Trigger(), _this.player = param.player, _this.raiseEventTrigger = new g.Trigger(), 
+                _this.raiseTickTrigger = new g.Trigger(), _this.snapshotTrigger = new g.Trigger(), 
+                _this.isSnapshotSaver = !!param.isSnapshotSaver, _this._eventFilterFuncs = null, 
+                _this._notifyPassedAgeTable = {}, _this._gameArgs = param.gameArgs, _this;
             }
             return __extends(Game, _super), Game.prototype.requestNotifyAgePassed = function(age) {
                 this._notifyPassedAgeTable[age] = !0;
@@ -412,15 +383,15 @@ require = function e(t, n, r) {
                         snapshot: data.gameSnapshot
                     });
                 }
-            }, Game.prototype._leaveGame = function() {
-                throw new Error("Not implemented: Game#_leaveGame");
+            }, Game.prototype._leaveGame = function() {}, Game.prototype._terminateGame = function() {
+                this.abortTrigger.fire();
             }, Game;
         }(g.Game);
         exports.Game = Game;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    7: [ function(require, module, exports) {
+    8: [ function(require, module, exports) {
         "use strict";
         var es6_promise_1 = require("es6-promise"), g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), Game_1 = require("./Game"), EventBuffer_1 = require("./EventBuffer"), GameLoop_1 = require("./GameLoop"), PdiUtil_1 = require("./PdiUtil"), GameDriver = function() {
             function GameDriver(param) {
@@ -615,15 +586,15 @@ require = function e(t, n, r) {
         }();
         exports.GameDriver = GameDriver;
     }, {
-        "./EventBuffer": 2,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameLoop": 8,
-        "./PdiUtil": 12,
+        "./EventBuffer": 3,
+        "./ExecutionMode": 6,
+        "./Game": 7,
+        "./GameLoop": 9,
+        "./PdiUtil": 13,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 25
+        "es6-promise": 24
     } ],
-    8: [ function(require, module, exports) {
+    9: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), LoopMode_1 = require("./LoopMode"), LoopRenderMode_1 = require("./LoopRenderMode"), ExecutionMode_1 = require("./ExecutionMode"), Clock_1 = (require("./EventIndex"), 
         require("./Clock")), ProfilerClock_1 = require("./ProfilerClock"), EventConverter_1 = require("./EventConverter"), TickController_1 = require("./TickController"), GameLoop = function() {
@@ -823,24 +794,24 @@ require = function e(t, n, r) {
                 this._lastPollingTickTime = +new Date();
             }, GameLoop.prototype._stopWaitingNextTick = function() {
                 this._waitingNextTick = !1, this._clock.rawFrameTrigger.remove(this, this._onPollingTick);
-            }, GameLoop.DEFAULT_DELAY_IGNORE_THERSHOLD = 6, GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE = 100, 
-            GameLoop.DEFAULT_SKIP_THRESHOLD = 3e4, GameLoop.DEFAULT_JUMP_TRY_THRESHOLD = 9e4, 
-            GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop.DEFAULT_POLLING_TICK_THRESHOLD = 1e4, 
-            GameLoop;
+            }, GameLoop;
         }();
+        GameLoop.DEFAULT_DELAY_IGNORE_THERSHOLD = 6, GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE = 100, 
+        GameLoop.DEFAULT_SKIP_THRESHOLD = 3e4, GameLoop.DEFAULT_JUMP_TRY_THRESHOLD = 9e4, 
+        GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop.DEFAULT_POLLING_TICK_THRESHOLD = 1e4, 
         exports.GameLoop = GameLoop;
     }, {
-        "./Clock": 1,
-        "./EventConverter": 3,
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./ProfilerClock": 14,
-        "./TickController": 17,
+        "./Clock": 2,
+        "./EventConverter": 4,
+        "./EventIndex": 5,
+        "./ExecutionMode": 6,
+        "./LoopMode": 11,
+        "./LoopRenderMode": 12,
+        "./ProfilerClock": 15,
+        "./TickController": 18,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    9: [ function(require, module, exports) {
+    10: [ function(require, module, exports) {
         "use strict";
         var g = (require("@akashic/playlog"), require("@akashic/akashic-engine")), JoinLeaveRequest = (require("./EventIndex"), 
         function() {
@@ -875,11 +846,11 @@ require = function e(t, n, r) {
         }();
         exports.JoinResolver = JoinResolver;
     }, {
-        "./EventIndex": 4,
+        "./EventIndex": 5,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 24
+        "@akashic/playlog": 29
     } ],
-    10: [ function(require, module, exports) {
+    11: [ function(require, module, exports) {
         "use strict";
         var LoopMode;
         !function(LoopMode) {
@@ -889,7 +860,7 @@ require = function e(t, n, r) {
             value: !0
         }), exports.default = LoopMode;
     }, {} ],
-    11: [ function(require, module, exports) {
+    12: [ function(require, module, exports) {
         "use strict";
         var LoopRenderMode;
         !function(LoopRenderMode) {
@@ -898,7 +869,7 @@ require = function e(t, n, r) {
             value: !0
         }), exports.default = LoopRenderMode;
     }, {} ],
-    12: [ function(require, module, exports) {
+    13: [ function(require, module, exports) {
         "use strict";
         var PdiUtil, es6_promise_1 = require("es6-promise"), g = require("@akashic/akashic-engine");
         !function(PdiUtil) {
@@ -971,9 +942,9 @@ require = function e(t, n, r) {
         }(PdiUtil = exports.PdiUtil || (exports.PdiUtil = {}));
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 25
+        "es6-promise": 24
     } ],
-    13: [ function(require, module, exports) {
+    14: [ function(require, module, exports) {
         "use strict";
         var PointEventResolver = (require("@akashic/playlog"), function() {
             function PointEventResolver(param) {
@@ -1030,9 +1001,9 @@ require = function e(t, n, r) {
         }());
         exports.PointEventResolver = PointEventResolver;
     }, {
-        "@akashic/playlog": 24
+        "@akashic/playlog": 29
     } ],
-    14: [ function(require, module, exports) {
+    15: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function(d, b) {
             function __() {
@@ -1042,7 +1013,8 @@ require = function e(t, n, r) {
             d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
         }, Clock_1 = require("./Clock"), ProfilerClock = function(_super) {
             function ProfilerClock(param) {
-                _super.call(this, param), this._profiler = param.profiler;
+                var _this = _super.call(this, param) || this;
+                return _this._profiler = param.profiler, _this;
             }
             return __extends(ProfilerClock, _super), ProfilerClock.prototype._onLooperCall = function(deltaTime) {
                 if (deltaTime <= 0) return this._waitTime - this._totalDeltaTime;
@@ -1063,9 +1035,9 @@ require = function e(t, n, r) {
         }(Clock_1.Clock);
         exports.ProfilerClock = ProfilerClock;
     }, {
-        "./Clock": 1
+        "./Clock": 2
     } ],
-    15: [ function(require, module, exports) {
+    16: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), StorageResolver = function() {
             function StorageResolver(param) {
@@ -1113,10 +1085,10 @@ require = function e(t, n, r) {
         }();
         exports.StorageResolver = StorageResolver;
     }, {
-        "./ExecutionMode": 5,
+        "./ExecutionMode": 6,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    16: [ function(require, module, exports) {
+    17: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = (require("./EventIndex"), 
         require("./ExecutionMode")), TickBuffer = function() {
@@ -1240,16 +1212,16 @@ require = function e(t, n, r) {
                     ticks: []
                 };
                 return tick[1] && range.ticks.push(tick), range;
-            }, TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800, TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3, 
-            TickBuffer;
+            }, TickBuffer;
         }();
+        TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800, TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3, 
         exports.TickBuffer = TickBuffer;
     }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
+        "./EventIndex": 5,
+        "./ExecutionMode": 6,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    17: [ function(require, module, exports) {
+    18: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), TickBuffer_1 = require("./TickBuffer"), TickGenerator_1 = require("./TickGenerator"), sr = require("./StorageResolver"), TickController = function() {
             function TickController(param) {
@@ -1306,13 +1278,13 @@ require = function e(t, n, r) {
         }();
         exports.TickController = TickController;
     }, {
-        "./ExecutionMode": 5,
-        "./StorageResolver": 15,
-        "./TickBuffer": 16,
-        "./TickGenerator": 18,
+        "./ExecutionMode": 6,
+        "./StorageResolver": 16,
+        "./TickBuffer": 17,
+        "./TickGenerator": 19,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    18: [ function(require, module, exports) {
+    19: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), JoinResolver_1 = require("./JoinResolver"), TickGenerator = function() {
             function TickGenerator(param) {
@@ -1365,10 +1337,10 @@ require = function e(t, n, r) {
         }();
         exports.TickGenerator = TickGenerator;
     }, {
-        "./JoinResolver": 9,
+        "./JoinResolver": 10,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    19: [ function(require, module, exports) {
+    20: [ function(require, module, exports) {
         "use strict";
         var DummyPassiveAmflowClient = (require("@akashic/playlog"), require("../EventIndex"), 
         function() {
@@ -1461,10 +1433,10 @@ require = function e(t, n, r) {
         }());
         exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient;
     }, {
-        "../EventIndex": 4,
-        "@akashic/playlog": 24
+        "../EventIndex": 5,
+        "@akashic/playlog": 29
     } ],
-    20: [ function(require, module, exports) {
+    21: [ function(require, module, exports) {
         "use strict";
         var MemoryAmflowClient = (require("../EventIndex"), function() {
             function MemoryAmflowClient(param) {
@@ -1577,9 +1549,9 @@ require = function e(t, n, r) {
         }());
         exports.MemoryAmflowClient = MemoryAmflowClient;
     }, {
-        "../EventIndex": 4
+        "../EventIndex": 5
     } ],
-    21: [ function(require, module, exports) {
+    22: [ function(require, module, exports) {
         "use strict";
         var ReplayAmflowProxy = (require("../EventIndex"), function() {
             function ReplayAmflowProxy(param) {
@@ -1671,9 +1643,9 @@ require = function e(t, n, r) {
         }());
         exports.ReplayAmflowProxy = ReplayAmflowProxy;
     }, {
-        "../EventIndex": 4
+        "../EventIndex": 5
     } ],
-    22: [ function(require, module, exports) {
+    23: [ function(require, module, exports) {
         "use strict";
         var g = require("@akashic/akashic-engine"), SimpleProfiler = function() {
             function SimpleProfiler(param) {
@@ -1729,18 +1701,14 @@ require = function e(t, n, r) {
                 };
             }, SimpleProfiler.prototype._getCurrentTime = function() {
                 return +new Date();
-            }, SimpleProfiler.DEFAULT_INTERVAL = 1e3, SimpleProfiler.DEFAULT_LIMIT = 1e3, SimpleProfiler.BACKUP_MARGIN = 100, 
-            SimpleProfiler;
+            }, SimpleProfiler;
         }();
+        SimpleProfiler.DEFAULT_INTERVAL = 1e3, SimpleProfiler.DEFAULT_LIMIT = 1e3, SimpleProfiler.BACKUP_MARGIN = 100, 
         exports.SimpleProfiler = SimpleProfiler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    23: [ function(require, module, exports) {
-        "use strict";
-    }, {} ],
-    24: [ function(require, module, exports) {}, {} ],
-    25: [ function(require, module, exports) {
+    24: [ function(require, module, exports) {
         (function(process, global) {
             /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2027,9 +1995,9 @@ require = function e(t, n, r) {
             });
         }).call(this, require("_process"), "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {
-        _process: 26
+        _process: 25
     } ],
-    26: [ function(require, module, exports) {
+    25: [ function(require, module, exports) {
         function defaultSetTimout() {
             throw new Error("setTimeout has not been defined");
         }
@@ -2115,5 +2083,60 @@ require = function e(t, n, r) {
         }, process.umask = function() {
             return 0;
         };
-    }, {} ]
+    }, {} ],
+    26: [ function(require, module, exports) {}, {} ],
+    27: [ function(require, module, exports) {
+        arguments[4][26][0].apply(exports, arguments);
+    }, {
+        dup: 26
+    } ],
+    28: [ function(require, module, exports) {
+        arguments[4][26][0].apply(exports, arguments);
+    }, {
+        dup: 26
+    } ],
+    29: [ function(require, module, exports) {
+        function __export(m) {
+            for (var p in m) exports.hasOwnProperty(p) || (exports[p] = m[p]);
+        }
+        __export(require("./Tick")), __export(require("./Event")), __export(require("./StorageData"));
+    }, {
+        "./Event": 26,
+        "./StorageData": 27,
+        "./Tick": 28
+    } ],
+    "@akashic/game-driver": [ function(require, module, exports) {
+        "use strict";
+        var EventIndex = require("./EventIndex");
+        exports.EventIndex = EventIndex;
+        var LoopMode_1 = require("./LoopMode");
+        exports.LoopMode = LoopMode_1.default;
+        var LoopRenderMode_1 = require("./LoopRenderMode");
+        exports.LoopRenderMode = LoopRenderMode_1.default;
+        var ExecutionMode_1 = require("./ExecutionMode");
+        exports.ExecutionMode = ExecutionMode_1.default;
+        var GameDriver_1 = require("./GameDriver");
+        exports.GameDriver = GameDriver_1.GameDriver;
+        var Game_1 = require("./Game");
+        exports.Game = Game_1.Game;
+        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
+        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
+        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
+        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
+        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
+        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
+        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
+        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
+    }, {
+        "./EventIndex": 5,
+        "./ExecutionMode": 6,
+        "./Game": 7,
+        "./GameDriver": 8,
+        "./LoopMode": 11,
+        "./LoopRenderMode": 12,
+        "./auxiliary/DummyPassiveAmflowClient": 20,
+        "./auxiliary/MemoryAmflowClient": 21,
+        "./auxiliary/ReplayAmflowProxy": 22,
+        "./auxiliary/SimpleProfiler": 23
+    } ]
 }, {}, []);
