@@ -23,9 +23,9 @@ require = function e(t, n, r) {
 }({
     1: [ function(require, module, exports) {
         "use strict";
-    }, {} ],
-    2: [ function(require, module, exports) {
-        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), Clock = function() {
             function Clock(param) {
                 this.fps = param.fps, this.scaleFactor = param.scaleFactor || 1, this.frameTrigger = new g.Trigger(), 
@@ -65,8 +65,11 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    3: [ function(require, module, exports) {
+    2: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = (require("@akashic/playlog"), require("@akashic/akashic-pdi"), require("@akashic/akashic-engine")), PointEventResolver_1 = (require("./EventIndex"), 
         require("./PointEventResolver")), EventBuffer = function() {
             function EventBuffer(param) {
@@ -178,14 +181,17 @@ require = function e(t, n, r) {
         }();
         exports.EventBuffer = EventBuffer;
     }, {
-        "./EventIndex": 5,
-        "./PointEventResolver": 14,
+        "./EventIndex": 4,
+        "./PointEventResolver": 13,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 1,
-        "@akashic/playlog": 29
+        "@akashic/akashic-pdi": 23,
+        "@akashic/playlog": 24
     } ],
-    4: [ function(require, module, exports) {
+    3: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), EventConverter = (require("@akashic/playlog"), 
         require("./EventIndex"), function() {
             function EventConverter(param) {
@@ -297,33 +303,48 @@ require = function e(t, n, r) {
         }());
         exports.EventConverter = EventConverter;
     }, {
-        "./EventIndex": 5,
+        "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 29
+        "@akashic/playlog": 24
     } ],
-    5: [ function(require, module, exports) {
-        arguments[4][1][0].apply(exports, arguments);
-    }, {
-        dup: 1
-    } ],
-    6: [ function(require, module, exports) {
+    4: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+    }, {} ],
+    5: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var ExecutionMode;
         !function(ExecutionMode) {
             ExecutionMode[ExecutionMode.Active = 0] = "Active", ExecutionMode[ExecutionMode.Passive = 1] = "Passive";
-        }(ExecutionMode || (ExecutionMode = {})), Object.defineProperty(exports, "__esModule", {
-            value: !0
-        }), exports.default = ExecutionMode;
+        }(ExecutionMode || (ExecutionMode = {})), exports.default = ExecutionMode;
     }, {} ],
-    7: [ function(require, module, exports) {
+    6: [ function(require, module, exports) {
         "use strict";
-        var __extends = this && this.__extends || function(d, b) {
-            function __() {
-                this.constructor = d;
-            }
-            for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
-            d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
-        }, g = require("@akashic/akashic-engine"), Game = function(_super) {
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), Game = function(_super) {
             function Game(param) {
                 var _this = _super.call(this, param.configuration, param.resourceFactory, param.assetBase, param.player.id, param.operationPluginViewInfo) || this;
                 return _this.agePassedTrigger = new g.Trigger(), _this.skippingChangedTrigger = new g.Trigger(), 
@@ -391,8 +412,11 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    8: [ function(require, module, exports) {
+    7: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var es6_promise_1 = require("es6-promise"), g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), Game_1 = require("./Game"), EventBuffer_1 = require("./EventBuffer"), GameLoop_1 = require("./GameLoop"), PdiUtil_1 = require("./PdiUtil"), GameDriver = function() {
             function GameDriver(param) {
                 this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.handle(param.errorHandlerOwner, param.errorHandler), 
@@ -586,16 +610,19 @@ require = function e(t, n, r) {
         }();
         exports.GameDriver = GameDriver;
     }, {
-        "./EventBuffer": 3,
-        "./ExecutionMode": 6,
-        "./Game": 7,
-        "./GameLoop": 9,
-        "./PdiUtil": 13,
+        "./EventBuffer": 2,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameLoop": 8,
+        "./PdiUtil": 12,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 24
+        "es6-promise": 25
     } ],
-    9: [ function(require, module, exports) {
+    8: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), LoopMode_1 = require("./LoopMode"), LoopRenderMode_1 = require("./LoopRenderMode"), ExecutionMode_1 = require("./ExecutionMode"), Clock_1 = (require("./EventIndex"), 
         require("./Clock")), ProfilerClock_1 = require("./ProfilerClock"), EventConverter_1 = require("./EventConverter"), TickController_1 = require("./TickController"), GameLoop = function() {
             function GameLoop(param) {
@@ -801,18 +828,21 @@ require = function e(t, n, r) {
         GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop.DEFAULT_POLLING_TICK_THRESHOLD = 1e4, 
         exports.GameLoop = GameLoop;
     }, {
-        "./Clock": 2,
-        "./EventConverter": 4,
-        "./EventIndex": 5,
-        "./ExecutionMode": 6,
-        "./LoopMode": 11,
-        "./LoopRenderMode": 12,
-        "./ProfilerClock": 15,
-        "./TickController": 18,
+        "./Clock": 1,
+        "./EventConverter": 3,
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./ProfilerClock": 14,
+        "./TickController": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    10: [ function(require, module, exports) {
+    9: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = (require("@akashic/playlog"), require("@akashic/akashic-engine")), JoinLeaveRequest = (require("./EventIndex"), 
         function() {
             function JoinLeaveRequest(pev, joinResolver, amflow, keys) {
@@ -846,31 +876,36 @@ require = function e(t, n, r) {
         }();
         exports.JoinResolver = JoinResolver;
     }, {
-        "./EventIndex": 5,
+        "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 29
+        "@akashic/playlog": 24
     } ],
-    11: [ function(require, module, exports) {
+    10: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var LoopMode;
         !function(LoopMode) {
             LoopMode[LoopMode.Realtime = 0] = "Realtime", LoopMode[LoopMode.Replay = 1] = "Replay", 
             LoopMode[LoopMode.FrameByFrame = 2] = "FrameByFrame";
-        }(LoopMode || (LoopMode = {})), Object.defineProperty(exports, "__esModule", {
-            value: !0
-        }), exports.default = LoopMode;
+        }(LoopMode || (LoopMode = {})), exports.default = LoopMode;
     }, {} ],
-    12: [ function(require, module, exports) {
+    11: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var LoopRenderMode;
         !function(LoopRenderMode) {
             LoopRenderMode[LoopRenderMode.AfterRawFrame = 0] = "AfterRawFrame", LoopRenderMode[LoopRenderMode.None = 1] = "None";
-        }(LoopRenderMode || (LoopRenderMode = {})), Object.defineProperty(exports, "__esModule", {
-            value: !0
-        }), exports.default = LoopRenderMode;
+        }(LoopRenderMode || (LoopRenderMode = {})), exports.default = LoopRenderMode;
     }, {} ],
-    13: [ function(require, module, exports) {
+    12: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var PdiUtil, es6_promise_1 = require("es6-promise"), g = require("@akashic/akashic-engine");
         !function(PdiUtil) {
             function makeLoadConfigurationFunc(pf) {
@@ -909,10 +944,17 @@ require = function e(t, n, r) {
                     return ret;
                 }
                 var assets = configuration.assets;
-                if (assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].path = resolvePath(basePath, assets[p].path));
-                return configuration.globalScripts && (configuration.globalScripts = configuration.globalScripts.map(function(s) {
-                    return resolvePath(basePath, s);
-                })), configuration;
+                if (configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
+                    if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
+                    assets[path] = {
+                        type: /\.json$/i.test(path) ? "text" : "script",
+                        virtualPath: path,
+                        path: resolvePath(basePath, path),
+                        global: !0
+                    };
+                }), delete configuration.globalScripts), assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
+                assets[p].path = resolvePath(basePath, assets[p].path));
+                return configuration;
             }
             function _mergeObject(target, source) {
                 for (var ks = Object.keys(source), i = 0, len = ks.length; i < len; ++i) {
@@ -942,10 +984,13 @@ require = function e(t, n, r) {
         }(PdiUtil = exports.PdiUtil || (exports.PdiUtil = {}));
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 24
+        "es6-promise": 25
     } ],
-    14: [ function(require, module, exports) {
+    13: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var PointEventResolver = (require("@akashic/playlog"), function() {
             function PointEventResolver(param) {
                 this._game = param.game, this._pointEventMap = {};
@@ -1001,17 +1046,30 @@ require = function e(t, n, r) {
         }());
         exports.PointEventResolver = PointEventResolver;
     }, {
-        "@akashic/playlog": 29
+        "@akashic/playlog": 24
     } ],
-    15: [ function(require, module, exports) {
+    14: [ function(require, module, exports) {
         "use strict";
-        var __extends = this && this.__extends || function(d, b) {
-            function __() {
-                this.constructor = d;
-            }
-            for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
-            d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
-        }, Clock_1 = require("./Clock"), ProfilerClock = function(_super) {
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Clock_1 = require("./Clock"), ProfilerClock = function(_super) {
             function ProfilerClock(param) {
                 var _this = _super.call(this, param) || this;
                 return _this._profiler = param.profiler, _this;
@@ -1035,10 +1093,13 @@ require = function e(t, n, r) {
         }(Clock_1.Clock);
         exports.ProfilerClock = ProfilerClock;
     }, {
-        "./Clock": 2
+        "./Clock": 1
     } ],
-    16: [ function(require, module, exports) {
+    15: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), StorageResolver = function() {
             function StorageResolver(param) {
                 this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.handle(param.errorHandlerOwner, param.errorHandler), 
@@ -1085,11 +1146,14 @@ require = function e(t, n, r) {
         }();
         exports.StorageResolver = StorageResolver;
     }, {
-        "./ExecutionMode": 6,
+        "./ExecutionMode": 5,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    17: [ function(require, module, exports) {
+    16: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = (require("./EventIndex"), 
         require("./ExecutionMode")), TickBuffer = function() {
             function TickBuffer(param) {
@@ -1217,12 +1281,15 @@ require = function e(t, n, r) {
         TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800, TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3, 
         exports.TickBuffer = TickBuffer;
     }, {
-        "./EventIndex": 5,
-        "./ExecutionMode": 6,
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    18: [ function(require, module, exports) {
+    17: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), TickBuffer_1 = require("./TickBuffer"), TickGenerator_1 = require("./TickGenerator"), sr = require("./StorageResolver"), TickController = function() {
             function TickController(param) {
                 this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.handle(param.errorHandlerOwner, param.errorHandler), 
@@ -1278,14 +1345,17 @@ require = function e(t, n, r) {
         }();
         exports.TickController = TickController;
     }, {
-        "./ExecutionMode": 6,
-        "./StorageResolver": 16,
-        "./TickBuffer": 17,
-        "./TickGenerator": 19,
+        "./ExecutionMode": 5,
+        "./StorageResolver": 15,
+        "./TickBuffer": 16,
+        "./TickGenerator": 18,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    19: [ function(require, module, exports) {
+    18: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), JoinResolver_1 = require("./JoinResolver"), TickGenerator = function() {
             function TickGenerator(param) {
                 this.tickTrigger = new g.Trigger(), this.gotStorageTrigger = new g.Trigger(), this.errorTrigger = new g.Trigger(), 
@@ -1337,11 +1407,14 @@ require = function e(t, n, r) {
         }();
         exports.TickGenerator = TickGenerator;
     }, {
-        "./JoinResolver": 10,
+        "./JoinResolver": 9,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    20: [ function(require, module, exports) {
+    19: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var DummyPassiveAmflowClient = (require("@akashic/playlog"), require("../EventIndex"), 
         function() {
             function DummyPassiveAmflowClient(param) {
@@ -1433,11 +1506,14 @@ require = function e(t, n, r) {
         }());
         exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient;
     }, {
-        "../EventIndex": 5,
-        "@akashic/playlog": 29
+        "../EventIndex": 4,
+        "@akashic/playlog": 24
     } ],
-    21: [ function(require, module, exports) {
+    20: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var MemoryAmflowClient = (require("../EventIndex"), function() {
             function MemoryAmflowClient(param) {
                 this._playId = param.playId, this._seed = param.seed, this._putStorageDataSyncFunc = param.putStorageDataSyncFunc || function() {
@@ -1549,10 +1625,13 @@ require = function e(t, n, r) {
         }());
         exports.MemoryAmflowClient = MemoryAmflowClient;
     }, {
-        "../EventIndex": 5
+        "../EventIndex": 4
     } ],
-    22: [ function(require, module, exports) {
+    21: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var ReplayAmflowProxy = (require("../EventIndex"), function() {
             function ReplayAmflowProxy(param) {
                 this._amflow = param.amflow, this._tickList = param.tickList, this._startPointMap = {};
@@ -1643,10 +1722,13 @@ require = function e(t, n, r) {
         }());
         exports.ReplayAmflowProxy = ReplayAmflowProxy;
     }, {
-        "../EventIndex": 5
+        "../EventIndex": 4
     } ],
-    23: [ function(require, module, exports) {
+    22: [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), SimpleProfiler = function() {
             function SimpleProfiler(param) {
                 this._interval = null != param.interval ? param.interval : SimpleProfiler.DEFAULT_INTERVAL, 
@@ -1708,7 +1790,13 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    24: [ function(require, module, exports) {
+    23: [ function(require, module, exports) {
+        arguments[4][4][0].apply(exports, arguments);
+    }, {
+        dup: 4
+    } ],
+    24: [ function(require, module, exports) {}, {} ],
+    25: [ function(require, module, exports) {
         (function(process, global) {
             /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -1995,9 +2083,9 @@ require = function e(t, n, r) {
             });
         }).call(this, require("_process"), "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {
-        _process: 25
+        _process: 26
     } ],
-    25: [ function(require, module, exports) {
+    26: [ function(require, module, exports) {
         function defaultSetTimout() {
             throw new Error("setTimeout has not been defined");
         }
@@ -2084,29 +2172,11 @@ require = function e(t, n, r) {
             return 0;
         };
     }, {} ],
-    26: [ function(require, module, exports) {}, {} ],
-    27: [ function(require, module, exports) {
-        arguments[4][26][0].apply(exports, arguments);
-    }, {
-        dup: 26
-    } ],
-    28: [ function(require, module, exports) {
-        arguments[4][26][0].apply(exports, arguments);
-    }, {
-        dup: 26
-    } ],
-    29: [ function(require, module, exports) {
-        function __export(m) {
-            for (var p in m) exports.hasOwnProperty(p) || (exports[p] = m[p]);
-        }
-        __export(require("./Tick")), __export(require("./Event")), __export(require("./StorageData"));
-    }, {
-        "./Event": 26,
-        "./StorageData": 27,
-        "./Tick": 28
-    } ],
     "@akashic/game-driver": [ function(require, module, exports) {
         "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var EventIndex = require("./EventIndex");
         exports.EventIndex = EventIndex;
         var LoopMode_1 = require("./LoopMode");
@@ -2128,15 +2198,15 @@ require = function e(t, n, r) {
         var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
         exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
     }, {
-        "./EventIndex": 5,
-        "./ExecutionMode": 6,
-        "./Game": 7,
-        "./GameDriver": 8,
-        "./LoopMode": 11,
-        "./LoopRenderMode": 12,
-        "./auxiliary/DummyPassiveAmflowClient": 20,
-        "./auxiliary/MemoryAmflowClient": 21,
-        "./auxiliary/ReplayAmflowProxy": 22,
-        "./auxiliary/SimpleProfiler": 23
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameDriver": 7,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./auxiliary/DummyPassiveAmflowClient": 19,
+        "./auxiliary/MemoryAmflowClient": 20,
+        "./auxiliary/ReplayAmflowProxy": 21,
+        "./auxiliary/SimpleProfiler": 22
     } ]
 }, {}, []);
