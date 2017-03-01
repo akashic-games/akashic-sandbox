@@ -77,7 +77,7 @@ function setupDeveloperMenu(param) {
 		views: views
 	};
 
-	if (config.autoJoin) {
+	if (config.autoJoin && !param.isReplay) {
 		// NOTE: この時点でgame._loadedにgame._start()がハンドルされている必要がある
 		// スナップショットから復元時はloadedが発火しないのでJOINは行われない
 		props.game._loaded.handle(function() {
@@ -87,7 +87,7 @@ function setupDeveloperMenu(param) {
 			return true;
 		});
 	}
-	if (config.autoSendEvents) {
+	if (config.autoSendEvents && !param.isReplay) {
 		props.game._loaded.handle(function () {
 			sendEvents();
 			return true;
