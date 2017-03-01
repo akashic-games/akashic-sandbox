@@ -87,7 +87,7 @@ function setupDeveloperMenu(param) {
 			return true;
 		});
 	}
-	if (config.autoSendEvents) {
+	if (config.autoSendEvents && !param.isReplay) {
 		props.game._loaded.handle(function () {
 			sendEvents();
 			return true;
