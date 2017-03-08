@@ -21,6 +21,37 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var NullAmflowClient_1 = require("./NullAmflowClient");
+        exports.NullAmflowClient = NullAmflowClient_1.NullAmflowClient;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./NullAmflowClient": 3,
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 33,
+        "./plugin/AudioPluginRegistry": 34,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 37,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 41,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -234,9 +265,13 @@ require = function e(t, n, r) {
             }, Platform.prototype.getPrimarySurface = function() {
                 return this.containerController.surface;
             }, Platform.prototype.getOperationPluginViewInfo = function() {
+                var _this = this;
                 return {
-                    type: null,
-                    view: this.containerController.inputHandlerLayer.view
+                    type: "pdi-browser",
+                    view: this.containerController.inputHandlerLayer.view,
+                    getScale: function() {
+                        return _this.containerController.inputHandlerLayer._inputHandler.getScale();
+                    }
                 };
             }, Platform.prototype.createLooper = function(fun) {
                 return new RafLooper_1.RafLooper(fun);
@@ -1893,6 +1928,11 @@ require = function e(t, n, r) {
                     x: (e.pageX - this._offset.x) / this._xScale,
                     y: (e.pageY - this._offset.y) / this._yScale
                 };
+            }, InputAbstractHandler.prototype.getScale = function() {
+                return {
+                    x: this._xScale,
+                    y: this._yScale
+                };
             }, InputAbstractHandler.prototype.notifyViewMoved = function() {
                 this._calculateOffsetForLazy = !0;
             }, InputAbstractHandler;
@@ -2429,36 +2469,5 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-    }, {} ],
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var NullAmflowClient_1 = require("./NullAmflowClient");
-        exports.NullAmflowClient = NullAmflowClient_1.NullAmflowClient;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./NullAmflowClient": 3,
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 33,
-        "./plugin/AudioPluginRegistry": 34,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 37,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 41,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ]
+    }, {} ]
 }, {}, []);

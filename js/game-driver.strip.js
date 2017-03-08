@@ -21,6 +21,40 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/game-driver": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var EventIndex = require("./EventIndex");
+        exports.EventIndex = EventIndex;
+        var LoopMode_1 = require("./LoopMode");
+        exports.LoopMode = LoopMode_1.default;
+        var LoopRenderMode_1 = require("./LoopRenderMode");
+        exports.LoopRenderMode = LoopRenderMode_1.default;
+        var ExecutionMode_1 = require("./ExecutionMode");
+        exports.ExecutionMode = ExecutionMode_1.default;
+        var GameDriver_1 = require("./GameDriver");
+        exports.GameDriver = GameDriver_1.GameDriver;
+        var Game_1 = require("./Game");
+        exports.Game = Game_1.Game;
+        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
+        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
+        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
+        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
+        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
+        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
+    }, {
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameDriver": 7,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./auxiliary/DummyPassiveAmflowClient": 19,
+        "./auxiliary/MemoryAmflowClient": 20,
+        "./auxiliary/SimpleProfiler": 21
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -184,8 +218,8 @@ require = function e(t, n, r) {
         "./EventIndex": 4,
         "./PointEventResolver": 13,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 23,
-        "@akashic/playlog": 24
+        "@akashic/akashic-pdi": 22,
+        "@akashic/playlog": 23
     } ],
     3: [ function(require, module, exports) {
         "use strict";
@@ -305,7 +339,7 @@ require = function e(t, n, r) {
     }, {
         "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 24
+        "@akashic/playlog": 23
     } ],
     4: [ function(require, module, exports) {
         "use strict";
@@ -616,7 +650,7 @@ require = function e(t, n, r) {
         "./GameLoop": 8,
         "./PdiUtil": 12,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 25
+        "es6-promise": 24
     } ],
     8: [ function(require, module, exports) {
         "use strict";
@@ -878,7 +912,7 @@ require = function e(t, n, r) {
     }, {
         "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 24
+        "@akashic/playlog": 23
     } ],
     10: [ function(require, module, exports) {
         "use strict";
@@ -944,7 +978,9 @@ require = function e(t, n, r) {
                     return ret;
                 }
                 var assets = configuration.assets;
-                if (configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
+                if (assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
+                assets[p].path = resolvePath(basePath, assets[p].path));
+                return configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
                     if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
                     assets[path] = {
                         type: /\.json$/i.test(path) ? "text" : "script",
@@ -952,9 +988,7 @@ require = function e(t, n, r) {
                         path: resolvePath(basePath, path),
                         global: !0
                     };
-                }), delete configuration.globalScripts), assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
-                assets[p].path = resolvePath(basePath, assets[p].path));
-                return configuration;
+                }), delete configuration.globalScripts), configuration;
             }
             function _mergeObject(target, source) {
                 for (var ks = Object.keys(source), i = 0, len = ks.length; i < len; ++i) {
@@ -984,7 +1018,7 @@ require = function e(t, n, r) {
         }(PdiUtil = exports.PdiUtil || (exports.PdiUtil = {}));
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 25
+        "es6-promise": 24
     } ],
     13: [ function(require, module, exports) {
         "use strict";
@@ -1046,7 +1080,7 @@ require = function e(t, n, r) {
         }());
         exports.PointEventResolver = PointEventResolver;
     }, {
-        "@akashic/playlog": 24
+        "@akashic/playlog": 23
     } ],
     14: [ function(require, module, exports) {
         "use strict";
@@ -1507,7 +1541,7 @@ require = function e(t, n, r) {
         exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient;
     }, {
         "../EventIndex": 4,
-        "@akashic/playlog": 24
+        "@akashic/playlog": 23
     } ],
     20: [ function(require, module, exports) {
         "use strict";
@@ -1520,10 +1554,14 @@ require = function e(t, n, r) {
                     throw new Error("Implementation not given");
                 }, this._getStorageDataSyncFunc = param.getStorageDataSyncFunc || function() {
                     throw new Error("Implementation not given");
-                }, this._tickHandlers = [], this._eventHandlers = [], this._events = [], this._ticks = [], 
-                this._startPoints = {}, this._startPoints[0] = {
-                    seed: this._seed
-                };
+                }, this._tickHandlers = [], this._eventHandlers = [], this._events = [], this._tickList = null, 
+                param.startPoints ? (this._tickList = param.tickList, this._startPoints = param.startPoints) : (this._startPoints = [], 
+                this._startPoints[0] = {
+                    frame: 0,
+                    data: {
+                        seed: this._seed
+                    }
+                });
             }
             return MemoryAmflowClient.prototype.open = function(playId, callback) {
                 var _this = this;
@@ -1546,9 +1584,11 @@ require = function e(t, n, r) {
                     });
                 }, 0);
             }, MemoryAmflowClient.prototype.sendTick = function(tick) {
-                var len = this._ticks.length, age = tick[0];
-                if (len > 0 && this._ticks[len - 1][0] + 1 !== age) throw new Error("MemoryAmflowClient#sendTick: wrong age");
-                this._ticks.push(tick), this._tickHandlers.forEach(function(h) {
+                if (tick[1] || tick[2]) {
+                    if (this._tickList || (this._tickList = [ tick[0], tick[0], [] ]), this._tickList[2][tick[0]]) throw new Error("illegal age tick");
+                    this._tickList[2].push(tick);
+                }
+                this._tickList[1] = tick[0], this._tickHandlers.forEach(function(h) {
                     return h(tick);
                 });
             }, MemoryAmflowClient.prototype.onTick = function(handler) {
@@ -1573,33 +1613,31 @@ require = function e(t, n, r) {
                     return h !== handler;
                 });
             }, MemoryAmflowClient.prototype.getTickList = function(from, to, callback) {
-                var _this = this;
-                return 0 === this._ticks.length ? void setTimeout(function() {
+                this._tickList || setTimeout(function() {
                     return callback(null, null);
-                }, 0) : (from = Math.max(from, this._ticks[0][0]), to = Math.min(to, this._ticks[this._ticks.length - 1][0]), 
-                void setTimeout(function() {
-                    var ret = _this._ticks.slice(from, to).filter(function(t) {
-                        return !(!t[1] && !t[2]);
-                    });
-                    callback(null, [ from, to, ret ]);
-                }, 0));
+                }, 0), from = Math.max(from, this._tickList[0]), to = Math.min(to, this._tickList[1]);
+                var tickList = [ from, to, this._tickList[2].slice(from, to) ];
+                setTimeout(function() {
+                    return callback(null, tickList);
+                }, 0);
             }, MemoryAmflowClient.prototype.putStartPoint = function(startPoint, callback) {
                 var _this = this;
                 setTimeout(function() {
-                    _this._startPoints[startPoint.frame] = startPoint.data, callback(null);
+                    _this._startPoints[startPoint.frame] = startPoint, callback(null);
                 }, 0);
             }, MemoryAmflowClient.prototype.getStartPoint = function(opts, callback) {
                 var _this = this;
                 setTimeout(function() {
-                    var ages = Object.keys(_this._startPoints).map(Number);
-                    if (0 === ages.length) return void callback(new Error("no startpoint"));
-                    for (var nearestLatest = ages[0], i = 0; i < ages.length; ++i) {
+                    if (!_this._startPoints || 0 === _this._startPoints.length) return void callback(new Error("no startpoint"));
+                    for (var ages = _this._startPoints.map(function(sp) {
+                        return sp.frame;
+                    }), nearestLatest = ages[0], ageIndex = 0, i = 0; i < ages.length; ++i) {
                         var age = ages[i];
-                        age <= opts.frame && nearestLatest < age && (nearestLatest = age);
+                        age <= opts.frame && nearestLatest < age && (nearestLatest = age, ageIndex = i);
                     }
                     callback(null, {
                         frame: nearestLatest,
-                        data: _this._startPoints[nearestLatest]
+                        data: _this._startPoints[ageIndex].data
                     });
                 }, 0);
             }, MemoryAmflowClient.prototype.putStorageData = function(key, value, options, callback) {
@@ -1621,6 +1659,31 @@ require = function e(t, n, r) {
                         callback(e);
                     }
                 }, 0);
+            }, MemoryAmflowClient.prototype.dropAfter = function(age) {
+                if (this._tickList) {
+                    var from = this._tickList[0], to = this._tickList[1], ticksWithEvents = this._tickList[2];
+                    age <= from ? (this._tickList = null, this._dropStartPoints(age), this._startPoints = [], 
+                    this._startPoints[0] = {
+                        frame: 0,
+                        data: {
+                            seed: this._seed
+                        }
+                    }) : age <= to && (this._tickList[1] = age - 1, this._tickList[2] = this._sliceTicks(ticksWithEvents, from, age - 1), 
+                    this._dropStartPoints(age));
+                }
+            }, MemoryAmflowClient.prototype._sliceTicks = function(ticks, from, to) {
+                return ticks.filter(function(t) {
+                    var age = t[0];
+                    return from <= age && age <= to;
+                });
+            }, MemoryAmflowClient.prototype._dropStartPoints = function(age) {
+                var _this = this, indexs = Object.keys(this._startPoints).map(Number);
+                indexs.forEach(function(index) {
+                    var sp = _this._startPoints[index];
+                    age <= sp.frame && delete _this._startPoints[index];
+                }), this._startPoints = this._startPoints.filter(function(sp) {
+                    return void 0 !== sp;
+                });
             }, MemoryAmflowClient;
         }());
         exports.MemoryAmflowClient = MemoryAmflowClient;
@@ -1628,103 +1691,6 @@ require = function e(t, n, r) {
         "../EventIndex": 4
     } ],
     21: [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var ReplayAmflowProxy = (require("../EventIndex"), function() {
-            function ReplayAmflowProxy(param) {
-                this._amflow = param.amflow, this._tickList = param.tickList, this._startPointMap = {};
-                for (var i = 0; i < param.startPoints.length; ++i) {
-                    var sp = param.startPoints[i];
-                    this._startPointMap[sp.frame] = sp;
-                }
-            }
-            return ReplayAmflowProxy.prototype.dropAfter = function(age) {
-                if (this._tickList) {
-                    var givenFrom = this._tickList[0], givenTo = this._tickList[1], givenTicksWithEvents = this._tickList[2];
-                    if (age <= givenFrom) this._tickList = null, this._startPointMap = {}; else if (age <= givenTo) {
-                        this._tickList[1] = age - 1, this._tickList[2] = this._sliceTicks(givenTicksWithEvents, givenTo, age - 1);
-                        for (var ages = Object.keys(this._startPointMap).map(Number), i = 0; i < ages.length; ++i) {
-                            var a = ages[i];
-                            age <= a && delete this._startPointMap[a];
-                        }
-                    }
-                }
-            }, ReplayAmflowProxy.prototype.open = function(playId, callback) {
-                this._amflow.open(playId, callback);
-            }, ReplayAmflowProxy.prototype.close = function(callback) {
-                this._amflow.close(callback);
-            }, ReplayAmflowProxy.prototype.authenticate = function(token, callback) {
-                this._amflow.authenticate(token, callback);
-            }, ReplayAmflowProxy.prototype.sendTick = function(tick) {
-                this._amflow.sendTick(tick);
-            }, ReplayAmflowProxy.prototype.onTick = function(handler) {
-                this._amflow.onTick(handler);
-            }, ReplayAmflowProxy.prototype.offTick = function(handler) {
-                this._amflow.offTick(handler);
-            }, ReplayAmflowProxy.prototype.sendEvent = function(event) {
-                this._amflow.sendEvent(event);
-            }, ReplayAmflowProxy.prototype.onEvent = function(handler) {
-                this._amflow.onEvent(handler);
-            }, ReplayAmflowProxy.prototype.offEvent = function(handler) {
-                this._amflow.offEvent(handler);
-            }, ReplayAmflowProxy.prototype.getTickList = function(from, to, callback) {
-                var _this = this;
-                if (!this._tickList) return void this._amflow.getTickList(from, to, callback);
-                var givenFrom = this._tickList[0], givenTo = this._tickList[1], givenTicksWithEvents = this._tickList[2], fromInGiven = givenFrom <= from && from <= givenTo, toInGiven = givenFrom <= to && to <= givenTo;
-                fromInGiven && toInGiven ? setTimeout(function() {
-                    callback(null, [ from, to, _this._sliceTicks(givenTicksWithEvents, from, to) ]);
-                }, 0) : this._amflow.getTickList(from, to, function(err, tickList) {
-                    if (err) return void callback(err);
-                    if (tickList) if (fromInGiven || toInGiven) if (fromInGiven) {
-                        var ticksWithEvents = _this._sliceTicks(givenTicksWithEvents, from, to).concat(tickList[2] || []);
-                        callback(null, [ from, tickList[1], ticksWithEvents ]);
-                    } else {
-                        var ticksWithEvents = (tickList[2] || []).concat(_this._sliceTicks(givenTicksWithEvents, from, to));
-                        callback(null, [ tickList[0], to, ticksWithEvents ]);
-                    } else if (to < givenFrom || givenTo < from) callback(null, tickList); else {
-                        var ticksWithEvents = tickList[2];
-                        if (ticksWithEvents) {
-                            var beforeGiven = _this._sliceTicks(ticksWithEvents, from, givenFrom - 1), afterGiven = _this._sliceTicks(ticksWithEvents, givenTo + 1, to);
-                            ticksWithEvents = beforeGiven.concat(givenTicksWithEvents, afterGiven);
-                        } else ticksWithEvents = givenTicksWithEvents;
-                        callback(null, [ from, to, ticksWithEvents ]);
-                    } else fromInGiven || toInGiven ? fromInGiven ? callback(null, [ from, givenTo, _this._sliceTicks(givenTicksWithEvents, from, to) ]) : callback(null, [ givenFrom, to, _this._sliceTicks(givenTicksWithEvents, from, to) ]) : to < givenFrom || givenTo < from ? callback(null, tickList) : callback(null, [ givenFrom, givenTo, _this._sliceTicks(givenTicksWithEvents, from, to) ]);
-                });
-            }, ReplayAmflowProxy.prototype.putStartPoint = function(startPoint, callback) {
-                this._amflow.putStartPoint(startPoint, callback);
-            }, ReplayAmflowProxy.prototype.getStartPoint = function(opts, callback) {
-                var _this = this, nearestLatest = null, ages = Object.keys(this._startPointMap).map(Number);
-                if (ages.length > 0) {
-                    nearestLatest = ages[0];
-                    for (var i = 0; i < ages.length; ++i) {
-                        var age = ages[i];
-                        age <= opts.frame && nearestLatest < age && (nearestLatest = age);
-                    }
-                }
-                var givenTo = this._tickList ? this._tickList[1] : -1;
-                opts.frame > givenTo ? this._amflow.getStartPoint(opts, function(err, startPoint) {
-                    return err ? void callback(err) : void (givenTo < startPoint.frame ? callback(null, startPoint) : callback(null, _this._startPointMap[nearestLatest]));
-                }) : setTimeout(function() {
-                    callback(null, _this._startPointMap[nearestLatest]);
-                }, 0);
-            }, ReplayAmflowProxy.prototype.putStorageData = function(key, value, options, callback) {
-                this._amflow.putStorageData(key, value, options, callback);
-            }, ReplayAmflowProxy.prototype.getStorageData = function(keys, callback) {
-                this._amflow.getStorageData(keys, callback);
-            }, ReplayAmflowProxy.prototype._sliceTicks = function(ticks, from, to) {
-                return ticks.filter(function(t) {
-                    var age = t[0];
-                    return from <= age && age <= to;
-                });
-            }, ReplayAmflowProxy;
-        }());
-        exports.ReplayAmflowProxy = ReplayAmflowProxy;
-    }, {
-        "../EventIndex": 4
-    } ],
-    22: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1790,13 +1756,14 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    23: [ function(require, module, exports) {
-        arguments[4][4][0].apply(exports, arguments);
-    }, {
-        dup: 4
-    } ],
-    24: [ function(require, module, exports) {}, {} ],
-    25: [ function(require, module, exports) {
+    22: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+    }, {} ],
+    23: [ function(require, module, exports) {}, {} ],
+    24: [ function(require, module, exports) {
         (function(process, global) {
             /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2083,9 +2050,9 @@ require = function e(t, n, r) {
             });
         }).call(this, require("_process"), "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {
-        _process: 26
+        _process: 25
     } ],
-    26: [ function(require, module, exports) {
+    25: [ function(require, module, exports) {
         function defaultSetTimout() {
             throw new Error("setTimeout has not been defined");
         }
@@ -2171,42 +2138,5 @@ require = function e(t, n, r) {
         }, process.umask = function() {
             return 0;
         };
-    }, {} ],
-    "@akashic/game-driver": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var EventIndex = require("./EventIndex");
-        exports.EventIndex = EventIndex;
-        var LoopMode_1 = require("./LoopMode");
-        exports.LoopMode = LoopMode_1.default;
-        var LoopRenderMode_1 = require("./LoopRenderMode");
-        exports.LoopRenderMode = LoopRenderMode_1.default;
-        var ExecutionMode_1 = require("./ExecutionMode");
-        exports.ExecutionMode = ExecutionMode_1.default;
-        var GameDriver_1 = require("./GameDriver");
-        exports.GameDriver = GameDriver_1.GameDriver;
-        var Game_1 = require("./Game");
-        exports.Game = Game_1.Game;
-        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
-        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
-        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
-        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
-        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
-        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
-        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
-        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
-    }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameDriver": 7,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./auxiliary/DummyPassiveAmflowClient": 19,
-        "./auxiliary/MemoryAmflowClient": 20,
-        "./auxiliary/ReplayAmflowProxy": 21,
-        "./auxiliary/SimpleProfiler": 22
-    } ]
+    }, {} ]
 }, {}, []);
