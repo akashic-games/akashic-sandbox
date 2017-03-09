@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.11.0
+* akashic-engine@1.12.0 に追従
+
 ## 0.10.6
 * 「ゲーム開始時にsandbox-playerの自動Join」を有効にした場合、リプレイが正常に動作しないバグの修正
 
