@@ -21,6 +21,43 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/game-driver": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var EventIndex = require("./EventIndex");
+        exports.EventIndex = EventIndex;
+        var LoopMode_1 = require("./LoopMode");
+        exports.LoopMode = LoopMode_1.default;
+        var LoopRenderMode_1 = require("./LoopRenderMode");
+        exports.LoopRenderMode = LoopRenderMode_1.default;
+        var ExecutionMode_1 = require("./ExecutionMode");
+        exports.ExecutionMode = ExecutionMode_1.default;
+        var GameDriver_1 = require("./GameDriver");
+        exports.GameDriver = GameDriver_1.GameDriver;
+        var Game_1 = require("./Game");
+        exports.Game = Game_1.Game;
+        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
+        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
+        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
+        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
+        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
+        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
+        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
+        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
+    }, {
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameDriver": 7,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./auxiliary/DummyPassiveAmflowClient": 19,
+        "./auxiliary/MemoryAmflowClient": 20,
+        "./auxiliary/ReplayAmflowProxy": 21,
+        "./auxiliary/SimpleProfiler": 22
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -185,7 +222,7 @@ require = function e(t, n, r) {
         "./PointEventResolver": 13,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
         "@akashic/akashic-pdi": 23,
-        "@akashic/playlog": 24
+        "@akashic/playlog": 27
     } ],
     3: [ function(require, module, exports) {
         "use strict";
@@ -305,7 +342,7 @@ require = function e(t, n, r) {
     }, {
         "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 24
+        "@akashic/playlog": 27
     } ],
     4: [ function(require, module, exports) {
         "use strict";
@@ -351,7 +388,8 @@ require = function e(t, n, r) {
                 _this.abortTrigger = new g.Trigger(), _this.player = param.player, _this.raiseEventTrigger = new g.Trigger(), 
                 _this.raiseTickTrigger = new g.Trigger(), _this.snapshotTrigger = new g.Trigger(), 
                 _this.isSnapshotSaver = !!param.isSnapshotSaver, _this._eventFilterFuncs = null, 
-                _this._notifyPassedAgeTable = {}, _this._gameArgs = param.gameArgs, _this;
+                _this._notifyPassedAgeTable = {}, _this._gameArgs = param.gameArgs, _this._globalGameArgs = param.globalGameArgs, 
+                _this;
             }
             return __extends(Game, _super), Game.prototype.requestNotifyAgePassed = function(age) {
                 this._notifyPassedAgeTable[age] = !0;
@@ -393,7 +431,8 @@ require = function e(t, n, r) {
                         age: snapshot.frame,
                         randGen: randGen
                     }), this._loadAndStart({
-                        args: this._gameArgs
+                        args: this._gameArgs,
+                        globalArgs: this._globalGameArgs
                     });
                 } else {
                     var randGen = new g.XorshiftRandomGenerator(0, data.randGenSer);
@@ -524,40 +563,47 @@ require = function e(t, n, r) {
                         return err ? reject(err) : (_this.configurationLoadedTrigger.fire(conf), void resolve(conf));
                     });
                 });
-            }, GameDriver.prototype._getRandomSeed = function(putSeed) {
-                var _this = this, p = new es6_promise_1.Promise(function(resolve, reject) {
-                    if (!putSeed || !_this._permission.writeTick) return void resolve();
+            }, GameDriver.prototype._putZerothStartPointData = function(data) {
+                var _this = this;
+                return new es6_promise_1.Promise(function(resolve, reject) {
                     var zerothStartPoint = {
                         frame: 0,
-                        data: {
-                            seed: Date.now()
-                        }
+                        data: data
                     };
                     _this._platform.amflow.putStartPoint(zerothStartPoint, function(err) {
                         return err ? reject(err) : void resolve();
                     });
                 });
-                return p.then(function() {
-                    return new es6_promise_1.Promise(function(resolve, reject) {
-                        _this._platform.amflow.getStartPoint({
-                            frame: 0
-                        }, function(err, startPoint) {
-                            if (err) return reject(err);
-                            var data = startPoint.data;
-                            return "number" != typeof data.seed ? reject(new Error("GameDriver#_getRandomSeed: No seed found.")) : void resolve(data.seed);
-                        });
+            }, GameDriver.prototype._getZerothStartPointData = function() {
+                var _this = this;
+                return new es6_promise_1.Promise(function(resolve, reject) {
+                    _this._platform.amflow.getStartPoint({
+                        frame: 0
+                    }, function(err, startPoint) {
+                        if (err) return reject(err);
+                        var data = startPoint.data;
+                        return "number" != typeof data.seed ? reject(new Error("GameDriver#_getRandomSeed: No seed found.")) : void resolve(data);
                     });
                 });
             }, GameDriver.prototype._createGame = function(conf, player, param) {
-                var _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active;
-                return this._getRandomSeed(putSeed).then(function(seed) {
+                var _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active, p = new es6_promise_1.Promise(function(resolve, reject) {
+                    if (!putSeed || !_this._permission.writeTick) return void resolve();
+                    var startPointData = {
+                        seed: Date.now(),
+                        globalArgs: param.globalGameArgs
+                    };
+                    _this._putZerothStartPointData(startPointData).then(resolve, reject);
+                }).then(function() {
+                    return _this._getZerothStartPointData();
+                });
+                return p.then(function(data) {
                     var pf = _this._platform, driverConf = param.driverConfiguration || {
                         eventBufferMode: {
                             isReceiver: !0,
                             isSender: !1
                         },
                         executionMode: ExecutionMode_1.default.Active
-                    };
+                    }, seed = data.seed, args = param.gameArgs, globalArgs = data.globalArgs;
                     pf.setRendererRequirement({
                         primarySurfaceWidth: conf.width,
                         primarySurfaceHeight: conf.height,
@@ -570,7 +616,8 @@ require = function e(t, n, r) {
                         assetBase: param.assetBase,
                         isSnapshotSaver: _this._permission.writeTick,
                         operationPluginViewInfo: pf.getOperationPluginViewInfo ? pf.getOperationPluginViewInfo() : null,
-                        gameArgs: param.gameArgs
+                        gameArgs: args,
+                        globalGameArgs: globalArgs
                     }), eventBuffer = new EventBuffer_1.EventBuffer({
                         game: game,
                         amflow: pf.amflow
@@ -616,7 +663,7 @@ require = function e(t, n, r) {
         "./GameLoop": 8,
         "./PdiUtil": 12,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 25
+        "es6-promise": 28
     } ],
     8: [ function(require, module, exports) {
         "use strict";
@@ -878,7 +925,7 @@ require = function e(t, n, r) {
     }, {
         "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 24
+        "@akashic/playlog": 27
     } ],
     10: [ function(require, module, exports) {
         "use strict";
@@ -944,7 +991,9 @@ require = function e(t, n, r) {
                     return ret;
                 }
                 var assets = configuration.assets;
-                if (configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
+                if (assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
+                assets[p].path = resolvePath(basePath, assets[p].path));
+                return configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
                     if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
                     assets[path] = {
                         type: /\.json$/i.test(path) ? "text" : "script",
@@ -952,9 +1001,7 @@ require = function e(t, n, r) {
                         path: resolvePath(basePath, path),
                         global: !0
                     };
-                }), delete configuration.globalScripts), assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
-                assets[p].path = resolvePath(basePath, assets[p].path));
-                return configuration;
+                }), delete configuration.globalScripts), configuration;
             }
             function _mergeObject(target, source) {
                 for (var ks = Object.keys(source), i = 0, len = ks.length; i < len; ++i) {
@@ -984,7 +1031,7 @@ require = function e(t, n, r) {
         }(PdiUtil = exports.PdiUtil || (exports.PdiUtil = {}));
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 25
+        "es6-promise": 28
     } ],
     13: [ function(require, module, exports) {
         "use strict";
@@ -1046,7 +1093,7 @@ require = function e(t, n, r) {
         }());
         exports.PointEventResolver = PointEventResolver;
     }, {
-        "@akashic/playlog": 24
+        "@akashic/playlog": 27
     } ],
     14: [ function(require, module, exports) {
         "use strict";
@@ -1507,7 +1554,7 @@ require = function e(t, n, r) {
         exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient;
     }, {
         "../EventIndex": 4,
-        "@akashic/playlog": 24
+        "@akashic/playlog": 27
     } ],
     20: [ function(require, module, exports) {
         "use strict";
@@ -1797,6 +1844,26 @@ require = function e(t, n, r) {
     } ],
     24: [ function(require, module, exports) {}, {} ],
     25: [ function(require, module, exports) {
+        arguments[4][24][0].apply(exports, arguments);
+    }, {
+        dup: 24
+    } ],
+    26: [ function(require, module, exports) {
+        arguments[4][24][0].apply(exports, arguments);
+    }, {
+        dup: 24
+    } ],
+    27: [ function(require, module, exports) {
+        function __export(m) {
+            for (var p in m) exports.hasOwnProperty(p) || (exports[p] = m[p]);
+        }
+        __export(require("./Tick")), __export(require("./Event")), __export(require("./StorageData"));
+    }, {
+        "./Event": 24,
+        "./StorageData": 25,
+        "./Tick": 26
+    } ],
+    28: [ function(require, module, exports) {
         (function(process, global) {
             /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2083,9 +2150,9 @@ require = function e(t, n, r) {
             });
         }).call(this, require("_process"), "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {
-        _process: 26
+        _process: 29
     } ],
-    26: [ function(require, module, exports) {
+    29: [ function(require, module, exports) {
         function defaultSetTimout() {
             throw new Error("setTimeout has not been defined");
         }
@@ -2171,42 +2238,5 @@ require = function e(t, n, r) {
         }, process.umask = function() {
             return 0;
         };
-    }, {} ],
-    "@akashic/game-driver": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var EventIndex = require("./EventIndex");
-        exports.EventIndex = EventIndex;
-        var LoopMode_1 = require("./LoopMode");
-        exports.LoopMode = LoopMode_1.default;
-        var LoopRenderMode_1 = require("./LoopRenderMode");
-        exports.LoopRenderMode = LoopRenderMode_1.default;
-        var ExecutionMode_1 = require("./ExecutionMode");
-        exports.ExecutionMode = ExecutionMode_1.default;
-        var GameDriver_1 = require("./GameDriver");
-        exports.GameDriver = GameDriver_1.GameDriver;
-        var Game_1 = require("./Game");
-        exports.Game = Game_1.Game;
-        var DummyPassiveAmflowClient_1 = require("./auxiliary/DummyPassiveAmflowClient");
-        exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient_1.DummyPassiveAmflowClient;
-        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
-        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
-        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
-        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
-        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
-        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
-    }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameDriver": 7,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./auxiliary/DummyPassiveAmflowClient": 19,
-        "./auxiliary/MemoryAmflowClient": 20,
-        "./auxiliary/ReplayAmflowProxy": 21,
-        "./auxiliary/SimpleProfiler": 22
-    } ]
+    }, {} ]
 }, {}, []);

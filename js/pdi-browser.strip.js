@@ -234,9 +234,13 @@ require = function e(t, n, r) {
             }, Platform.prototype.getPrimarySurface = function() {
                 return this.containerController.surface;
             }, Platform.prototype.getOperationPluginViewInfo = function() {
+                var _this = this;
                 return {
-                    type: null,
-                    view: this.containerController.inputHandlerLayer.view
+                    type: "pdi-browser",
+                    view: this.containerController.inputHandlerLayer.view,
+                    getScale: function() {
+                        return _this.containerController.inputHandlerLayer._inputHandler.getScale();
+                    }
                 };
             }, Platform.prototype.createLooper = function(fun) {
                 return new RafLooper_1.RafLooper(fun);
@@ -321,12 +325,12 @@ require = function e(t, n, r) {
                 return _this._audioPluginManager = param.audioPluginManager, _this._platform = param.platform, 
                 _this;
             }
-            return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system) {
+            return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
                 var activePlugin = this._audioPluginManager.getActivePlugin();
-                return activePlugin.createAsset(id, assetPath, duration, system);
-            }, ResourceFactory.prototype.createAudioPlayer = function(system, loop) {
+                return activePlugin.createAsset(id, assetPath, duration, system, loop, hint);
+            }, ResourceFactory.prototype.createAudioPlayer = function(system) {
                 var activePlugin = this._audioPluginManager.getActivePlugin();
-                return activePlugin.createPlayer(system, loop);
+                return activePlugin.createPlayer(system);
             }, ResourceFactory.prototype.createImageAsset = function(id, assetPath, width, height) {
                 return new HTMLImageAsset_1.HTMLImageAsset(id, assetPath, width, height);
             }, ResourceFactory.prototype.createTextAsset = function(id, assetPath) {
@@ -1893,6 +1897,11 @@ require = function e(t, n, r) {
                     x: (e.pageX - this._offset.x) / this._xScale,
                     y: (e.pageY - this._offset.y) / this._yScale
                 };
+            }, InputAbstractHandler.prototype.getScale = function() {
+                return {
+                    x: this._xScale,
+                    y: this._yScale
+                };
             }, InputAbstractHandler.prototype.notifyViewMoved = function() {
                 this._calculateOffsetForLazy = !0;
             }, InputAbstractHandler;
@@ -2107,7 +2116,7 @@ require = function e(t, n, r) {
                 }
                 startLoadingAudio(this.path, handlers);
             }, HTMLAudioAsset.prototype.createInstance = function() {
-                var audio = new Audio(this.data.src), ret = new HTMLAudioAsset(this.id, this.path, this.duration, this._system);
+                var audio = new Audio(this.data.src), ret = new HTMLAudioAsset(this.id, this.path, this.duration, this._system, this.loop, this.hint);
                 return ret.data = audio, ret;
             }, HTMLAudioAsset.prototype._assetPathFilter = function(path) {
                 return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("mp4") !== -1 ? g.PathUtil.addExtname(path, "mp4") : void 0;
@@ -2147,8 +2156,8 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), HTMLAudioPlayer = function(_super) {
-            function HTMLAudioPlayer(system, loop) {
-                var _this = _super.call(this, system, loop) || this;
+            function HTMLAudioPlayer(system) {
+                var _this = _super.call(this, system) || this;
                 return _this._endedEventHandler = function() {
                     _this._onAudioEnded();
                 }, _this;
@@ -2156,7 +2165,7 @@ require = function e(t, n, r) {
             return __extends(HTMLAudioPlayer, _super), HTMLAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
                 var instance = asset.createInstance(), audio = instance.data;
-                audio.volume = this.volume, audio.play(), audio.loop = this._loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
+                audio.volume = this.volume, audio.play(), audio.loop = asset.loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
                 this._audioInstance = audio, _super.prototype.play.call(this, asset);
             }, HTMLAudioPlayer.prototype.stop = function() {
                 this.currentAudio && (this._clearEndedEventHandler(), this._audioInstance.pause(), 
@@ -2197,10 +2206,10 @@ require = function e(t, n, r) {
                 },
                 enumerable: !0,
                 configurable: !0
-            }), HTMLAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system) {
-                return new HTMLAudioAsset_1.HTMLAudioAsset(id, assetPath, duration, system);
-            }, HTMLAudioPlugin.prototype.createPlayer = function(system, loop) {
-                return new HTMLAudioPlayer_1.HTMLAudioPlayer(system, loop);
+            }), HTMLAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
+                return new HTMLAudioAsset_1.HTMLAudioAsset(id, assetPath, duration, system, loop, hint);
+            }, HTMLAudioPlugin.prototype.createPlayer = function(system) {
+                return new HTMLAudioPlayer_1.HTMLAudioPlayer(system);
             }, HTMLAudioPlugin.prototype._detectSupportedFormats = function() {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
@@ -2316,8 +2325,8 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), helper = require("./WebAudioHelper"), WebAudioPlayer = function(_super) {
-            function WebAudioPlayer(system, loop) {
-                var _this = _super.call(this, system, loop) || this;
+            function WebAudioPlayer(system) {
+                var _this = _super.call(this, system) || this;
                 return _this._audioContext = helper.getAudioContext(), _this._gainNode = helper.createGainNode(_this._audioContext), 
                 _this._gainNode.connect(_this._audioContext.destination), _this._gainNode.gain.value = system.volume, 
                 _this._sourceNode = void 0, _this._endedEventHandler = function() {
@@ -2329,7 +2338,7 @@ require = function e(t, n, r) {
             }, WebAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
                 var bufferNode = helper.createBufferNode(this._audioContext);
-                bufferNode.loop = this._loop, bufferNode.buffer = asset.data, bufferNode.connect(this._gainNode), 
+                bufferNode.loop = asset.loop, bufferNode.buffer = asset.data, bufferNode.connect(this._gainNode), 
                 this._sourceNode = bufferNode, this._sourceNode.onended = this._endedEventHandler, 
                 this._sourceNode.start(0), _super.prototype.play.call(this, asset);
             }, WebAudioPlayer.prototype.stop = function() {
@@ -2366,10 +2375,10 @@ require = function e(t, n, r) {
                 },
                 enumerable: !0,
                 configurable: !0
-            }), WebAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system) {
-                return new WebAudioAsset_1.WebAudioAsset(id, assetPath, duration, system);
-            }, WebAudioPlugin.prototype.createPlayer = function(system, loop) {
-                return new WebAudioPlayer_1.WebAudioPlayer(system, loop);
+            }), WebAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
+                return new WebAudioAsset_1.WebAudioAsset(id, assetPath, duration, system, loop, hint);
+            }, WebAudioPlugin.prototype.createPlayer = function(system) {
+                return new WebAudioPlayer_1.WebAudioPlayer(system);
             }, WebAudioPlugin.prototype._detectSupportedFormats = function() {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
