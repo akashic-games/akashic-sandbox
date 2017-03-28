@@ -219,7 +219,7 @@ require = function e(t, n, r) {
         "./PointEventResolver": 13,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
         "@akashic/akashic-pdi": 22,
-        "@akashic/playlog": 23
+        "@akashic/playlog": 26
     } ],
     3: [ function(require, module, exports) {
         "use strict";
@@ -339,7 +339,7 @@ require = function e(t, n, r) {
     }, {
         "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 23
+        "@akashic/playlog": 26
     } ],
     4: [ function(require, module, exports) {
         "use strict";
@@ -385,7 +385,8 @@ require = function e(t, n, r) {
                 _this.abortTrigger = new g.Trigger(), _this.player = param.player, _this.raiseEventTrigger = new g.Trigger(), 
                 _this.raiseTickTrigger = new g.Trigger(), _this.snapshotTrigger = new g.Trigger(), 
                 _this.isSnapshotSaver = !!param.isSnapshotSaver, _this._eventFilterFuncs = null, 
-                _this._notifyPassedAgeTable = {}, _this._gameArgs = param.gameArgs, _this;
+                _this._notifyPassedAgeTable = {}, _this._gameArgs = param.gameArgs, _this._globalGameArgs = param.globalGameArgs, 
+                _this;
             }
             return __extends(Game, _super), Game.prototype.requestNotifyAgePassed = function(age) {
                 this._notifyPassedAgeTable[age] = !0;
@@ -427,7 +428,8 @@ require = function e(t, n, r) {
                         age: snapshot.frame,
                         randGen: randGen
                     }), this._loadAndStart({
-                        args: this._gameArgs
+                        args: this._gameArgs,
+                        globalArgs: this._globalGameArgs
                     });
                 } else {
                     var randGen = new g.XorshiftRandomGenerator(0, data.randGenSer);
@@ -558,40 +560,47 @@ require = function e(t, n, r) {
                         return err ? reject(err) : (_this.configurationLoadedTrigger.fire(conf), void resolve(conf));
                     });
                 });
-            }, GameDriver.prototype._getRandomSeed = function(putSeed) {
-                var _this = this, p = new es6_promise_1.Promise(function(resolve, reject) {
-                    if (!putSeed || !_this._permission.writeTick) return void resolve();
+            }, GameDriver.prototype._putZerothStartPointData = function(data) {
+                var _this = this;
+                return new es6_promise_1.Promise(function(resolve, reject) {
                     var zerothStartPoint = {
                         frame: 0,
-                        data: {
-                            seed: Date.now()
-                        }
+                        data: data
                     };
                     _this._platform.amflow.putStartPoint(zerothStartPoint, function(err) {
                         return err ? reject(err) : void resolve();
                     });
                 });
-                return p.then(function() {
-                    return new es6_promise_1.Promise(function(resolve, reject) {
-                        _this._platform.amflow.getStartPoint({
-                            frame: 0
-                        }, function(err, startPoint) {
-                            if (err) return reject(err);
-                            var data = startPoint.data;
-                            return "number" != typeof data.seed ? reject(new Error("GameDriver#_getRandomSeed: No seed found.")) : void resolve(data.seed);
-                        });
+            }, GameDriver.prototype._getZerothStartPointData = function() {
+                var _this = this;
+                return new es6_promise_1.Promise(function(resolve, reject) {
+                    _this._platform.amflow.getStartPoint({
+                        frame: 0
+                    }, function(err, startPoint) {
+                        if (err) return reject(err);
+                        var data = startPoint.data;
+                        return "number" != typeof data.seed ? reject(new Error("GameDriver#_getRandomSeed: No seed found.")) : void resolve(data);
                     });
                 });
             }, GameDriver.prototype._createGame = function(conf, player, param) {
-                var _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active;
-                return this._getRandomSeed(putSeed).then(function(seed) {
+                var _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active, p = new es6_promise_1.Promise(function(resolve, reject) {
+                    if (!putSeed || !_this._permission.writeTick) return void resolve();
+                    var startPointData = {
+                        seed: Date.now(),
+                        globalArgs: param.globalGameArgs
+                    };
+                    _this._putZerothStartPointData(startPointData).then(resolve, reject);
+                }).then(function() {
+                    return _this._getZerothStartPointData();
+                });
+                return p.then(function(data) {
                     var pf = _this._platform, driverConf = param.driverConfiguration || {
                         eventBufferMode: {
                             isReceiver: !0,
                             isSender: !1
                         },
                         executionMode: ExecutionMode_1.default.Active
-                    };
+                    }, seed = data.seed, args = param.gameArgs, globalArgs = data.globalArgs;
                     pf.setRendererRequirement({
                         primarySurfaceWidth: conf.width,
                         primarySurfaceHeight: conf.height,
@@ -604,7 +613,8 @@ require = function e(t, n, r) {
                         assetBase: param.assetBase,
                         isSnapshotSaver: _this._permission.writeTick,
                         operationPluginViewInfo: pf.getOperationPluginViewInfo ? pf.getOperationPluginViewInfo() : null,
-                        gameArgs: param.gameArgs
+                        gameArgs: args,
+                        globalGameArgs: globalArgs
                     }), eventBuffer = new EventBuffer_1.EventBuffer({
                         game: game,
                         amflow: pf.amflow
@@ -650,7 +660,7 @@ require = function e(t, n, r) {
         "./GameLoop": 8,
         "./PdiUtil": 12,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 24
+        "es6-promise": 27
     } ],
     8: [ function(require, module, exports) {
         "use strict";
@@ -912,7 +922,7 @@ require = function e(t, n, r) {
     }, {
         "./EventIndex": 4,
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/playlog": 23
+        "@akashic/playlog": 26
     } ],
     10: [ function(require, module, exports) {
         "use strict";
@@ -1018,7 +1028,7 @@ require = function e(t, n, r) {
         }(PdiUtil = exports.PdiUtil || (exports.PdiUtil = {}));
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "es6-promise": 24
+        "es6-promise": 27
     } ],
     13: [ function(require, module, exports) {
         "use strict";
@@ -1080,7 +1090,7 @@ require = function e(t, n, r) {
         }());
         exports.PointEventResolver = PointEventResolver;
     }, {
-        "@akashic/playlog": 23
+        "@akashic/playlog": 26
     } ],
     14: [ function(require, module, exports) {
         "use strict";
@@ -1541,7 +1551,7 @@ require = function e(t, n, r) {
         exports.DummyPassiveAmflowClient = DummyPassiveAmflowClient;
     }, {
         "../EventIndex": 4,
-        "@akashic/playlog": 23
+        "@akashic/playlog": 26
     } ],
     20: [ function(require, module, exports) {
         "use strict";
@@ -1550,20 +1560,19 @@ require = function e(t, n, r) {
         });
         var MemoryAmflowClient = (require("../EventIndex"), function() {
             function MemoryAmflowClient(param) {
-                this._playId = param.playId, this._seed = param.seed, this._putStorageDataSyncFunc = param.putStorageDataSyncFunc || function() {
+                this._playId = param.playId, this._putStorageDataSyncFunc = param.putStorageDataSyncFunc || function() {
                     throw new Error("Implementation not given");
                 }, this._getStorageDataSyncFunc = param.getStorageDataSyncFunc || function() {
                     throw new Error("Implementation not given");
                 }, this._tickHandlers = [], this._eventHandlers = [], this._events = [], this._tickList = null, 
-                param.startPoints ? (this._tickList = param.tickList, this._startPoints = param.startPoints) : (this._startPoints = [], 
-                this._startPoints[0] = {
-                    frame: 0,
-                    data: {
-                        seed: this._seed
-                    }
-                });
+                param.startPoints ? (this._tickList = param.tickList, this._startPoints = param.startPoints) : this._startPoints = [];
             }
-            return MemoryAmflowClient.prototype.open = function(playId, callback) {
+            return MemoryAmflowClient.prototype.dump = function() {
+                return {
+                    tickList: this._tickList,
+                    startPoints: this._startPoints
+                };
+            }, MemoryAmflowClient.prototype.open = function(playId, callback) {
                 var _this = this;
                 setTimeout(function() {
                     return playId !== _this._playId ? void callback(new Error("MemoryAmflowClient#open: unknown playId")) : void callback();
@@ -1584,11 +1593,11 @@ require = function e(t, n, r) {
                     });
                 }, 0);
             }, MemoryAmflowClient.prototype.sendTick = function(tick) {
-                if (tick[1] || tick[2]) {
-                    if (this._tickList || (this._tickList = [ tick[0], tick[0], [] ]), this._tickList[2][tick[0]]) throw new Error("illegal age tick");
-                    this._tickList[2].push(tick);
-                }
-                this._tickList[1] = tick[0], this._tickHandlers.forEach(function(h) {
+                if (this._tickList) {
+                    if (this._tickList[0] <= tick[0] && tick[0] <= this._tickList[1]) throw new Error("illegal age tick");
+                    this._tickList[1] = tick[0];
+                } else this._tickList = [ tick[0], tick[0], [] ];
+                (tick[1] || tick[2]) && this._tickList[2].push(tick), this._tickHandlers.forEach(function(h) {
                     return h(tick);
                 });
             }, MemoryAmflowClient.prototype.onTick = function(handler) {
@@ -1613,17 +1622,21 @@ require = function e(t, n, r) {
                     return h !== handler;
                 });
             }, MemoryAmflowClient.prototype.getTickList = function(from, to, callback) {
-                this._tickList || setTimeout(function() {
+                if (!this._tickList) return void setTimeout(function() {
                     return callback(null, null);
-                }, 0), from = Math.max(from, this._tickList[0]), to = Math.min(to, this._tickList[1]);
-                var tickList = [ from, to, this._tickList[2].slice(from, to) ];
+                }, 0);
+                from = Math.max(from, this._tickList[0]), to = Math.min(to, this._tickList[1]);
+                var ticks = this._tickList[2].filter(function(tick) {
+                    var age = tick[0];
+                    return from <= age && age <= to;
+                }), tickList = [ from, to, ticks ];
                 setTimeout(function() {
                     return callback(null, tickList);
                 }, 0);
             }, MemoryAmflowClient.prototype.putStartPoint = function(startPoint, callback) {
                 var _this = this;
                 setTimeout(function() {
-                    _this._startPoints[startPoint.frame] = startPoint, callback(null);
+                    _this._startPoints.push(startPoint), callback(null);
                 }, 0);
             }, MemoryAmflowClient.prototype.getStartPoint = function(opts, callback) {
                 var _this = this;
@@ -1661,29 +1674,15 @@ require = function e(t, n, r) {
                 }, 0);
             }, MemoryAmflowClient.prototype.dropAfter = function(age) {
                 if (this._tickList) {
-                    var from = this._tickList[0], to = this._tickList[1], ticksWithEvents = this._tickList[2];
-                    age <= from ? (this._tickList = null, this._dropStartPoints(age), this._startPoints = [], 
-                    this._startPoints[0] = {
-                        frame: 0,
-                        data: {
-                            seed: this._seed
-                        }
-                    }) : age <= to && (this._tickList[1] = age - 1, this._tickList[2] = this._sliceTicks(ticksWithEvents, from, age - 1), 
-                    this._dropStartPoints(age));
+                    var from = this._tickList[0], to = this._tickList[1];
+                    age <= from ? (this._tickList = null, this._startPoints = []) : age <= to && (this._tickList[1] = age - 1, 
+                    this._tickList[2] = this._tickList[2].filter(function(tick) {
+                        var ta = tick[0];
+                        return from <= ta && ta <= age - 1;
+                    }), this._startPoints = this._startPoints.filter(function(sp) {
+                        return sp.frame < age;
+                    }));
                 }
-            }, MemoryAmflowClient.prototype._sliceTicks = function(ticks, from, to) {
-                return ticks.filter(function(t) {
-                    var age = t[0];
-                    return from <= age && age <= to;
-                });
-            }, MemoryAmflowClient.prototype._dropStartPoints = function(age) {
-                var _this = this, indexs = Object.keys(this._startPoints).map(Number);
-                indexs.forEach(function(index) {
-                    var sp = _this._startPoints[index];
-                    age <= sp.frame && delete _this._startPoints[index];
-                }), this._startPoints = this._startPoints.filter(function(sp) {
-                    return void 0 !== sp;
-                });
             }, MemoryAmflowClient;
         }());
         exports.MemoryAmflowClient = MemoryAmflowClient;
@@ -1757,13 +1756,32 @@ require = function e(t, n, r) {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     22: [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-    }, {} ],
+        arguments[4][4][0].apply(exports, arguments);
+    }, {
+        dup: 4
+    } ],
     23: [ function(require, module, exports) {}, {} ],
     24: [ function(require, module, exports) {
+        arguments[4][23][0].apply(exports, arguments);
+    }, {
+        dup: 23
+    } ],
+    25: [ function(require, module, exports) {
+        arguments[4][23][0].apply(exports, arguments);
+    }, {
+        dup: 23
+    } ],
+    26: [ function(require, module, exports) {
+        function __export(m) {
+            for (var p in m) exports.hasOwnProperty(p) || (exports[p] = m[p]);
+        }
+        __export(require("./Tick")), __export(require("./Event")), __export(require("./StorageData"));
+    }, {
+        "./Event": 23,
+        "./StorageData": 24,
+        "./Tick": 25
+    } ],
+    27: [ function(require, module, exports) {
         (function(process, global) {
             /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2050,9 +2068,9 @@ require = function e(t, n, r) {
             });
         }).call(this, require("_process"), "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {
-        _process: 25
+        _process: 28
     } ],
-    25: [ function(require, module, exports) {
+    28: [ function(require, module, exports) {
         function defaultSetTimout() {
             throw new Error("setTimeout has not been defined");
         }
