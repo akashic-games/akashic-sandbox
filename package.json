@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
@@ -60,14 +60,8 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "optionalDependencies": {
-<<<<<<< HEAD
-    "@akashic/game-driver": "~0.9.0",
-    "@akashic/pdi-browser": "~0.8.1",
-    "@akashic/game-storage": "0.0.4"
-=======
-    "@akashic/game-driver": "~0.10.0",
+    "@akashic/game-driver": "~0.11.0",
     "@akashic/pdi-browser": "~0.9.0",
     "@akashic/game-storage": "0.0.6"
->>>>>>> master
   }
 }
