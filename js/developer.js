@@ -693,9 +693,10 @@ function setupDeveloperMenu(param) {
 	}
 	function savePlaylog() {
 		var name = +new Date();
+		var dump = amflow.dump();
 		var jsonData = JSON.stringify({
-			tickList: amflow._tickList,
-			startPoints: amflow._startPoints
+			tickList: dump.tickList,
+			startPoints: dump.startPoints
 		});
 		if (localStorage.getItem(PLAYLOG_PREFIX + name)) {
 			if (!window.confirm("同名のリプレイ情報がすでに存在します。上書きしてもよろしいでしょうか？")) {
