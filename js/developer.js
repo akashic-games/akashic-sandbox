@@ -693,20 +693,10 @@ function setupDeveloperMenu(param) {
 	}
 	function savePlaylog() {
 		var name = +new Date();
-		var currentTicks = amflow._ticks;
-		var startPoints = amflow._startPoints;
-		if (!currentTicks || !startPoints) {
-			window.alert("実装上の問題のため、続きからプレイのログは現在保存できません。");
-			return;
-		}
-		var tickList = [
-			currentTicks[0][0], // From
-			currentTicks[currentTicks.length - 1][0], // To
-			currentTicks.filter(function (t) { return t[1] || t[2]; })
-		];
+		var dump = amflow.dump();
 		var jsonData = JSON.stringify({
-			tickList: tickList,
-			startPoints: Object.keys(startPoints).map(function (k) {return { frame: Number(k), data: startPoints[k] };})
+			tickList: dump.tickList,
+			startPoints: dump.startPoints
 		});
 		if (localStorage.getItem(PLAYLOG_PREFIX + name)) {
 			if (!window.confirm("同名のリプレイ情報がすでに存在します。上書きしてもよろしいでしょうか？")) {

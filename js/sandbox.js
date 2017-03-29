@@ -60,7 +60,18 @@ window.addEventListener("load", function() {
 		var gdr = require("@akashic/game-driver");
 
 		// var executionMode = gdr.ExecutionMode.Active;
-		var isReplay = false;
+		var playlogName = getParameterByName("playlog");
+
+		var playlog;
+		if (playlogName) {
+			var playlogStr = localStorage.getItem("akpl:" + sandboxGameId + "/" + playlogName);
+			if (playlogStr) {
+				playlog = JSON.parse(playlogStr);
+			} else {
+				console.log("cannot load playlog: " + playlogName);
+			}
+		}
+
 		var amflowClient = new gdr.MemoryAmflowClient({
 			playId: sandboxPlayId,
 			putStorageDataSyncFunc: storage.set.bind(storage),
@@ -69,26 +80,13 @@ window.addEventListener("load", function() {
 				// StorageValue[][]からStorageData[]に変換する
 				// TODO: StorageValue[][]が返ってくる必然性はない。game-storage側の仕様を変えるべき。
 				return readKeys.map(function (k, i) { return { readKey: k, values: svs[i] }; });
-			}
+			},
+			tickList:  playlog ? playlog.tickList : null,
+			startPoints: playlog ? playlog.startPoints : null
 		});
+		var isReplay = !!playlog;
+		var replayLastAge = playlog ? playlog.tickList[1] : null;
 
-		var playlogName = getParameterByName("playlog");
-		var replayLastAge;
-		if (playlogName) {
-			var playlog = localStorage.getItem("akpl:" + sandboxGameId + "/" + playlogName);
-			if (playlog) {
-				var p = JSON.parse(playlog);
-				amflowClient = new gdr.ReplayAmflowProxy({
-					amflow: amflowClient,
-					tickList: p.tickList,
-					startPoints: p.startPoints
-				});
-				isReplay = true;
-				replayLastAge = p.tickList[1]; // To
-			} else {
-				console.log("cannot load playlog: " + playlogName);
-			}
-		}
 
 		var pf = new pdiBrowser.Platform({
 			amflow: amflowClient,
