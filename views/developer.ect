@@ -233,7 +233,7 @@
 					<fieldset>
 						<a class="pure-button" title="最初から" v-on:click="rewindReplay()"><i class="fa fa-step-backward"></i></a>
 						<a class="pure-button" title="再生/停止" v-on:click="playPauseReplay()"><i class="fa {{ isPaused ? 'fa-play' : 'fa-pause' }}"></i></a>
-						<progress id="dev-menu-age-progress" style="" max="{{ replayLastAge }}" value="{{ currentAge }}" v-on:click="onClickProgress"></progress>
+						<progress id="dev-menu-time-progress" style="" max="{{ replayLastTime }}" value="{{ currentTime }}" v-on:click="onClickTimeProgress"></progress>
 						<a class="pure-button" title="減速" v-on:click="decelerateReplay()"><i class="fa fa-angle-down"></i></a>
 						<a class="pure-button" title="加速" v-on:click="accelerateReplay()"><i class="fa fa-angle-up"></i></a>
 						<a class="pure-button" title="ここからプレイ" v-on:click="playFromHere()" >ここからプレイ</a>

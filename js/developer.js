@@ -1,6 +1,7 @@
 /**
  * param.isReplay: boolean
- * param.replayLastAge: number
+ * param.replayLastTime: number
+ * param.timeKeeper: TimeKeeper
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
@@ -67,9 +68,9 @@ function setupDeveloperMenu(param) {
 			expand: false
 		},
 		isPaused: false,
-		currentAge: 0,
 		isReplay: param.isReplay,
-		replayLastAge: param.replayLastAge,
+		currentTime: 0,
+		replayLastTime: param.replayLastTime,
 		replayDone: false,
 		playlog: {
 			list: [] // {name: string, url: string}
@@ -674,11 +675,13 @@ function setupDeveloperMenu(param) {
 		saveConfig();
 	}
 
-	// age 取得
-	function updateCurrentAge() { data.currentAge = props.game.age; }
+	// time 更新
+	function updateCurrentTime() {
+		data.currentTime = param.timeKeeper.now();
+	}
 	props.game._sceneChanged.handle(function (scene) {
-		if (!scene.update.isHandled(updateCurrentAge)) {
-			scene.update.handle(updateCurrentAge);
+		if (!scene.update.isHandled(updateCurrentTime)) {
+			scene.update.handle(updateCurrentTime);
 		}
 	});
 
@@ -696,7 +699,8 @@ function setupDeveloperMenu(param) {
 		var dump = amflow.dump();
 		var jsonData = JSON.stringify({
 			tickList: dump.tickList,
-			startPoints: dump.startPoints
+			startPoints: dump.startPoints,
+			fps: props.game.fps
 		});
 		if (localStorage.getItem(PLAYLOG_PREFIX + name)) {
 			if (!window.confirm("同名のリプレイ情報がすでに存在します。上書きしてもよろしいでしょうか？")) {
@@ -726,57 +730,29 @@ function setupDeveloperMenu(param) {
 			}
 		});
 	}
-	var currentTargetAge = null;
-	props.game.agePassedTrigger.handle(function (age) {
-		if (age !== currentTargetAge)
-			return;
-		currentTargetAge = null;
-		changeDriverState({
-			loopConfiguration: {
-				delayIgnoreThreshold: Infinity,
-				jumpTryThreshold: Infinity
-			}
-		});
-	});
-	function jumpReplay(targetAge) {
-		changeDriverState({
-			loopConfiguration: {
-				targetAge: targetAge,
-				delayIgnoreThreshold: 6,  // Ugh! GameLoopがデフォルト値にリセットする方法を提供するべき
-				jumpTryThreshold: 90000
-			}
-		}, function () {
-			props.game.requestNotifyAgePassed(targetAge);
-			currentTargetAge = targetAge;
-			data.currentAge = targetAge;  // 表示をごまかすため即座に移す
-		});
-	}
 	function rewindReplay() {
-		jumpReplay(0);
+		param.timeKeeper.setTime(0);
+		updateCurrentTime();
 	}
 	function playPauseReplay() {
 		if (data.isPaused) {
-			props.driver.startGame();
+			param.timeKeeper.start();
 			data.isPaused = false;
 		} else {
-			props.driver.stopGame();
+			param.timeKeeper.pause();
 			data.isPaused = true;
 		}
 	}
-	function onClickProgress(ev) {
-		var progress = document.getElementById("dev-menu-age-progress");
-		var targetAge = Math.floor(ev.offsetX * progress.max / progress.offsetWidth);
-		jumpReplay(targetAge);
+	function onClickTimeProgress(ev) {
+		var progress = document.getElementById("dev-menu-time-progress");
+		var targetTime = Math.floor(ev.offsetX * progress.max / progress.offsetWidth);
+		param.timeKeeper.setTime(targetTime);
 	}
 	function accelerateReplay() {
-		var lc = props.driver.getLoopConfiguration();
-		var current = lc ? lc.playbackRate : 1;
-		changeDriverState({ loopConfiguration: { playbackRate: current * 2 } });
+		param.timeKeeper.setRate(param.timeKeeper.getRate() * 2);
 	}
 	function decelerateReplay() {
-		var lc = props.driver.getLoopConfiguration();
-		var current = lc ? lc.playbackRate : 1;
-		changeDriverState({ loopConfiguration: { playbackRate: current / 2 } });
+		param.timeKeeper.setRate(param.timeKeeper.getRate() / 2);
 	}
 	function playFromHere() {
 		if (props.amflow.dropAfter) {
@@ -992,7 +968,7 @@ function setupDeveloperMenu(param) {
 			reloadPlaylog: reloadPlaylog,
 			rewindReplay: rewindReplay,
 			playPauseReplay: playPauseReplay,
-			onClickProgress: onClickProgress,
+			onClickTimeProgress: onClickTimeProgress,
 			accelerateReplay: accelerateReplay,
 			decelerateReplay: decelerateReplay,
 			playFromHere: playFromHere,
