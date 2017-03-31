@@ -100,7 +100,7 @@ window.addEventListener("load", function() {
 				}
 			}
 			if (replayLastTime == null) {
-				replayLastTime = replayLastAge * 1000 / p.fps;
+				replayLastTime = replayLastAge * 1000 / playlog.fps;
 			}
 		}
 
