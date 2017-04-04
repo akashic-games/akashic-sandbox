@@ -85,8 +85,24 @@ window.addEventListener("load", function() {
 			startPoints: playlog ? playlog.startPoints : null
 		});
 		var isReplay = !!playlog;
-		var replayLastAge = playlog ? playlog.tickList[1] : null;
-
+		var replayLastTime = null;
+		if (isReplay) {
+			var replayLastAge = playlog.tickList[1];
+			var ticksWithEvents = playlog.tickList[2];
+			loop: for (var i = ticksWithEvents.length - 1; i >= 0; --i) {
+				var tick = ticksWithEvents[i];
+				var pevs = tick[1];
+				for (var j = 0; j < pevs.length; ++j) {
+					if (pevs[j][0] === 2) { // TimestampEvent
+						replayLastTime = (pevs[j][3] /* Timestamp */) + (replayLastAge - tick[0]) * 1000 / playlog.fps;
+						break loop;
+					}
+				}
+			}
+			if (replayLastTime == null) {
+				replayLastTime = replayLastAge * 1000 / playlog.fps;
+			}
+		}
 
 		var pf = new pdiBrowser.Platform({
 			amflow: amflowClient,
@@ -106,6 +122,8 @@ window.addEventListener("load", function() {
 			errorHandler: function (e) { console.log("ERRORHANDLER:", e); }
 		});
 
+		var timeKeeper = new TimeKeeper(replayLastTime);
+
 		driver.gameCreatedTrigger.handle(function (game) {
 			enableLogger(game);
 			window.sandboxDeveloperProps.game = game;
@@ -121,7 +139,8 @@ window.addEventListener("load", function() {
 			if (devMode) {
 				setupDeveloperMenu({
 					isReplay: isReplay,
-					replayLastAge: replayLastAge
+					replayLastTime: replayLastTime,
+					timeKeeper: timeKeeper
 				});
 			}
 		});
@@ -142,10 +161,13 @@ window.addEventListener("load", function() {
 				playToken: "dummyToken",
 				executionMode: isReplay ? gdr.ExecutionMode.Passive : gdr.ExecutionMode.Active
 			},
-			loopConfiguration: {
-				loopMode: isReplay ? gdr.LoopMode.Replay : gdr.LoopMode.Realtime,
-				delayIgnoreThreshold: isReplay ? Number.MAX_VALUE : undefined,
-				jumpTryThreshold: isReplay ? Number.MAX_VALUE : undefined
+			loopConfiguration: isReplay ? {
+				loopMode: gdr.LoopMode.Replay,
+				delayIgnoreThreshold: Number.MAX_VALUE,
+				jumpTryThreshold: Number.MAX_VALUE,
+				targetTimeFunc: timeKeeper.now.bind(timeKeeper)
+			} : {
+				loopMode: gdr.LoopMode.Realtime
 			},
 			profiler: profiler
 		}, function (e) {
@@ -153,6 +175,7 @@ window.addEventListener("load", function() {
 				console.log(e);
 				throw e;
 			}
+			timeKeeper.start();
 			driver.startGame();
 		});
 	}
