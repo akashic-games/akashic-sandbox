@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.12.2
+* akashic-engine@1.12.2 を利用するように
+
 ## 0.12.1
 * akashic-engine@1.12.1 を利用するように
 
