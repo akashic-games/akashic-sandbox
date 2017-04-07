@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
@@ -41,7 +41,7 @@
     "serve-favicon": "^2.2.0"
   },
   "devDependencies": {
-    "@akashic/akashic-engine": "~1.12.1",
+    "@akashic/akashic-engine": "~1.12.2",
     "browserify": "^13.0.0",
     "del": "^1.1.1",
     "gulp": "^3.8.11",
