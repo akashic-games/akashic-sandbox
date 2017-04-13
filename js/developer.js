@@ -761,7 +761,8 @@ function setupDeveloperMenu(param) {
 		props.driver.stopGame();
 		props.driver.changeState({
 			driverConfiguration: {
-				executionMode: gdr.ExecutionMode.Active
+				executionMode: gdr.ExecutionMode.Active,
+				playToken: gdr.MemoryAmflowClient.TOKEN_ACTIVE
 			},
 			loopConfiguration: {
 				playbackRate: 1,  // 実行速度もリセットしておく
