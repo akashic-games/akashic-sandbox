@@ -158,7 +158,7 @@ window.addEventListener("load", function() {
 			assetBase: "/game/",
 			driverConfiguration: {
 				playId: sandboxPlayId,
-				playToken: "dummyToken",
+				playToken: isReplay ? gdr.MemoryAmflowClient.TOKEN_PASSIVE : gdr.MemoryAmflowClient.TOKEN_ACTIVE,
 				executionMode: isReplay ? gdr.ExecutionMode.Passive : gdr.ExecutionMode.Active
 			},
 			loopConfiguration: isReplay ? {
