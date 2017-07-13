@@ -21,6 +21,40 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/game-driver": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var EventIndex = require("./EventIndex");
+        exports.EventIndex = EventIndex;
+        var LoopMode_1 = require("./LoopMode");
+        exports.LoopMode = LoopMode_1.default;
+        var LoopRenderMode_1 = require("./LoopRenderMode");
+        exports.LoopRenderMode = LoopRenderMode_1.default;
+        var ExecutionMode_1 = require("./ExecutionMode");
+        exports.ExecutionMode = ExecutionMode_1.default;
+        var GameDriver_1 = require("./GameDriver");
+        exports.GameDriver = GameDriver_1.GameDriver;
+        var Game_1 = require("./Game");
+        exports.Game = Game_1.Game;
+        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
+        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
+        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
+        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
+        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
+        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
+    }, {
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameDriver": 7,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./auxiliary/MemoryAmflowClient": 19,
+        "./auxiliary/ReplayAmflowProxy": 20,
+        "./auxiliary/SimpleProfiler": 21
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -59,9 +93,10 @@ require = function e(t, n, r) {
                 this._waitTime = 1e3 / realFps, this._waitTimeDoubled = Math.max(2e3 / realFps | 0, 1), 
                 this._waitTimeMax = Math.max(scaleFactor * (1e3 * this._maxFramePerOnce / realFps) | 0, 1), 
                 this._skipFrameWaitTime = this._waitTime * Clock.ANTICIPATE_RATE | 0, this._realMaxFramePerOnce = this._maxFramePerOnce * scaleFactor;
-            }, Clock;
+            }, Clock.ANTICIPATE_RATE = .8, Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD = 150, 
+            Clock;
         }();
-        Clock.ANTICIPATE_RATE = .8, Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD = 150, exports.Clock = Clock;
+        exports.Clock = Clock;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
@@ -437,9 +472,9 @@ require = function e(t, n, r) {
                 this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.handle(param.errorHandlerOwner, param.errorHandler), 
                 this.configurationLoadedTrigger = new g.Trigger(), this.gameCreatedTrigger = new g.Trigger(), 
                 this._platform = param.platform, this._loadConfigurationFunc = PdiUtil_1.PdiUtil.makeLoadConfigurationFunc(param.platform), 
-                this._player = param.player, this._playId = null, this._game = null, this._gameLoop = null, 
-                this._eventBuffer = null, this._openedAmflow = !1, this._playToken = null, this._permission = null, 
-                this._hidden = !1;
+                this._player = param.player, this._rendererRequirement = null, this._playId = null, 
+                this._game = null, this._gameLoop = null, this._eventBuffer = null, this._openedAmflow = !1, 
+                this._playToken = null, this._permission = null, this._hidden = !1;
             }
             return GameDriver.prototype.initialize = function(param, callback) {
                 this.doInitialize(param).then(function() {
@@ -469,6 +504,24 @@ require = function e(t, n, r) {
                 return this._gameLoop ? this._gameLoop.getLoopConfiguration() : null;
             }, GameDriver.prototype.getHidden = function() {
                 return this._hidden;
+            }, GameDriver.prototype.resetPrimarySurface = function(width, height, rendererCandidates) {
+                rendererCandidates = rendererCandidates ? rendererCandidates : this._rendererRequirement ? this._rendererRequirement.rendererCandidates : null;
+                var game = this._game, pf = this._platform, primarySurface = pf.getPrimarySurface();
+                game.renderers = game.renderers.filter(function(renderer) {
+                    return renderer !== primarySurface.renderer();
+                }), pf.setRendererRequirement({
+                    primarySurfaceWidth: width,
+                    primarySurfaceHeight: height,
+                    rendererCandidates: rendererCandidates
+                }), this._rendererRequirement = {
+                    primarySurfaceWidth: width,
+                    primarySurfaceHeight: height,
+                    rendererCandidates: rendererCandidates
+                }, game.renderers.push(pf.getPrimarySurface().renderer()), game.width = width, game.height = height, 
+                game.resized.fire({
+                    width: width,
+                    height: height
+                }), game.modified = !0;
             }, GameDriver.prototype.doInitialize = function(param) {
                 var _this = this, p = new es6_promise_1.Promise(function(resolve, reject) {
                     return _this._gameLoop && _this._gameLoop.running ? reject(new Error("Game is running. Must be stopped.")) : (_this._gameLoop && param.loopConfiguration && _this._gameLoop.setLoopConfiguration(param.loopConfiguration), 
@@ -539,7 +592,7 @@ require = function e(t, n, r) {
                         return err ? reject(err) : (_this.configurationLoadedTrigger.fire(conf), void resolve(conf));
                     });
                 });
-            }, GameDriver.prototype._putZerothStartPointData = function(data) {
+            }, GameDriver.prototype._putZerothStartPoint = function(data) {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
                     var zerothStartPoint = {
@@ -563,25 +616,27 @@ require = function e(t, n, r) {
                     });
                 });
             }, GameDriver.prototype._createGame = function(conf, player, param) {
-                var _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active && this._permission.writeTick, p = putSeed ? this._putZerothStartPointData({
+                var p, _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active && this._permission.writeTick;
+                return p = putSeed ? this._putZerothStartPoint({
                     seed: Date.now(),
-                    globalArgs: param.globalGameArgs
-                }) : es6_promise_1.Promise.resolve(), q = p.then(function() {
+                    globalArgs: param.globalGameArgs,
+                    fps: conf.fps,
+                    startedAt: Date.now()
+                }) : es6_promise_1.Promise.resolve(), p = p.then(function() {
                     return _this._getZerothStartPointData();
-                });
-                return q.then(function(zerothData) {
+                }), p.then(function(zerothData) {
                     var pf = _this._platform, driverConf = param.driverConfiguration || {
                         eventBufferMode: {
                             isReceiver: !0,
                             isSender: !1
                         },
                         executionMode: ExecutionMode_1.default.Active
-                    }, seed = zerothData.seed, args = param.gameArgs, globalArgs = zerothData.globalArgs;
-                    pf.setRendererRequirement({
+                    }, seed = zerothData.seed, args = param.gameArgs, globalArgs = zerothData.globalArgs, startedAt = zerothData.startedAt, rendererRequirement = {
                         primarySurfaceWidth: conf.width,
                         primarySurfaceHeight: conf.height,
                         rendererCandidates: conf.renderers
-                    });
+                    };
+                    pf.setRendererRequirement(rendererRequirement);
                     var game = new Game_1.Game({
                         configuration: conf,
                         player: player,
@@ -607,6 +662,7 @@ require = function e(t, n, r) {
                         executionMode: driverConf.executionMode,
                         eventBuffer: eventBuffer,
                         configuration: param.loopConfiguration,
+                        startedAt: startedAt,
                         profiler: param.profiler
                     });
                     game.setCurrentTimeFunc(gameLoop.getCurrentTime.bind(gameLoop)), game._reset({
@@ -617,7 +673,8 @@ require = function e(t, n, r) {
                             err && _this.errorTrigger.fire(err);
                         });
                     }), _this._game = game, _this._eventBuffer = eventBuffer, _this._gameLoop = gameLoop, 
-                    _this.gameCreatedTrigger.fire(game), _this._game._loadAndStart({
+                    _this._rendererRequirement = rendererRequirement, _this.gameCreatedTrigger.fire(game), 
+                    _this._game._loadAndStart({
                         args: param.gameArgs || void 0
                     });
                 });
@@ -649,7 +706,10 @@ require = function e(t, n, r) {
                 this.errorTrigger = new g.Trigger(), this.running = !1, this._currentTime = 0, this._frameTime = 1e3 / param.game.fps, 
                 param.errorHandler && this.errorTrigger.handle(param.errorHandlerOwner, param.errorHandler);
                 var conf = param.configuration;
-                this._targetTimeFunc = conf.targetTimeFunc || null, this._delayIgnoreThreshold = conf.delayIgnoreThreshold || GameLoop.DEFAULT_DELAY_IGNORE_THRESHOLD, 
+                this._startedAt = param.startedAt, this._targetTimeFunc = conf.targetTimeFunc || null, 
+                this._targetTimeOffset = conf.targetTimeOffset || null, this._originDate = conf.originDate || null, 
+                this._realTargetTimeOffset = null != this._originDate ? this._originDate - this._startedAt : this._targetTimeOffset || 0, 
+                this._delayIgnoreThreshold = conf.delayIgnoreThreshold || GameLoop.DEFAULT_DELAY_IGNORE_THRESHOLD, 
                 this._skipTicksAtOnce = conf.skipTicksAtOnce || GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE, 
                 this._skipThreshold = conf.skipThreshold || GameLoop.DEFAULT_SKIP_THRESHOLD, this._jumpTryThreshold = conf.jumpTryThreshold || GameLoop.DEFAULT_JUMP_TRY_THRESHOLD, 
                 this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold || GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD, 
@@ -710,6 +770,8 @@ require = function e(t, n, r) {
                     playbackRate: this._playbackRate,
                     loopRenderMode: this._loopRenderMode,
                     targetTimeFunc: this._targetTimeFunc,
+                    targetTimeOffset: this._targetTimeOffset,
+                    originDate: this._originDate,
                     targetAge: this._targetAge
                 };
             }, GameLoop.prototype.setLoopConfiguration = function(conf) {
@@ -719,7 +781,9 @@ require = function e(t, n, r) {
                 null != conf.jumpIgnoreThreshold && (this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold), 
                 null != conf.playbackRate && (this._playbackRate = conf.playbackRate, this._clock.changeScaleFactor(this._playbackRate), 
                 this._updateGamePlaybackRate()), null != conf.loopRenderMode && this._setLoopRenderMode(conf.loopRenderMode), 
-                null != conf.targetTimeFunc && (this._targetTimeFunc = conf.targetTimeFunc), null != conf.targetAge && (this._targetAge !== conf.targetAge && (this._waitingNextTick = !1), 
+                null != conf.targetTimeFunc && (this._targetTimeFunc = conf.targetTimeFunc), null != conf.targetTimeOffset && (this._targetTimeOffset = conf.targetTimeOffset), 
+                null != conf.originDate && (this._originDate = conf.originDate), this._realTargetTimeOffset = null != this._originDate ? this._originDate - this._startedAt : this._targetTimeOffset || 0, 
+                null != conf.targetAge && (this._targetAge !== conf.targetAge && (this._waitingNextTick = !1), 
                 this._targetAge = conf.targetAge);
             }, GameLoop.prototype.addTickList = function(tickList) {
                 this._tickBuffer.addTickList(tickList);
@@ -760,7 +824,7 @@ require = function e(t, n, r) {
             }, GameLoop.prototype._onFrame = function(frameArg) {
                 this._loopMode === LoopMode_1.default.Replay && this._targetTimeFunc ? this._onFrameForTimedReplay(frameArg) : this._onFrameNormal(frameArg);
             }, GameLoop.prototype._onFrameForTimedReplay = function(frameArg) {
-                var sceneChanged = !1, game = this._game, targetTime = this._targetTimeFunc(), timeGap = targetTime - this._currentTime, frameGap = timeGap / this._frameTime;
+                var sceneChanged = !1, game = this._game, targetTime = this._targetTimeFunc() + this._realTargetTimeOffset, timeGap = targetTime - this._currentTime, frameGap = timeGap / this._frameTime;
                 if ((frameGap > this._jumpTryThreshold || frameGap < 0) && !this._waitingStartPoint && this._lastRequestedStartPointTime < this._currentTime && (this._waitingStartPoint = !0, 
                 this._lastRequestedStartPointTime = targetTime, this._amflow.getStartPoint({
                     timestamp: targetTime
@@ -853,7 +917,7 @@ require = function e(t, n, r) {
             }, GameLoop.prototype._onGotStartPoint = function(err, startPoint) {
                 if (this._waitingStartPoint = !1, err) throw new Error();
                 if (this._targetTimeFunc && this._loopMode !== LoopMode_1.default.Realtime) {
-                    var targetTime = this._targetTimeFunc();
+                    var targetTime = this._targetTimeFunc() + this._realTargetTimeOffset;
                     if (targetTime < startPoint.timestamp) return;
                     var currentTime = this._currentTime;
                     if (currentTime < targetTime && startPoint.timestamp < currentTime + this._jumpIgnoreThreshold * this._frameTime) return;
@@ -905,12 +969,12 @@ require = function e(t, n, r) {
                 this._lastPollingTickTime = +new Date();
             }, GameLoop.prototype._stopWaitingNextTick = function() {
                 this._waitingNextTick = !1, this._clock.rawFrameTrigger.remove(this, this._onPollingTick);
-            }, GameLoop;
+            }, GameLoop.DEFAULT_DELAY_IGNORE_THRESHOLD = 6, GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE = 100, 
+            GameLoop.DEFAULT_SKIP_THRESHOLD = 3e4, GameLoop.DEFAULT_JUMP_TRY_THRESHOLD = 9e4, 
+            GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop.DEFAULT_POLLING_TICK_THRESHOLD = 1e4, 
+            GameLoop.DEFAULT_DELAY_IGNORE_THERSHOLD = GameLoop.DEFAULT_DELAY_IGNORE_THRESHOLD, 
+            GameLoop;
         }();
-        GameLoop.DEFAULT_DELAY_IGNORE_THRESHOLD = 6, GameLoop.DEFAULT_SKIP_TICKS_AT_ONCE = 100, 
-        GameLoop.DEFAULT_SKIP_THRESHOLD = 3e4, GameLoop.DEFAULT_JUMP_TRY_THRESHOLD = 9e4, 
-        GameLoop.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, GameLoop.DEFAULT_POLLING_TICK_THRESHOLD = 1e4, 
-        GameLoop.DEFAULT_DELAY_IGNORE_THERSHOLD = GameLoop.DEFAULT_DELAY_IGNORE_THRESHOLD, 
         exports.GameLoop = GameLoop;
     }, {
         "./Clock": 1,
@@ -1380,9 +1444,9 @@ require = function e(t, n, r) {
                     ticks: []
                 };
                 return tick[1] && range.ticks.push(tick), range;
-            }, TickBuffer;
+            }, TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800, TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3, 
+            TickBuffer;
         }();
-        TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800, TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3, 
         exports.TickBuffer = TickBuffer;
     }, {
         "./EventIndex": 4,
@@ -1670,9 +1734,9 @@ require = function e(t, n, r) {
                         return sp.frame < age;
                     }));
                 }
-            }, MemoryAmflowClient;
+            }, MemoryAmflowClient.TOKEN_ACTIVE = "mamfc-token:active", MemoryAmflowClient.TOKEN_PASSIVE = "mamfc-token:passive", 
+            MemoryAmflowClient;
         }());
-        MemoryAmflowClient.TOKEN_ACTIVE = "mamfc-token:active", MemoryAmflowClient.TOKEN_PASSIVE = "mamfc-token:passive", 
         exports.MemoryAmflowClient = MemoryAmflowClient;
     }, {
         "../EventIndex": 4
@@ -1827,19 +1891,18 @@ require = function e(t, n, r) {
                 };
             }, SimpleProfiler.prototype._getCurrentTime = function() {
                 return +new Date();
-            }, SimpleProfiler;
+            }, SimpleProfiler.DEFAULT_INTERVAL = 1e3, SimpleProfiler.DEFAULT_LIMIT = 1e3, SimpleProfiler.BACKUP_MARGIN = 100, 
+            SimpleProfiler;
         }();
-        SimpleProfiler.DEFAULT_INTERVAL = 1e3, SimpleProfiler.DEFAULT_LIMIT = 1e3, SimpleProfiler.BACKUP_MARGIN = 100, 
         exports.SimpleProfiler = SimpleProfiler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     22: [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-    }, {} ],
+        arguments[4][4][0].apply(exports, arguments);
+    }, {
+        dup: 4
+    } ],
     23: [ function(require, module, exports) {}, {} ],
     24: [ function(require, module, exports) {
         arguments[4][23][0].apply(exports, arguments);
@@ -2227,7 +2290,10 @@ require = function e(t, n, r) {
         }, process.title = "browser", process.browser = !0, process.env = {}, process.argv = [], 
         process.version = "", process.versions = {}, process.on = noop, process.addListener = noop, 
         process.once = noop, process.off = noop, process.removeListener = noop, process.removeAllListeners = noop, 
-        process.emit = noop, process.binding = function(name) {
+        process.emit = noop, process.prependListener = noop, process.prependOnceListener = noop, 
+        process.listeners = function(name) {
+            return [];
+        }, process.binding = function(name) {
             throw new Error("process.binding is not supported");
         }, process.cwd = function() {
             return "/";
@@ -2236,39 +2302,5 @@ require = function e(t, n, r) {
         }, process.umask = function() {
             return 0;
         };
-    }, {} ],
-    "@akashic/game-driver": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var EventIndex = require("./EventIndex");
-        exports.EventIndex = EventIndex;
-        var LoopMode_1 = require("./LoopMode");
-        exports.LoopMode = LoopMode_1.default;
-        var LoopRenderMode_1 = require("./LoopRenderMode");
-        exports.LoopRenderMode = LoopRenderMode_1.default;
-        var ExecutionMode_1 = require("./ExecutionMode");
-        exports.ExecutionMode = ExecutionMode_1.default;
-        var GameDriver_1 = require("./GameDriver");
-        exports.GameDriver = GameDriver_1.GameDriver;
-        var Game_1 = require("./Game");
-        exports.Game = Game_1.Game;
-        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
-        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
-        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
-        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
-        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
-        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
-    }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameDriver": 7,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./auxiliary/MemoryAmflowClient": 19,
-        "./auxiliary/ReplayAmflowProxy": 20,
-        "./auxiliary/SimpleProfiler": 21
-    } ]
+    }, {} ]
 }, {}, []);

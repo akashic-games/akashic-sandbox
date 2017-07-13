@@ -64,12 +64,10 @@ require = function e(t, n, r) {
                 this._rendererReq = param.rendererRequirement, this._disablePreventDefault = !!param.disablePreventDefault, 
                 this._loadView();
             }, ContainerController.prototype.setRootView = function(rootView) {
-                var _this = this;
                 rootView !== this.rootView && (this.rootView && (this.unloadView(), this._loadView()), 
-                this.rootView = rootView, rootView.appendChild(this.container), this.inputHandlerLayer.enablePointerEvent(), 
-                this.inputHandlerLayer.pointEventTrigger.handle(function(ev) {
-                    _this.pointEventTrigger.fire(ev);
-                }));
+                this.rootView = rootView, this._appendToRootView(rootView));
+            }, ContainerController.prototype.resetView = function(rendererReq) {
+                this.unloadView(), this._rendererReq = rendererReq, this._loadView(), this._appendToRootView(this.rootView);
             }, ContainerController.prototype.getRenderer = function() {
                 if (!this.surface) throw new Error("this container has no surface");
                 return this.surface.renderer();
@@ -90,7 +88,11 @@ require = function e(t, n, r) {
             }, ContainerController.prototype.unloadView = function() {
                 if (this.inputHandlerLayer.disablePointerEvent(), this.rootView) for (;this.rootView.firstChild; ) this.rootView.removeChild(this.rootView.firstChild);
             }, ContainerController.prototype._loadView = function() {
-                this.container = document.createDocumentFragment(), this.inputHandlerLayer = new InputHandlerLayer_1.InputHandlerLayer({
+                this.container = document.createDocumentFragment(), this.inputHandlerLayer ? (this.inputHandlerLayer.setViewSize({
+                    width: this._rendererReq.primarySurfaceWidth,
+                    height: this._rendererReq.primarySurfaceHeight
+                }), this.inputHandlerLayer.pointEventTrigger._reset(), this.inputHandlerLayer.view.removeChild(this.surface.canvas), 
+                this.surface.destroy()) : this.inputHandlerLayer = new InputHandlerLayer_1.InputHandlerLayer({
                     width: this._rendererReq.primarySurfaceWidth,
                     height: this._rendererReq.primarySurfaceHeight,
                     disablePreventDefault: this._disablePreventDefault
@@ -100,6 +102,12 @@ require = function e(t, n, r) {
                     width: this.surface.width,
                     height: this.surface.height
                 };
+            }, ContainerController.prototype._appendToRootView = function(rootView) {
+                var _this = this;
+                rootView.appendChild(this.container), this.inputHandlerLayer.enablePointerEvent(), 
+                this.inputHandlerLayer.pointEventTrigger.handle(function(ev) {
+                    _this.pointEventTrigger.fire(ev);
+                });
             }, ContainerController;
         }();
         exports.ContainerController = ContainerController;
@@ -125,12 +133,13 @@ require = function e(t, n, r) {
                     _this.pointEventTrigger.fire(e);
                 }), this._inputHandler.start();
             }, InputHandlerLayer.prototype.disablePointerEvent = function() {
-                this._inputHandler.stop();
+                this._inputHandler && this._inputHandler.stop();
             }, InputHandlerLayer.prototype.setOffset = function(offset) {
                 var inputViewStyle = "position:relative; left:" + offset.x + "px; top:" + offset.y + "px";
-                this._inputHandler.inputView.setAttribute("style", inputViewStyle), this._inputHandler.setOffset(offset);
-            }, InputHandlerLayer.prototype.notifyViewMoved = function() {
-                this._inputHandler.notifyViewMoved();
+                this._inputHandler.inputView.setAttribute("style", inputViewStyle);
+            }, InputHandlerLayer.prototype.setViewSize = function(size) {
+                var view = this.view;
+                view.style.width = size.width + "px", view.style.height = size.height + "px";
             }, InputHandlerLayer.prototype._createInputView = function(width, height) {
                 var view = document.createElement("div");
                 return view.setAttribute("tabindex", "1"), view.className = "input-handler", view.setAttribute("style", "display:inline-block; outline:none;"), 
@@ -176,11 +185,14 @@ require = function e(t, n, r) {
                 return this._resourceFactory;
             }, Platform.prototype.setRendererRequirement = function(requirement) {
                 if (!requirement) return void (this.containerController && this.containerController.unloadView());
-                this._rendererReq = requirement, this._resourceFactory._rendererCandidates = this._rendererReq.rendererCandidates, 
-                this.containerController.initialize({
-                    rendererRequirement: this._rendererReq,
+                if (this._rendererReq = requirement, this._resourceFactory._rendererCandidates = this._rendererReq.rendererCandidates, 
+                this.containerController && !this.containerController.inputHandlerLayer) this.containerController.initialize({
+                    rendererRequirement: requirement,
                     disablePreventDefault: this._disablePreventDefault
-                }), this.containerController.setRootView(this.containerView), this._platformEventHandler && this.containerController.pointEventTrigger.handle(this._platformEventHandler, this._platformEventHandler.onPointEvent);
+                }), this.containerController.setRootView(this.containerView), this._platformEventHandler && this.containerController.pointEventTrigger.handle(this._platformEventHandler, this._platformEventHandler.onPointEvent); else {
+                    var surface = this.getPrimarySurface();
+                    surface && !surface.destroyed() && surface.destroy(), this.containerController.resetView(requirement);
+                }
                 var parentView = this.containerView.parentElement;
                 this.defaultViewMargin = parentView.style.margin, this.defaultViewPadding = parentView.style.padding, 
                 this.defaultViewOverflow = parentView.style.overflow;
@@ -215,9 +227,7 @@ require = function e(t, n, r) {
                 var parentView = this.containerView.parentElement;
                 parentView.style.margin = this.defaultViewMargin, parentView.style.padding = this.defaultViewPadding, 
                 parentView.style.overflow = this.defaultViewOverflow, this.containerController.revertSize();
-            }, Platform.prototype.notifyViewMoved = function() {
-                this.containerController.inputHandlerLayer.notifyViewMoved();
-            }, Platform;
+            }, Platform.prototype.notifyViewMoved = function() {}, Platform;
         }();
         exports.Platform = Platform;
     }, {
@@ -514,10 +524,10 @@ require = function e(t, n, r) {
             }, XHRScriptAsset.prototype._wrap = function() {
                 var func = new Function("g", XHRScriptAsset.PRE_SCRIPT + this.script + XHRScriptAsset.POST_SCRIPT);
                 return func;
-            }, XHRScriptAsset;
+            }, XHRScriptAsset.PRE_SCRIPT = "(function(exports, require, module, __filename, __dirname) {", 
+            XHRScriptAsset.POST_SCRIPT = "})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);", 
+            XHRScriptAsset;
         }(g.ScriptAsset);
-        XHRScriptAsset.PRE_SCRIPT = "(function(exports, require, module, __filename, __dirname) {", 
-        XHRScriptAsset.POST_SCRIPT = "})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);", 
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
         "../utils/XHRLoader": 43,
@@ -1019,9 +1029,9 @@ require = function e(t, n, r) {
                     newCapacity < 2 * oldCapacity ? this._capacity *= 2 : this._capacity = newCapacity;
                     for (var i = oldCapacity; i < this._capacity; ++i) this._stateStack.push(new RenderingState_1.RenderingState());
                 }
-            }, StateHoldingRenderer;
+            }, StateHoldingRenderer.DEFAULT_CAPACITY = 16, StateHoldingRenderer;
         }(g.Renderer);
-        StateHoldingRenderer.DEFAULT_CAPACITY = 16, exports.StateHoldingRenderer = StateHoldingRenderer;
+        exports.StateHoldingRenderer = StateHoldingRenderer;
     }, {
         "./RenderingHelper": 16,
         "./RenderingState": 17,
@@ -1835,9 +1845,10 @@ require = function e(t, n, r) {
                 image._texture = map.texture, image._textureOffsetX = map.offsetX, image._textureOffsetY = map.offsetY, 
                 image._textureWidth = WebGLTextureAtlas.TEXTURE_SIZE, image._textureHeight = WebGLTextureAtlas.TEXTURE_SIZE, 
                 renderer._assignTexture(image, map.offsetX, map.offsetY, map.texture);
-            }, WebGLTextureAtlas;
+            }, WebGLTextureAtlas.TEXTURE_SIZE = 1024, WebGLTextureAtlas.TEXTURE_COUNT = 16, 
+            WebGLTextureAtlas;
         }();
-        WebGLTextureAtlas.TEXTURE_SIZE = 1024, WebGLTextureAtlas.TEXTURE_COUNT = 16, exports.WebGLTextureAtlas = WebGLTextureAtlas;
+        exports.WebGLTextureAtlas = WebGLTextureAtlas;
     }, {
         "./WebGLTextureMap": 29
     } ],
@@ -1883,9 +1894,9 @@ require = function e(t, n, r) {
                 this._right = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, this._width, remainHeight)) : (this._left = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, width, remainHeight), 
                 this._right = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, this._height)), 
                 this._surface = surface, this;
-            }, WebGLTextureMap;
+            }, WebGLTextureMap.TEXTURE_MARGIN = 1, WebGLTextureMap;
         }();
-        WebGLTextureMap.TEXTURE_MARGIN = 1, exports.WebGLTextureMap = WebGLTextureMap;
+        exports.WebGLTextureMap = WebGLTextureMap;
     }, {} ],
     30: [ function(require, module, exports) {
         "use strict";
@@ -1921,11 +1932,8 @@ require = function e(t, n, r) {
         function() {
             function InputAbstractHandler(inputView, disablePreventDefault) {
                 if (Object.getPrototypeOf && Object.getPrototypeOf(this) === InputAbstractHandler.prototype) throw new Error("InputAbstractHandler is abstract and should not be directly instantiated");
-                this.inputView = inputView, this.pointerEventLock = {}, this._calculateOffsetForLazy = !0, 
-                this._xScale = 1, this._yScale = 1, this._offset = {
-                    x: 0,
-                    y: 0
-                }, this._disablePreventDefault = !!disablePreventDefault, this.pointTrigger = new g.Trigger();
+                this.inputView = inputView, this.pointerEventLock = {}, this._xScale = 1, this._yScale = 1, 
+                this._disablePreventDefault = !!disablePreventDefault, this.pointTrigger = new g.Trigger();
             }
             return InputAbstractHandler.isSupported = function() {
                 return !1;
@@ -1933,8 +1941,6 @@ require = function e(t, n, r) {
                 throw new Error("This method is abstract");
             }, InputAbstractHandler.prototype.stop = function() {
                 throw new Error("This method is abstract");
-            }, InputAbstractHandler.prototype.setOffset = function(value) {
-                this._offset = value;
             }, InputAbstractHandler.prototype.setScale = function(xScale, yScale) {
                 void 0 === yScale && (yScale = xScale), this._xScale = xScale, this._yScale = yScale;
             }, InputAbstractHandler.prototype.pointDown = function(identifier, pagePosition) {
@@ -1956,24 +1962,16 @@ require = function e(t, n, r) {
                     offset: this.getOffsetFromEvent(pagePosition)
                 }), delete this.pointerEventLock[identifier]);
             }, InputAbstractHandler.prototype.getOffsetFromEvent = function(e) {
-                if (this._calculateOffsetForLazy) {
-                    var bounding = this.inputView.getBoundingClientRect(), offsetOfWindow = {
-                        x: Math.round(window.pageXOffset + bounding.left),
-                        y: Math.round(window.pageYOffset + bounding.top)
-                    };
-                    this._offset = offsetOfWindow, this._calculateOffsetForLazy = !1;
-                }
+                var bounding = this.inputView.getBoundingClientRect();
                 return {
-                    x: (e.pageX - this._offset.x) / this._xScale,
-                    y: (e.pageY - this._offset.y) / this._yScale
+                    x: (e.pageX - Math.round(window.pageXOffset + bounding.left)) / this._xScale,
+                    y: (e.pageY - Math.round(window.pageYOffset + bounding.top)) / this._yScale
                 };
             }, InputAbstractHandler.prototype.getScale = function() {
                 return {
                     x: this._xScale,
                     y: this._yScale
                 };
-            }, InputAbstractHandler.prototype.notifyViewMoved = function() {
-                this._calculateOffsetForLazy = !0;
             }, InputAbstractHandler;
         }());
         exports.InputAbstractHandler = InputAbstractHandler;
@@ -2344,9 +2342,9 @@ require = function e(t, n, r) {
                 if (WebAudioAsset.supportedFormats.indexOf("ogg") !== -1) return g.PathUtil.addExtname(path, "ogg");
                 if (WebAudioAsset.supportedFormats.indexOf("mp4") !== -1) return g.PathUtil.addExtname(path, "mp4");
                 throw new Error("not available ogg or aac, The UA supported formats are " + WebAudioAsset.supportedFormats);
-            }, WebAudioAsset;
+            }, WebAudioAsset.supportedFormats = [], WebAudioAsset;
         }(g.AudioAsset);
-        WebAudioAsset.supportedFormats = [], exports.WebAudioAsset = WebAudioAsset;
+        exports.WebAudioAsset = WebAudioAsset;
     }, {
         "../../utils/XHRLoader": 43,
         "./WebAudioHelper": 40,
