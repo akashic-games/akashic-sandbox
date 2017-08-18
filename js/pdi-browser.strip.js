@@ -41,15 +41,38 @@ require = function e(t, n, r) {
         var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
         exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
     }, {
-        "./Platform": 3,
-        "./ResourceFactory": 5,
-        "./plugin/AudioPluginManager": 34,
-        "./plugin/AudioPluginRegistry": 35,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 38,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 42,
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 35,
+        "./plugin/AudioPluginRegistry": 36,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     1: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var AudioManager = function() {
+            function AudioManager() {
+                this.audioAssets = [], this._masterVolume = 1;
+            }
+            return AudioManager.prototype.registerAudioAsset = function(asset) {
+                this.audioAssets.indexOf(asset) === -1 && this.audioAssets.push(asset);
+            }, AudioManager.prototype.removeAudioAsset = function(asset) {
+                var index = this.audioAssets.indexOf(asset);
+                index === -1 && this.audioAssets.splice(index, 1);
+            }, AudioManager.prototype.setMasterVolume = function(volume) {
+                this._masterVolume = volume;
+                for (var i = 0; i < this.audioAssets.length; i++) this.audioAssets[i]._lastPlayedPlayer && this.audioAssets[i]._lastPlayedPlayer.notifyMasterVolumeChanged();
+            }, AudioManager.prototype.getMasterVolume = function() {
+                return this._masterVolume;
+            }, AudioManager;
+        }();
+        exports.AudioManager = AudioManager;
+    }, {} ],
+    2: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -112,11 +135,11 @@ require = function e(t, n, r) {
         }();
         exports.ContainerController = ContainerController;
     }, {
-        "./InputHandlerLayer": 2,
-        "./canvas/RenderingHelper": 16,
+        "./InputHandlerLayer": 3,
+        "./canvas/RenderingHelper": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    2: [ function(require, module, exports) {
+    3: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -148,23 +171,25 @@ require = function e(t, n, r) {
         }();
         exports.InputHandlerLayer = InputHandlerLayer;
     }, {
-        "./handler/MouseHandler": 32,
-        "./handler/TouchHandler": 33,
+        "./handler/MouseHandler": 33,
+        "./handler/TouchHandler": 34,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    3: [ function(require, module, exports) {
+    4: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var RafLooper_1 = require("./RafLooper"), ResourceFactory_1 = require("./ResourceFactory"), ContainerController_1 = require("./ContainerController"), AudioPluginManager_1 = require("./plugin/AudioPluginManager"), AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), Platform = function() {
+        var RafLooper_1 = require("./RafLooper"), ResourceFactory_1 = require("./ResourceFactory"), ContainerController_1 = require("./ContainerController"), AudioPluginManager_1 = require("./plugin/AudioPluginManager"), AudioManager_1 = require("./AudioManager"), AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), Platform = function() {
             function Platform(param) {
                 this.containerView = param.containerView, this.containerController = new ContainerController_1.ContainerController(), 
                 this.audioPluginManager = new AudioPluginManager_1.AudioPluginManager(), param.audioPlugins && this.audioPluginManager.tryInstallPlugin(param.audioPlugins), 
                 this.audioPluginManager.tryInstallPlugin(AudioPluginRegistry_1.AudioPluginRegistry.getRegisteredAudioPlugins()), 
-                this.amflow = param.amflow, this._platformEventHandler = null, this._resourceFactory = param.resourceFactory || new ResourceFactory_1.ResourceFactory({
+                this._audioManager = new AudioManager_1.AudioManager(), this.amflow = param.amflow, 
+                this._platformEventHandler = null, this._resourceFactory = param.resourceFactory || new ResourceFactory_1.ResourceFactory({
                     audioPluginManager: this.audioPluginManager,
-                    platform: this
+                    platform: this,
+                    audioManager: this._audioManager
                 }), this._rendererReq = null, this._disablePreventDefault = !!param.disablePreventDefault;
             }
             return Platform.prototype.setPlatformEventHandler = function(handler) {
@@ -227,18 +252,23 @@ require = function e(t, n, r) {
                 var parentView = this.containerView.parentElement;
                 parentView.style.margin = this.defaultViewMargin, parentView.style.padding = this.defaultViewPadding, 
                 parentView.style.overflow = this.defaultViewOverflow, this.containerController.revertSize();
-            }, Platform.prototype.notifyViewMoved = function() {}, Platform;
+            }, Platform.prototype.notifyViewMoved = function() {}, Platform.prototype.setMasterVolume = function(volume) {
+                this._audioManager && this._audioManager.setMasterVolume(volume);
+            }, Platform.prototype.getMasterVolume = function() {
+                if (this._audioManager) return this._audioManager.getMasterVolume();
+            }, Platform;
         }();
         exports.Platform = Platform;
     }, {
-        "./ContainerController": 1,
-        "./RafLooper": 4,
-        "./ResourceFactory": 5,
-        "./asset/XHRTextAsset": 11,
-        "./plugin/AudioPluginManager": 34,
-        "./plugin/AudioPluginRegistry": 35
+        "./AudioManager": 1,
+        "./ContainerController": 2,
+        "./RafLooper": 5,
+        "./ResourceFactory": 6,
+        "./asset/XHRTextAsset": 12,
+        "./plugin/AudioPluginManager": 35,
+        "./plugin/AudioPluginRegistry": 36
     } ],
-    4: [ function(require, module, exports) {
+    5: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -261,7 +291,7 @@ require = function e(t, n, r) {
         }();
         exports.RafLooper = RafLooper;
     }, {} ],
-    5: [ function(require, module, exports) {
+    6: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -285,15 +315,16 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), HTMLImageAsset_1 = require("./asset/HTMLImageAsset"), HTMLVideoAsset_1 = require("./asset/HTMLVideoAsset"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), XHRScriptAsset_1 = require("./asset/XHRScriptAsset"), RenderingHelper_1 = require("./canvas/RenderingHelper"), GlyphFactory_1 = require("./canvas/GlyphFactory"), SurfaceAtlas_1 = require("./canvas/SurfaceAtlas"), ResourceFactory = function(_super) {
             function ResourceFactory(param) {
                 var _this = _super.call(this) || this;
-                return _this._audioPluginManager = param.audioPluginManager, _this._platform = param.platform, 
-                _this;
+                return _this._audioPluginManager = param.audioPluginManager, _this._audioManager = param.audioManager, 
+                _this._platform = param.platform, _this;
             }
             return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
-                var activePlugin = this._audioPluginManager.getActivePlugin();
-                return activePlugin.createAsset(id, assetPath, duration, system, loop, hint);
+                var activePlugin = this._audioPluginManager.getActivePlugin(), audioAsset = activePlugin.createAsset(id, assetPath, duration, system, loop, hint);
+                return audioAsset.onDestroyed && (this._audioManager.registerAudioAsset(audioAsset), 
+                audioAsset.onDestroyed.handle(this, this._onAudioAssetDestroyed)), audioAsset;
             }, ResourceFactory.prototype.createAudioPlayer = function(system) {
                 var activePlugin = this._audioPluginManager.getActivePlugin();
-                return activePlugin.createPlayer(system);
+                return activePlugin.createPlayer(system, this._audioManager);
             }, ResourceFactory.prototype.createImageAsset = function(id, assetPath, width, height) {
                 return new HTMLImageAsset_1.HTMLImageAsset(id, assetPath, width, height);
             }, ResourceFactory.prototype.createVideoAsset = function(id, assetPath, width, height, system, loop, useRealSize) {
@@ -308,20 +339,22 @@ require = function e(t, n, r) {
                 return new GlyphFactory_1.GlyphFactory(fontFamily, fontSize, baseline, RenderingHelper_1.RenderingHelper.usedWebGL(this._rendererCandidates), fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight);
             }, ResourceFactory.prototype.createSurfaceAtlas = function(width, height) {
                 return new SurfaceAtlas_1.SurfaceAtlas(this.createSurface(width, height));
+            }, ResourceFactory.prototype._onAudioAssetDestroyed = function(asset) {
+                this._audioManager.removeAudioAsset(asset);
             }, ResourceFactory;
         }(g.ResourceFactory);
         exports.ResourceFactory = ResourceFactory;
     }, {
-        "./asset/HTMLImageAsset": 7,
-        "./asset/HTMLVideoAsset": 8,
-        "./asset/XHRScriptAsset": 10,
-        "./asset/XHRTextAsset": 11,
-        "./canvas/GlyphFactory": 15,
-        "./canvas/RenderingHelper": 16,
-        "./canvas/SurfaceAtlas": 19,
+        "./asset/HTMLImageAsset": 8,
+        "./asset/HTMLVideoAsset": 9,
+        "./asset/XHRScriptAsset": 11,
+        "./asset/XHRTextAsset": 12,
+        "./canvas/GlyphFactory": 16,
+        "./canvas/RenderingHelper": 17,
+        "./canvas/SurfaceAtlas": 20,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    6: [ function(require, module, exports) {
+    7: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -341,7 +374,7 @@ require = function e(t, n, r) {
             RuntimeInfo.touchEnabled = touchEnabled;
         }(RuntimeInfo = exports.RuntimeInfo || (exports.RuntimeInfo = {}));
     }, {} ],
-    7: [ function(require, module, exports) {
+    8: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -398,7 +431,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    8: [ function(require, module, exports) {
+    9: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -449,10 +482,10 @@ require = function e(t, n, r) {
         }(g.VideoAsset);
         exports.HTMLVideoAsset = HTMLVideoAsset;
     }, {
-        "./HTMLVideoPlayer": 9,
+        "./HTMLVideoPlayer": 10,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    9: [ function(require, module, exports) {
+    10: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -486,7 +519,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    10: [ function(require, module, exports) {
+    11: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -530,10 +563,10 @@ require = function e(t, n, r) {
         }(g.ScriptAsset);
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
-        "../utils/XHRLoader": 43,
+        "../utils/XHRLoader": 44,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    11: [ function(require, module, exports) {
+    12: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -569,10 +602,10 @@ require = function e(t, n, r) {
         }(g.TextAsset);
         exports.XHRTextAsset = XHRTextAsset;
     }, {
-        "../utils/XHRLoader": 43,
+        "../utils/XHRLoader": 44,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    12: [ function(require, module, exports) {
+    13: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -596,7 +629,7 @@ require = function e(t, n, r) {
         }();
         exports.AffineTransformer = AffineTransformer;
     }, {} ],
-    13: [ function(require, module, exports) {
+    14: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -647,10 +680,10 @@ require = function e(t, n, r) {
         }(g.Surface);
         exports.CanvasSurface = CanvasSurface;
     }, {
-        "./Context2DRenderer": 14,
+        "./Context2DRenderer": 15,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    14: [ function(require, module, exports) {
+    15: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -705,10 +738,10 @@ require = function e(t, n, r) {
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;
     }, {
-        "./RenderingHelper": 16,
+        "./RenderingHelper": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    15: [ function(require, module, exports) {
+    16: [ function(require, module, exports) {
         "use strict";
         function createGlyphRenderedSurface(code, fontSize, cssFontFamily, baselineHeight, marginW, marginH, needImageData, cacheImageData, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
             var scale = fontSize < GlyphFactory._environmentMinimumFontSize ? fontSize / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scale), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scale), surface = new CanvasSurface_1.CanvasSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d"), str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
@@ -816,10 +849,10 @@ require = function e(t, n, r) {
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;
     }, {
-        "./CanvasSurface": 13,
+        "./CanvasSurface": 14,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    16: [ function(require, module, exports) {
+    17: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -943,10 +976,10 @@ require = function e(t, n, r) {
             RenderingHelper.createPrimarySurface = createPrimarySurface, RenderingHelper.createBackSurface = createBackSurface;
         }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
     }, {
-        "./shims/SurfaceFactory": 30,
+        "./shims/SurfaceFactory": 31,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    17: [ function(require, module, exports) {
+    18: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -968,9 +1001,9 @@ require = function e(t, n, r) {
         }();
         exports.RenderingState = RenderingState;
     }, {
-        "./AffineTransformer": 12
+        "./AffineTransformer": 13
     } ],
-    18: [ function(require, module, exports) {
+    19: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1033,11 +1066,11 @@ require = function e(t, n, r) {
         }(g.Renderer);
         exports.StateHoldingRenderer = StateHoldingRenderer;
     }, {
-        "./RenderingHelper": 16,
-        "./RenderingState": 17,
+        "./RenderingHelper": 17,
+        "./RenderingState": 18,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    19: [ function(require, module, exports) {
+    20: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1078,7 +1111,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    20: [ function(require, module, exports) {
+    21: [ function(require, module, exports) {
         "use strict";
         function getSystemTextOperations(surface) {
             return surface._systemTextOps;
@@ -1087,7 +1120,7 @@ require = function e(t, n, r) {
             value: !0
         }), exports.getSystemTextOperations = getSystemTextOperations;
     }, {} ],
-    21: [ function(require, module, exports) {
+    22: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1128,10 +1161,10 @@ require = function e(t, n, r) {
         }(g.Surface);
         exports.WebGLBackSurface = WebGLBackSurface;
     }, {
-        "./WebGLBackSurfaceRenderer": 22,
+        "./WebGLBackSurfaceRenderer": 23,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    22: [ function(require, module, exports) {
+    23: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1210,12 +1243,12 @@ require = function e(t, n, r) {
         }(g.Renderer);
         exports.WebGLBackSurfaceRenderer = WebGLBackSurfaceRenderer;
     }, {
-        "./RenderingHelper": 16,
-        "./RenderingState": 17,
-        "./SystemText": 20,
+        "./RenderingHelper": 17,
+        "./RenderingState": 18,
+        "./SystemText": 21,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    23: [ function(require, module, exports) {
+    24: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1394,9 +1427,9 @@ require = function e(t, n, r) {
             }, WebGLColor.get = get, WebGLColor._hsl2rgb = _hsl2rgb, WebGLColor._toColor = _toColor;
         }(WebGLColor = exports.WebGLColor || (exports.WebGLColor = {}));
     }, {
-        "./RenderingHelper": 16
+        "./RenderingHelper": 17
     } ],
-    24: [ function(require, module, exports) {
+    25: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1442,10 +1475,10 @@ require = function e(t, n, r) {
         }(CanvasSurface_1.CanvasSurface);
         exports.WebGLPrimarySurface = WebGLPrimarySurface;
     }, {
-        "./CanvasSurface": 13,
-        "./WebGLPrimarySurfaceRenderer": 25
+        "./CanvasSurface": 14,
+        "./WebGLPrimarySurfaceRenderer": 26
     } ],
-    25: [ function(require, module, exports) {
+    26: [ function(require, module, exports) {
         "use strict";
         function applyRenderingState(renderer, state) {
             renderer.transform(Array.prototype.slice.call(state.transformer.matrix)), renderer.opacity(state.globalAlpha), 
@@ -1496,11 +1529,11 @@ require = function e(t, n, r) {
         }(WebGLRenderer_1.WebGLRenderer);
         exports.WebGLPrimarySurfaceRenderer = WebGLPrimarySurfaceRenderer;
     }, {
-        "./RenderingHelper": 16,
-        "./SystemText": 20,
-        "./WebGLRenderer": 26
+        "./RenderingHelper": 17,
+        "./SystemText": 21,
+        "./WebGLRenderer": 27
     } ],
-    26: [ function(require, module, exports) {
+    27: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1743,15 +1776,15 @@ require = function e(t, n, r) {
         }(StateHoldingRenderer_1.StateHoldingRenderer);
         exports.WebGLRenderer = WebGLRenderer;
     }, {
-        "./RenderingHelper": 16,
-        "./RenderingState": 17,
-        "./StateHoldingRenderer": 18,
-        "./WebGLColor": 23,
-        "./WebGLShaderProgram": 27,
-        "./WebGLTextureAtlas": 28,
+        "./RenderingHelper": 17,
+        "./RenderingState": 18,
+        "./StateHoldingRenderer": 19,
+        "./WebGLColor": 24,
+        "./WebGLShaderProgram": 28,
+        "./WebGLTextureAtlas": 29,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    27: [ function(require, module, exports) {
+    28: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1815,7 +1848,7 @@ require = function e(t, n, r) {
         }();
         exports.WebGLShaderProgram = WebGLShaderProgram;
     }, {} ],
-    28: [ function(require, module, exports) {
+    29: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1850,9 +1883,9 @@ require = function e(t, n, r) {
         }();
         exports.WebGLTextureAtlas = WebGLTextureAtlas;
     }, {
-        "./WebGLTextureMap": 29
+        "./WebGLTextureMap": 30
     } ],
-    29: [ function(require, module, exports) {
+    30: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1898,7 +1931,7 @@ require = function e(t, n, r) {
         }();
         exports.WebGLTextureMap = WebGLTextureMap;
     }, {} ],
-    30: [ function(require, module, exports) {
+    31: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1918,12 +1951,12 @@ require = function e(t, n, r) {
             SurfaceFactory.createPrimarySurface = createPrimarySurface, SurfaceFactory.createBackSurface = createBackSurface;
         }(SurfaceFactory = exports.SurfaceFactory || (exports.SurfaceFactory = {}));
     }, {
-        "../CanvasSurface": 13,
-        "../RenderingHelper": 16,
-        "../WebGLBackSurface": 21,
-        "../WebGLPrimarySurface": 24
+        "../CanvasSurface": 14,
+        "../RenderingHelper": 17,
+        "../WebGLBackSurface": 22,
+        "../WebGLPrimarySurface": 25
     } ],
-    31: [ function(require, module, exports) {
+    32: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1977,9 +2010,9 @@ require = function e(t, n, r) {
         exports.InputAbstractHandler = InputAbstractHandler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 44
+        "@akashic/akashic-pdi": 45
     } ],
-    32: [ function(require, module, exports) {
+    33: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2026,9 +2059,9 @@ require = function e(t, n, r) {
         }(InputAbstractHandler_1.InputAbstractHandler);
         exports.MouseHandler = MouseHandler;
     }, {
-        "./InputAbstractHandler": 31
+        "./InputAbstractHandler": 32
     } ],
-    33: [ function(require, module, exports) {
+    34: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2084,10 +2117,10 @@ require = function e(t, n, r) {
         }(InputAbstractHandler_1.InputAbstractHandler);
         exports.TouchHandler = TouchHandler;
     }, {
-        "../RuntimeInfo": 6,
-        "./InputAbstractHandler": 31
+        "../RuntimeInfo": 7,
+        "./InputAbstractHandler": 32
     } ],
-    34: [ function(require, module, exports) {
+    35: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2110,7 +2143,7 @@ require = function e(t, n, r) {
         }();
         exports.AudioPluginManager = AudioPluginManager;
     }, {} ],
-    35: [ function(require, module, exports) {
+    36: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2128,7 +2161,7 @@ require = function e(t, n, r) {
             }
         };
     }, {} ],
-    36: [ function(require, module, exports) {
+    37: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2202,7 +2235,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    37: [ function(require, module, exports) {
+    38: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2224,33 +2257,43 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), HTMLAudioPlayer = function(_super) {
-            function HTMLAudioPlayer(system) {
+            function HTMLAudioPlayer(system, manager) {
                 var _this = _super.call(this, system) || this;
-                return _this._endedEventHandler = function() {
+                return _this._manager = manager, _this._endedEventHandler = function() {
                     _this._onAudioEnded();
+                }, _this._onPlayEventHandler = function() {
+                    _this._onPlayEvent();
                 }, _this;
             }
             return __extends(HTMLAudioPlayer, _super), HTMLAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
                 var instance = asset.createInstance(), audio = instance.data;
-                audio.volume = this.volume, audio.play(), audio.loop = asset.loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
+                audio.volume = this.volume * this._system.volume * this._manager.getMasterVolume(), 
+                audio.play(), audio.loop = asset.loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
+                audio.addEventListener("play", this._onPlayEventHandler, !1), this._isWaitingPlayEvent = !0, 
                 this._audioInstance = audio, _super.prototype.play.call(this, asset);
             }, HTMLAudioPlayer.prototype.stop = function() {
-                this.currentAudio && (this._clearEndedEventHandler(), this._audioInstance.pause(), 
-                this._audioInstance.currentTime = 0, _super.prototype.stop.call(this));
+                this.currentAudio && (this._clearEndedEventHandler(), this._isWaitingPlayEvent ? this._isStopRequested = !0 : (this._audioInstance.pause(), 
+                this._audioInstance = null), _super.prototype.stop.call(this));
             }, HTMLAudioPlayer.prototype.changeVolume = function(volume) {
-                this.currentAudio && (this._audioInstance.volume = volume), _super.prototype.changeVolume.call(this, volume);
+                this._audioInstance.volume = volume * this._system.volume * this._manager.getMasterVolume(), 
+                _super.prototype.changeVolume.call(this, volume);
+            }, HTMLAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
+                this._audioInstance.volume = this.volume * this._system.volume * this._manager.getMasterVolume();
             }, HTMLAudioPlayer.prototype._onAudioEnded = function() {
                 this._clearEndedEventHandler(), _super.prototype.stop.call(this);
             }, HTMLAudioPlayer.prototype._clearEndedEventHandler = function() {
                 this._audioInstance.removeEventListener("ended", this._endedEventHandler, !1);
+            }, HTMLAudioPlayer.prototype._onPlayEvent = function() {
+                this._isWaitingPlayEvent && (this._isWaitingPlayEvent = !1, this._isStopRequested && (this._isStopRequested = !1, 
+                this._audioInstance.pause(), this._audioInstance = null));
             }, HTMLAudioPlayer;
         }(g.AudioPlayer);
         exports.HTMLAudioPlayer = HTMLAudioPlayer;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    38: [ function(require, module, exports) {
+    39: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2276,8 +2319,8 @@ require = function e(t, n, r) {
                 configurable: !0
             }), HTMLAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
                 return new HTMLAudioAsset_1.HTMLAudioAsset(id, assetPath, duration, system, loop, hint);
-            }, HTMLAudioPlugin.prototype.createPlayer = function(system) {
-                return new HTMLAudioPlayer_1.HTMLAudioPlayer(system);
+            }, HTMLAudioPlugin.prototype.createPlayer = function(system, manager) {
+                return new HTMLAudioPlayer_1.HTMLAudioPlayer(system, manager);
             }, HTMLAudioPlugin.prototype._detectSupportedFormats = function() {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
@@ -2291,10 +2334,10 @@ require = function e(t, n, r) {
         }();
         exports.HTMLAudioPlugin = HTMLAudioPlugin;
     }, {
-        "./HTMLAudioAsset": 36,
-        "./HTMLAudioPlayer": 37
+        "./HTMLAudioAsset": 37,
+        "./HTMLAudioPlayer": 38
     } ],
-    39: [ function(require, module, exports) {
+    40: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2346,11 +2389,11 @@ require = function e(t, n, r) {
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
     }, {
-        "../../utils/XHRLoader": 43,
-        "./WebAudioHelper": 40,
+        "../../utils/XHRLoader": 44,
+        "./WebAudioHelper": 41,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    40: [ function(require, module, exports) {
+    41: [ function(require, module, exports) {
         (function(global) {
             "use strict";
             var WebAudioHelper, AudioContext = global.AudioContext || global.webkitAudioContext, singleContext = null;
@@ -2371,7 +2414,7 @@ require = function e(t, n, r) {
             }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
         }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {} ],
-    41: [ function(require, module, exports) {
+    42: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2393,25 +2436,28 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), helper = require("./WebAudioHelper"), WebAudioPlayer = function(_super) {
-            function WebAudioPlayer(system) {
+            function WebAudioPlayer(system, manager) {
                 var _this = _super.call(this, system) || this;
-                return _this._audioContext = helper.getAudioContext(), _this._gainNode = helper.createGainNode(_this._audioContext), 
-                _this._gainNode.connect(_this._audioContext.destination), _this._gainNode.gain.value = system.volume, 
+                return _this._audioContext = helper.getAudioContext(), _this._manager = manager, 
+                _this._gainNode = helper.createGainNode(_this._audioContext), _this._gainNode.connect(_this._audioContext.destination), 
                 _this._sourceNode = void 0, _this._endedEventHandler = function() {
                     _this._onAudioEnded();
                 }, _this;
             }
             return __extends(WebAudioPlayer, _super), WebAudioPlayer.prototype.changeVolume = function(volume) {
-                this._gainNode.gain.value = volume, _super.prototype.changeVolume.call(this, volume);
+                this._gainNode.gain.value = volume * this._system.volume * this._manager.getMasterVolume(), 
+                _super.prototype.changeVolume.call(this, volume);
             }, WebAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
                 var bufferNode = helper.createBufferNode(this._audioContext);
-                bufferNode.loop = asset.loop, bufferNode.buffer = asset.data, bufferNode.connect(this._gainNode), 
-                this._sourceNode = bufferNode, this._sourceNode.onended = this._endedEventHandler, 
+                bufferNode.loop = asset.loop, bufferNode.buffer = asset.data, this._gainNode.gain.value = this.volume * this._system.volume * this._manager.getMasterVolume(), 
+                bufferNode.connect(this._gainNode), this._sourceNode = bufferNode, this._sourceNode.onended = this._endedEventHandler, 
                 this._sourceNode.start(0), _super.prototype.play.call(this, asset);
             }, WebAudioPlayer.prototype.stop = function() {
                 this.currentAudio && (this._clearEndedEventHandler(), this._sourceNode.stop(0), 
                 _super.prototype.stop.call(this));
+            }, WebAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
+                this._gainNode.gain.value = this.volume * this._system.volume * this._manager.getMasterVolume();
             }, WebAudioPlayer.prototype._onAudioEnded = function() {
                 this._clearEndedEventHandler(), _super.prototype.stop.call(this);
             }, WebAudioPlayer.prototype._clearEndedEventHandler = function() {
@@ -2420,10 +2466,10 @@ require = function e(t, n, r) {
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
     }, {
-        "./WebAudioHelper": 40,
+        "./WebAudioHelper": 41,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    42: [ function(require, module, exports) {
+    43: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2445,8 +2491,8 @@ require = function e(t, n, r) {
                 configurable: !0
             }), WebAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
                 return new WebAudioAsset_1.WebAudioAsset(id, assetPath, duration, system, loop, hint);
-            }, WebAudioPlugin.prototype.createPlayer = function(system) {
-                return new WebAudioPlayer_1.WebAudioPlayer(system);
+            }, WebAudioPlugin.prototype.createPlayer = function(system, manager) {
+                return new WebAudioPlayer_1.WebAudioPlayer(system, manager);
             }, WebAudioPlugin.prototype._detectSupportedFormats = function() {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
@@ -2460,10 +2506,10 @@ require = function e(t, n, r) {
         }();
         exports.WebAudioPlugin = WebAudioPlugin;
     }, {
-        "./WebAudioAsset": 39,
-        "./WebAudioPlayer": 41
+        "./WebAudioAsset": 40,
+        "./WebAudioPlayer": 42
     } ],
-    43: [ function(require, module, exports) {
+    44: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2501,7 +2547,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    44: [ function(require, module, exports) {
+    45: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
