@@ -15,7 +15,6 @@
     "../../typings/index.d.ts",
     "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",
-    "./Game.ts",
     "./SandboxScriptAsset.ts"
   ]
 }
