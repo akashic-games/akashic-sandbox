@@ -16,7 +16,7 @@ class TimeKeeper {
 	now(): number {
 		var time = (this.isPausing()) ? this._pausedTime : ((Date.now() - this._origin) * this._rate + this._offset);
 		return Math.min(time, this._limit);
-	};
+	}
 
 	setTime(time: number): void {
 		if (this.isPausing()) {
@@ -25,11 +25,11 @@ class TimeKeeper {
 			this._origin = Date.now();
 			this._offset = time;
 		}
-	};
+	}
 
 	isPausing(): boolean {
 		return this._pausedTime != null;
-	};
+	}
 
 	start(): void {
 		if (!this.isPausing())
@@ -37,13 +37,13 @@ class TimeKeeper {
 		this._origin = Date.now();
 		this._offset = this._pausedTime;
 		this._pausedTime = null;
-	};
+	}
 
 	pause(): void {
 		if (this.isPausing())
 			return;
 		this._pausedTime = this.now();
-	};
+	}
 
 	getRate(): number {
 		return this._rate;
@@ -54,5 +54,5 @@ class TimeKeeper {
 			return;
 		this.setTime(this.now());
 		this._rate = rate;
-	};
+	}
 }
