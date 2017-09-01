@@ -91,7 +91,7 @@ window.addEventListener("load", function() {
 			var ticksWithEvents = playlog.tickList[2];
 			loop: for (var i = ticksWithEvents.length - 1; i >= 0; --i) {
 				var tick = ticksWithEvents[i];
-				var pevs = tick[1];
+				var pevs = tick[1] || [];
 				for (var j = 0; j < pevs.length; ++j) {
 					if (pevs[j][0] === 2) { // TimestampEvent
 						replayLastTime = (pevs[j][3] /* Timestamp */) + (replayLastAge - tick[0]) * 1000 / playlog.fps;
@@ -124,7 +124,7 @@ window.addEventListener("load", function() {
 
 		var timeKeeper = new TimeKeeper(replayLastTime);
 
-		driver.gameCreatedTrigger.handle(function (game) {
+		driver.gameCreatedTrigger.add(function (game) {
 			enableLogger(game);
 			window.sandboxDeveloperProps.game = game;
 			window.sandboxDeveloperProps.driver = driver;

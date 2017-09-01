@@ -21,34 +21,6 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 35,
-        "./plugin/AudioPluginRegistry": 36,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -114,7 +86,7 @@ require = function e(t, n, r) {
                 this.container = document.createDocumentFragment(), this.inputHandlerLayer ? (this.inputHandlerLayer.setViewSize({
                     width: this._rendererReq.primarySurfaceWidth,
                     height: this._rendererReq.primarySurfaceHeight
-                }), this.inputHandlerLayer.pointEventTrigger._reset(), this.inputHandlerLayer.view.removeChild(this.surface.canvas), 
+                }), this.inputHandlerLayer.pointEventTrigger.removeAll(), this.inputHandlerLayer.view.removeChild(this.surface.canvas), 
                 this.surface.destroy()) : this.inputHandlerLayer = new InputHandlerLayer_1.InputHandlerLayer({
                     width: this._rendererReq.primarySurfaceWidth,
                     height: this._rendererReq.primarySurfaceHeight,
@@ -128,7 +100,7 @@ require = function e(t, n, r) {
             }, ContainerController.prototype._appendToRootView = function(rootView) {
                 var _this = this;
                 rootView.appendChild(this.container), this.inputHandlerLayer.enablePointerEvent(), 
-                this.inputHandlerLayer.pointEventTrigger.handle(function(ev) {
+                this.inputHandlerLayer.pointEventTrigger.add(function(ev) {
                     _this.pointEventTrigger.fire(ev);
                 });
             }, ContainerController;
@@ -152,7 +124,7 @@ require = function e(t, n, r) {
             return InputHandlerLayer.prototype.enablePointerEvent = function() {
                 var _this = this;
                 TouchHandler_1.TouchHandler.isSupported() ? this._inputHandler = new TouchHandler_1.TouchHandler(this.view, this._disablePreventDefault) : this._inputHandler = new MouseHandler_1.MouseHandler(this.view, this._disablePreventDefault), 
-                this._inputHandler.pointTrigger.handle(function(e) {
+                this._inputHandler.pointTrigger.add(function(e) {
                     _this.pointEventTrigger.fire(e);
                 }), this._inputHandler.start();
             }, InputHandlerLayer.prototype.disablePointerEvent = function() {
@@ -193,8 +165,9 @@ require = function e(t, n, r) {
                 }), this._rendererReq = null, this._disablePreventDefault = !!param.disablePreventDefault;
             }
             return Platform.prototype.setPlatformEventHandler = function(handler) {
-                this.containerController && (this.containerController.pointEventTrigger.removeAll(this._platformEventHandler), 
-                this.containerController.pointEventTrigger.handle(handler, handler.onPointEvent)), 
+                this.containerController && (this.containerController.pointEventTrigger.removeAll({
+                    owner: this._platformEventHandler
+                }), this.containerController.pointEventTrigger.add(handler.onPointEvent, handler)), 
                 this._platformEventHandler = handler;
             }, Platform.prototype.loadGameConfiguration = function(url, callback) {
                 var a = new XHRTextAsset_1.XHRTextAsset("(game.json)", url);
@@ -214,7 +187,7 @@ require = function e(t, n, r) {
                 this.containerController && !this.containerController.inputHandlerLayer) this.containerController.initialize({
                     rendererRequirement: requirement,
                     disablePreventDefault: this._disablePreventDefault
-                }), this.containerController.setRootView(this.containerView), this._platformEventHandler && this.containerController.pointEventTrigger.handle(this._platformEventHandler, this._platformEventHandler.onPointEvent); else {
+                }), this.containerController.setRootView(this.containerView), this._platformEventHandler && this.containerController.pointEventTrigger.add(this._platformEventHandler.onPointEvent, this._platformEventHandler); else {
                     var surface = this.getPrimarySurface();
                     surface && !surface.destroyed() && surface.destroy(), this.containerController.resetView(requirement);
                 }
@@ -321,7 +294,7 @@ require = function e(t, n, r) {
             return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
                 var activePlugin = this._audioPluginManager.getActivePlugin(), audioAsset = activePlugin.createAsset(id, assetPath, duration, system, loop, hint);
                 return audioAsset.onDestroyed && (this._audioManager.registerAudioAsset(audioAsset), 
-                audioAsset.onDestroyed.handle(this, this._onAudioAssetDestroyed)), audioAsset;
+                audioAsset.onDestroyed.add(this._onAudioAssetDestroyed, this)), audioAsset;
             }, ResourceFactory.prototype.createAudioPlayer = function(system) {
                 var activePlugin = this._audioPluginManager.getActivePlugin();
                 return activePlugin.createPlayer(system, this._audioManager);
@@ -676,6 +649,8 @@ require = function e(t, n, r) {
                 "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
                 canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(defaultSize.width * xScale) + "px", 
                 canvasStyle.height = Math.floor(defaultSize.height * yScale) + "px");
+            }, CanvasSurface.prototype.isPlaying = function() {
+                throw g.ExceptionFactory.createAssertionError("CanvasSurface#isPlaying() is not implemented");
             }, CanvasSurface;
         }(g.Surface);
         exports.CanvasSurface = CanvasSurface;
@@ -734,6 +709,10 @@ require = function e(t, n, r) {
                 this.context.fillStyle = cssColor, this.context.fillRect(x, y, width, height), this.context.fillStyle = _fillStyle;
             }, Context2DRenderer.prototype.setCompositeOperation = function(operation) {
                 this.context.globalCompositeOperation = RenderingHelper_1.RenderingHelper.toTextFromCompositeOperation(operation);
+            }, Context2DRenderer.prototype.setOpacity = function(opacity) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
+            }, Context2DRenderer.prototype.setTransform = function(matrix) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
             }, Context2DRenderer;
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;
@@ -1047,6 +1026,20 @@ require = function e(t, n, r) {
                 return this._stateStack[this._stateStackPointer];
             }, StateHoldingRenderer.prototype.capacity = function() {
                 return this._capacity;
+            }, StateHoldingRenderer.prototype.clear = function() {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#clear() is not implemented");
+            }, StateHoldingRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, destOffsetX, destOffsetY) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawImage() is not implemented");
+            }, StateHoldingRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSprites() is not implemented");
+            }, StateHoldingRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSystemText() is not implemented");
+            }, StateHoldingRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#fillRect() is not implemented");
+            }, StateHoldingRenderer.prototype.setTransform = function(matrix) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setTransform() is not implemented");
+            }, StateHoldingRenderer.prototype.setOpacity = function(opacity) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setOpacity() is not implemented");
             }, StateHoldingRenderer.prototype._pushState = function() {
                 var old = this.currentState();
                 ++this._stateStackPointer, this._isOverCapacity && this._reallocation(this._stateStackPointer + 1), 
@@ -1157,6 +1150,8 @@ require = function e(t, n, r) {
                 this._webGLRenderer.context.deleteFramebuffer(this._frameBuffer), this._frameBuffer = void 0, 
                 this._webGLRenderer._disposeTexture(this._drawable._texture), this._webGLRenderer.context.deleteTexture(this._drawable._texture), 
                 this._drawable._texture = void 0, _super.prototype.destroy.call(this);
+            }, WebGLBackSurface.prototype.isPlaying = function() {
+                throw g.ExceptionFactory.createAssertionError("WebGLBackSurface#isPlaying() is not implemented");
             }, WebGLBackSurface;
         }(g.Surface);
         exports.WebGLBackSurface = WebGLBackSurface;
@@ -2279,7 +2274,7 @@ require = function e(t, n, r) {
                 this._audioInstance.volume = volume * this._system.volume * this._manager.getMasterVolume(), 
                 _super.prototype.changeVolume.call(this, volume);
             }, HTMLAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
-                this._audioInstance.volume = this.volume * this._system.volume * this._manager.getMasterVolume();
+                this._audioInstance && (this._audioInstance.volume = this.volume * this._system.volume * this._manager.getMasterVolume());
             }, HTMLAudioPlayer.prototype._onAudioEnded = function() {
                 this._clearEndedEventHandler(), _super.prototype.stop.call(this);
             }, HTMLAudioPlayer.prototype._clearEndedEventHandler = function() {
@@ -2552,5 +2547,33 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-    }, {} ]
+    }, {} ],
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 35,
+        "./plugin/AudioPluginRegistry": 36,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ]
 }, {}, []);
