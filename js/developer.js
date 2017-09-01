@@ -81,17 +81,15 @@ function setupDeveloperMenu(param) {
 	if (config.autoJoin && !param.isReplay) {
 		// NOTE: この時点でgame._loadedにgame._start()がハンドルされている必要がある
 		// スナップショットから復元時はloadedが発火しないのでJOINは行われない
-		props.game._loaded.handle(function() {
+		props.game._loaded.addOnce(function() {
 			var p = props.sandboxPlayer;
 			data.players.push({player: {id: p.id, name: p.name}, self: true});
 			amflow.sendEvent([0 /* Join */,  3, p.id, p.name, null ]);
-			return true;
 		});
 	}
 	if (config.autoSendEvents && !param.isReplay) {
-		props.game._loaded.handle(function () {
+		props.game._loaded.addOnce(function () {
 			sendEvents();
-			return true;
 		});
 	}
 
@@ -226,7 +224,7 @@ function setupDeveloperMenu(param) {
 		var profilerCanvasContext = profilerCanvas.getContext("2d");
 
 		// todo: SimpleProfilerのコンストラクタパラメータにgetValueTriggerを与えるように修正
-		props.driver._gameLoop._clock._profiler._calculateProfilerValueTrigger.handle(function(value) {
+		props.driver._gameLoop._clock._profiler._calculateProfilerValueTrigger.add(function(value) {
 			var deltaX;
 			var deltaY;
 			if (s.align === "vertical") {
@@ -437,10 +435,10 @@ function setupDeveloperMenu(param) {
 			{x: thisBoundingRect.right, y: thisBoundingRect.top},
 			{x: thisBoundingRect.right, y: thisBoundingRect.bottom}
 		];
-		var convertedPoint = matrix.multplyPoint(targetCoordinates[0]);
+		var convertedPoint = matrix.multiplyPoint(targetCoordinates[0]);
 		var result = {left: convertedPoint.x, right: convertedPoint.x, top: convertedPoint.y, bottom: convertedPoint.y};
 		for (var i = 1; i < targetCoordinates.length; ++i) {
-			convertedPoint = matrix.multplyPoint(targetCoordinates[i]);
+			convertedPoint = matrix.multiplyPoint(targetCoordinates[i]);
 			if (result.left > convertedPoint.x)
 				result.left = convertedPoint.x;
 			if (result.right < convertedPoint.x)
@@ -679,9 +677,9 @@ function setupDeveloperMenu(param) {
 	function updateCurrentTime() {
 		data.currentTime = param.timeKeeper.now();
 	}
-	props.game._sceneChanged.handle(function (scene) {
-		if (!scene.update.isHandled(updateCurrentTime)) {
-			scene.update.handle(updateCurrentTime);
+	props.game._sceneChanged.add(function (scene) {
+		if (!scene.update.contains(updateCurrentTime)) {
+			scene.update.add(updateCurrentTime);
 		}
 	});
 
