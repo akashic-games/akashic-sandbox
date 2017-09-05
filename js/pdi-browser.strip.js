@@ -676,6 +676,8 @@ require = function e(t, n, r) {
                 "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
                 canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(defaultSize.width * xScale) + "px", 
                 canvasStyle.height = Math.floor(defaultSize.height * yScale) + "px");
+            }, CanvasSurface.prototype.isPlaying = function() {
+                throw g.ExceptionFactory.createAssertionError("CanvasSurface#isPlaying() is not implemented");
             }, CanvasSurface;
         }(g.Surface);
         exports.CanvasSurface = CanvasSurface;
@@ -734,6 +736,10 @@ require = function e(t, n, r) {
                 this.context.fillStyle = cssColor, this.context.fillRect(x, y, width, height), this.context.fillStyle = _fillStyle;
             }, Context2DRenderer.prototype.setCompositeOperation = function(operation) {
                 this.context.globalCompositeOperation = RenderingHelper_1.RenderingHelper.toTextFromCompositeOperation(operation);
+            }, Context2DRenderer.prototype.setOpacity = function(opacity) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
+            }, Context2DRenderer.prototype.setTransform = function(matrix) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
             }, Context2DRenderer;
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;
@@ -1062,6 +1068,20 @@ require = function e(t, n, r) {
                     newCapacity < 2 * oldCapacity ? this._capacity *= 2 : this._capacity = newCapacity;
                     for (var i = oldCapacity; i < this._capacity; ++i) this._stateStack.push(new RenderingState_1.RenderingState());
                 }
+            }, StateHoldingRenderer.prototype.clear = function() {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#clear() is not implemented");
+            }, StateHoldingRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, destOffsetX, destOffsetY) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawImage() is not implemented");
+            }, StateHoldingRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSprites() is not implemented");
+            }, StateHoldingRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSystemText() is not implemented");
+            }, StateHoldingRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#fillRect() is not implemented");
+            }, StateHoldingRenderer.prototype.setTransform = function(matrix) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setTransform() is not implemented");
+            }, StateHoldingRenderer.prototype.setOpacity = function(opacity) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setOpacity() is not implemented");
             }, StateHoldingRenderer.DEFAULT_CAPACITY = 16, StateHoldingRenderer;
         }(g.Renderer);
         exports.StateHoldingRenderer = StateHoldingRenderer;
@@ -1157,6 +1177,8 @@ require = function e(t, n, r) {
                 this._webGLRenderer.context.deleteFramebuffer(this._frameBuffer), this._frameBuffer = void 0, 
                 this._webGLRenderer._disposeTexture(this._drawable._texture), this._webGLRenderer.context.deleteTexture(this._drawable._texture), 
                 this._drawable._texture = void 0, _super.prototype.destroy.call(this);
+            }, WebGLBackSurface.prototype.isPlaying = function() {
+                throw g.ExceptionFactory.createAssertionError("WebGLBackSurface#isPlaying() is not implemented");
             }, WebGLBackSurface;
         }(g.Surface);
         exports.WebGLBackSurface = WebGLBackSurface;
@@ -2204,12 +2226,12 @@ require = function e(t, n, r) {
                         4 === audio.readyState ? handlers.success() : (++_this._intervalCount, 600 === _this._intervalCount && handlers.error());
                     }, 100);
                 };
-                if (".mp4" === this.path.slice(-4) && HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1) {
+                if (".aac" === this.path.slice(-4) && HTMLAudioAsset.supportedFormats.indexOf("mp4") !== -1) {
                     var altHandlers = {
                         success: handlers.success,
                         error: function() {
                             _this._detachAll(audio, altHandlers), window.clearInterval(_this._intervalId);
-                            var altPath = _this.path.slice(0, _this.path.length - 4) + ".aac";
+                            var altPath = _this.path.slice(0, _this.path.length - 4) + ".mp4";
                             startLoadingAudio(altPath, handlers);
                         }
                     };
@@ -2220,7 +2242,7 @@ require = function e(t, n, r) {
                 var audio = new Audio(this.data.src), ret = new HTMLAudioAsset(this.id, this.path, this.duration, this._system, this.loop, this.hint);
                 return ret.data = audio, ret;
             }, HTMLAudioAsset.prototype._assetPathFilter = function(path) {
-                return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("mp4") !== -1 ? g.PathUtil.addExtname(path, "mp4") : void 0;
+                return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : void 0;
             }, HTMLAudioAsset.prototype._attachAll = function(audio, handlers) {
                 handlers.success && audio.addEventListener("canplaythrough", handlers.success, !1), 
                 handlers.error && (audio.addEventListener("stalled", handlers.error, !1), audio.addEventListener("error", handlers.error, !1), 
@@ -2279,7 +2301,7 @@ require = function e(t, n, r) {
                 this._audioInstance.volume = volume * this._system.volume * this._manager.getMasterVolume(), 
                 _super.prototype.changeVolume.call(this, volume);
             }, HTMLAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
-                this._audioInstance.volume = this.volume * this._system.volume * this._manager.getMasterVolume();
+                this._audioInstance && (this._audioInstance.volume = this.volume * this._system.volume * this._manager.getMasterVolume());
             }, HTMLAudioPlayer.prototype._onAudioEnded = function() {
                 this._clearEndedEventHandler(), _super.prototype.stop.call(this);
             }, HTMLAudioPlayer.prototype._clearEndedEventHandler = function() {
@@ -2322,9 +2344,10 @@ require = function e(t, n, r) {
             }, HTMLAudioPlugin.prototype.createPlayer = function(system, manager) {
                 return new HTMLAudioPlayer_1.HTMLAudioPlayer(system, manager);
             }, HTMLAudioPlugin.prototype._detectSupportedFormats = function() {
+                if (navigator.userAgent.indexOf("Edge/") !== -1) return [ "aac" ];
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
-                    for (var supportedExtensions = [ "ogg", "mp4", "aac" ], i = 0, len = supportedExtensions.length; i < len; i++) {
+                    for (var supportedExtensions = [ "ogg", "aac", "mp4" ], i = 0, len = supportedExtensions.length; i < len; i++) {
                         var ext = supportedExtensions[i], supported = "no" !== audioElement.canPlayType("audio/" + ext) && "" !== audioElement.canPlayType("audio/" + ext);
                         supported && supportedFormats.push(ext);
                     }
@@ -2375,15 +2398,15 @@ require = function e(t, n, r) {
                         error ? onFailed(error) : onSuccess(response);
                     });
                 };
-                return ".mp4" === this.path.slice(-4) ? void loadArrayBuffer(this.path, onLoadArrayBufferHandler, function(error) {
-                    var altPath = _this.path.slice(0, _this.path.length - 4) + ".aac";
+                return ".aac" === this.path.slice(-4) ? void loadArrayBuffer(this.path, onLoadArrayBufferHandler, function(error) {
+                    var altPath = _this.path.slice(0, _this.path.length - 4) + ".mp4";
                     loadArrayBuffer(altPath, function(response) {
                         _this.path = altPath, onLoadArrayBufferHandler(response);
                     }, errorHandler);
                 }) : void loadArrayBuffer(this.path, onLoadArrayBufferHandler, errorHandler);
             }, WebAudioAsset.prototype._assetPathFilter = function(path) {
                 if (WebAudioAsset.supportedFormats.indexOf("ogg") !== -1) return g.PathUtil.addExtname(path, "ogg");
-                if (WebAudioAsset.supportedFormats.indexOf("mp4") !== -1) return g.PathUtil.addExtname(path, "mp4");
+                if (WebAudioAsset.supportedFormats.indexOf("aac") !== -1) return g.PathUtil.addExtname(path, "aac");
                 throw new Error("not available ogg or aac, The UA supported formats are " + WebAudioAsset.supportedFormats);
             }, WebAudioAsset.supportedFormats = [], WebAudioAsset;
         }(g.AudioAsset);
@@ -2494,9 +2517,10 @@ require = function e(t, n, r) {
             }, WebAudioPlugin.prototype.createPlayer = function(system, manager) {
                 return new WebAudioPlayer_1.WebAudioPlayer(system, manager);
             }, WebAudioPlugin.prototype._detectSupportedFormats = function() {
+                if (navigator.userAgent.indexOf("Edge/") !== -1) return [ "aac" ];
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
-                    for (var supportedExtensions = [ "ogg", "mp4", "aac" ], i = 0, len = supportedExtensions.length; i < len; i++) {
+                    for (var supportedExtensions = [ "ogg", "aac", "mp4" ], i = 0, len = supportedExtensions.length; i < len; i++) {
                         var ext = supportedExtensions[i], supported = "no" !== audioElement.canPlayType("audio/" + ext) && "" !== audioElement.canPlayType("audio/" + ext);
                         supported && supportedFormats.push(ext);
                     }
