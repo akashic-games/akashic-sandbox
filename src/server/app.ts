@@ -20,6 +20,25 @@ interface ASSession extends Express.Session {
 	results?: any[];
 }
 
+interface AppOptions {
+	gameBase?: string;
+	jsBase?: string;
+	cssBase?: string;
+	thirdpartyBase?: string;
+	cascadeBases?: string[];
+}
+
+interface ModuleEnvironment {
+	version: string;
+}
+
+// Akashic Sandboxに必要な部分だけ定義
+interface GameConfiguration {
+	environment?: {
+		version: string;
+	};
+}
+
 function result2csv(results: any[]): string {
 	var csv: string = "";
 	for (var i = 0; i < results.length; i++) {
@@ -28,12 +47,9 @@ function result2csv(results: any[]): string {
 	return csv;
 }
 
-interface AppOptions {
-	gameBase?: string;
-	jsBase?: string;
-	cssBase?: string;
-	thirdpartyBase?: string;
-	cascadeBases?: string[];
+function getContentModuleEnvironment(gameJsonPath: string): ModuleEnvironment {
+	var configuration: GameConfiguration = JSON.parse(fs.readFileSync(gameJsonPath, "utf8"));
+	return configuration.environment;
 }
 
 module.exports = function (options: AppOptions = {}): AkashicSandbox {
@@ -47,6 +63,9 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	var app: AkashicSandbox = express();
 	var isDev = app.get("env") === "development";
 
+	var gameJsonPath = path.join(gameBase, "game.json");
+	var environment = getContentModuleEnvironment(gameJsonPath);
+
 	// see https://github.com/expressjs/session#secret
 	app.use(session({
 		resave: false,
@@ -56,6 +75,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 
 	app.use((req, res, next) => {
 		res.header("Access-Control-Allow-Origin", "*");
+		res.locals.environment = environment;
 		next();
 	});
 
@@ -131,8 +151,10 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.type("application/json");
 		var externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
 		externals = Array.isArray(externals) ? externals : [externals];
+		var version = environment && environment.version ? environment.version : "v1";
 		res.render("engine", {
 			host: host,
+			version: version,
 			externals: JSON.stringify(externals)
 		});
 	});

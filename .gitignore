@@ -3,7 +3,7 @@ node_modules
 npm-debug.log
 lib/*
 js/Game.js
-js/akashic-engine.js
+js/v2/akashic-engine.js
 js/SandboxScriptAsset.js
 js/TimeKeeper.js
 typings/index.d.ts
