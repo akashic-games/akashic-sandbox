@@ -34,9 +34,7 @@ interface ModuleEnvironment {
 
 // Akashic Sandboxに必要な部分だけ定義
 interface GameConfiguration {
-	environment?: {
-		version: string;
-	};
+	environment?: ModuleEnvironment;
 }
 
 function result2csv(results: any[]): string {
