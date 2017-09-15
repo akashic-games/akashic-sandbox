@@ -29,7 +29,7 @@ interface AppOptions {
 }
 
 interface ModuleEnvironment {
-	version: string;
+	engine: string;
 }
 
 // Akashic Sandboxに必要な部分だけ定義
@@ -149,7 +149,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.type("application/json");
 		var externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
 		externals = Array.isArray(externals) ? externals : [externals];
-		var version = environment && environment.version ? environment.version : "v1";
+		var version = environment && environment.engine ? environment.engine : "v1";
 		res.render("engine", {
 			host: host,
 			version: version,
