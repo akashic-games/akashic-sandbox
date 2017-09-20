@@ -37,7 +37,7 @@ akashic-sandbox [-p <port>] [--cascade<cascade-path>] [<path>]
 {
 ..
 	"environment": {
-		"engine": "v2"
+		"sandbox-runtime": "2"
 	}
 }
 ```
