@@ -58,9 +58,9 @@ akashic-sandbox [-p <port>] [--cascade<cascade-path>] [<path>]
 Akashic Engine 2.0 より前の内部モジュールを更新する場合、更新対象のモジュールを `js/v1` に手動でコピーする必要があります。
 対象のモジュールは以下になります。
 
-* @akashic/akashic-engine<2.0.0
-* @akashic/game-driver<1.0.0
-* @akashic/pdi-browser<1.0.0
+* @akashic/akashic-engine@<2.0.0
+* @akashic/game-driver@<1.0.0
+* @akashic/pdi-browser@<1.0.0
 
 ## ビルド方法
 
