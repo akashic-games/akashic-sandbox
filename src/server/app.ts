@@ -46,8 +46,11 @@ function result2csv(results: any[]): string {
 }
 
 function getContentModuleEnvironment(gameJsonPath: string): ModuleEnvironment {
-	var configuration: GameConfiguration = JSON.parse(fs.readFileSync(gameJsonPath, "utf8"));
-	return configuration.environment;
+	if (fs.existsSync(gameJsonPath)) {
+		var configuration: GameConfiguration = JSON.parse(fs.readFileSync(gameJsonPath, "utf8"));
+		return configuration.environment;
+	}
+	return null;
 }
 
 module.exports = function (options: AppOptions = {}): AkashicSandbox {
