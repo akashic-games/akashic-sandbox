@@ -1,13 +1,13 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
     "prepublish": "typings install && npm run build",
     "start": "npm run build && node bin/run",
     "build": "npm run build:browserify && npm run build:client && npm run build:server",
-    "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ./js/akashic-engine.js",
+    "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ./js/v2/akashic-engine.js",
     "lint": "tslint -c tslint.json src/**/*.ts",
     "build:client": "tsc -p src/client",
     "build:server": "tsc -p src/server",
@@ -44,7 +44,7 @@
     "serve-favicon": "^2.2.0"
   },
   "devDependencies": {
-    "@akashic/akashic-engine": "~1.12.5",
+    "@akashic/akashic-engine": "~2.0.0-beta.0",
     "browserify": "^13.0.0",
     "jasmine": "^2.1.1",
     "supertest": "^1.2.0",
@@ -56,8 +56,8 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "optionalDependencies": {
-    "@akashic/game-driver": "~0.11.4",
-    "@akashic/pdi-browser": "~0.10.3",
+    "@akashic/game-driver": "~1.0.0-beta.0",
+    "@akashic/pdi-browser": "~1.0.0-beta.1",
     "@akashic/game-storage": "0.0.6"
   }
 }

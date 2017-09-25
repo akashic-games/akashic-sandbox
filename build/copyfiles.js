@@ -20,6 +20,6 @@ var files = [
 ];
 
 files.forEach(filepath => {
-	const outputPath = path.resolve("./js/", path.basename(filepath, ".js") + ".strip.js");
+	const outputPath = path.resolve("./js/v2", path.basename(filepath, ".js") + ".strip.js");
 	fs.writeFileSync(outputPath, minify(filepath).code);
 });

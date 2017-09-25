@@ -29,6 +29,19 @@ akashic-sandbox [-p <port>] [--cascade<cascade-path>] [<path>]
 `--cascade <cascade-path>` を与えると、 `path` にある game.json に対して `<cascade-path>` にある game.json がカスケードされます。
 `--cascade` を複数指定した場合、指定した順でカスケードされます。
 
+## Akashic Engine 2.0 を利用したコンテンツの起動方法
+
+`game.json` に以下の記述を追加すると、対象のゲームを Akashic Engine 2.0 として実行します。
+
+```js
+{
+..
+	"environment": {
+		"sandbox-runtime": "2"
+	}
+}
+```
+
 ## 表示オプション
 
 * http://localhost:3000/game/?profiler=1 にアクセスすると、プロファイラー表示モードでゲームを実行することができます
@@ -39,6 +52,15 @@ akashic-sandbox [-p <port>] [--cascade<cascade-path>] [<path>]
 
 * ゲーム画面右上の歯車マークをクリックするとデベロッパーメニューが開きます。
 * http://localhost:3000/game/?devmode=disable にアクセスするとデベロッパーメニューを無効化できます。
+
+## Akashic Engine 2.0 より前の内部モジュールの更新
+
+Akashic Engine 2.0 より前の内部モジュールを更新する場合、更新対象のモジュールを `js/v1` に手動でコピーする必要があります。
+対象のモジュールは以下になります。
+
+* @akashic/akashic-engine@<2.0.0
+* @akashic/game-driver@<1.0.0
+* @akashic/pdi-browser@<1.0.0
 
 ## ビルド方法
 
