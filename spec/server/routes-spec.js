@@ -21,12 +21,30 @@ describe("app", function () {
                     done();
                 });
         });
-        it("should return /js/akashic-engine.js as default", function (done) {
+        it("should return /js/v1/akashic-engine.js as default", function (done) {
             var app = App();
-            var jsBase = path.join(__dirname, "../../js/");
+            var jsBase = path.join(__dirname, "../../js/v1");
             var expectedContext = fs.readFileSync(path.join(jsBase, "akashic-engine.js"), "utf-8");
             request(app)
-                .get("/js/akashic-engine.js")
+                .get("/js/v1/akashic-engine.js")
+                .expect("Content-Type", /javascript/)
+                .expect(expectedContext)
+                .end(function (err, res) {
+                    if (err) {
+                        done.fail(err);
+                    }
+                    done();
+                });
+        });
+        it("should return /js/v2/akashic-engine.js given environment['sandbox-runtime'] = '2'", function (done) {
+            var gameBase = path.join(__dirname, "../fixtures/games/v2");
+            var app = App({
+                gameBase: gameBase
+            });
+            var jsBase = path.join(__dirname, "../../js/v2");
+            var expectedContext = fs.readFileSync(path.join(jsBase, "akashic-engine.js"), "utf-8");
+            request(app)
+                .get("/js/v2/akashic-engine.js")
                 .expect("Content-Type", /javascript/)
                 .expect(expectedContext)
                 .end(function (err, res) {

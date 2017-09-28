@@ -7,7 +7,7 @@
     "prepublish": "typings install && npm run build",
     "start": "npm run build && node bin/run",
     "build": "npm run build:browserify && npm run build:client && npm run build:server",
-    "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ./js/akashic-engine.js",
+    "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ./js/v2/akashic-engine.js",
     "lint": "tslint -c tslint.json src/**/*.ts",
     "build:client": "tsc -p src/client",
     "build:server": "tsc -p src/server",
