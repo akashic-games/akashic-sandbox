@@ -68,9 +68,10 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	var environment = getContentModuleEnvironment(gameJsonPath);
 	var version = environment && environment["sandbox-runtime"] ? environment["sandbox-runtime"] : "1";
 
-	if (version !== "1" && version !== "2")
+	if (version !== "1" && version !== "2") {
 		// sandbox-runtime の値が "1", "2" 以外の場合エラーとする
 		throw new Error("sandbox-runtime value is invalid. Please set the environment.sandbox-runtime value of game.json to 1 or 2.");
+	}
 
 	// see https://github.com/expressjs/session#secret
 	app.use(session({
