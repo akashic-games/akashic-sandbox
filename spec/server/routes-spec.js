@@ -201,7 +201,7 @@ describe("app", function () {
 				errMsg = e.toString().trim();
 
 			} finally {
-				expect(errMsg).toBe("Error: sandbox-runtime value is invalid. Please set the environment.sandbox-runtime value of game.json to 1 or 2.");
+				expect(errMsg).toBe("Error: sandbox-runtime value is invalid. Please set the environment. sandbox-runtime value of game.json to 1 or 2.");
 				done();
 			}
 		});
