@@ -7,12 +7,10 @@
     "outDir": "../../js"
   },
   "filesGlob": [
-    "../../typings/index.d.ts",
     "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./**/*.ts"
   ],
   "files": [
-    "../../typings/index.d.ts",
     "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",
     "./SandboxScriptAsset.ts"

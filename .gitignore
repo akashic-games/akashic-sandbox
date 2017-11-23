@@ -6,5 +6,3 @@ js/Game.js
 js/v2/akashic-engine.js
 js/SandboxScriptAsset.js
 js/TimeKeeper.js
-typings/index.d.ts
-typings/globals
