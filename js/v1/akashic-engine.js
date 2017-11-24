@@ -170,6 +170,9 @@ var g;
         function RequireCachedValue(value) {
             this._value = value;
         }
+        /**
+         * @private
+         */
         RequireCachedValue.prototype._cachedValue = function () {
             return this._value;
         };
@@ -246,10 +249,14 @@ var g;
          * (このメソッドではなく) `AssetLoadFailureInfo#cancelRetry` に真を代入する必要がある。
          *
          * @param loader 読み込み結果の通知を受け取るハンドラ
+         * @private
          */
         Asset.prototype._load = function (loader) {
             throw g.ExceptionFactory.createPureVirtualError("Asset#_load");
         };
+        /**
+         * @private
+         */
         Asset.prototype._assetPathFilter = function (path) {
             // 拡張子の補完・読み替えが必要なassetはこれをオーバーライドすればよい。(対応形式が限定されるaudioなどの場合)
             return path;
@@ -453,12 +460,13 @@ var g;
          * @param game このインスタンスが属するゲーム
          * @param conf このアセットマネージャに与えるアセット定義。game.json の `"assets"` に相当。
          */
-        function AssetManager(game, conf, audioSystemConfMap) {
+        function AssetManager(game, conf, audioSystemConfMap, moduleMainScripts) {
             this.game = game;
             this.configuration = this._normalize(conf || {}, normalizeAudioSystemConfMap(audioSystemConfMap));
             this._assets = {};
             this._liveAssetVirtualPathTable = {};
             this._liveAbsolutePathTable = {};
+            this._moduleMainScripts = moduleMainScripts ? moduleMainScripts : {};
             this._refCounts = {};
             this._loadings = {};
         }
@@ -588,6 +596,7 @@ var g;
          * 引数の各要素で `unrefAsset()` を呼び出す。
          *
          * @param assetOrIds 参照カウントを減らすアセットまたはアセットID
+         * @private
          */
         AssetManager.prototype.unrefAssets = function (assetOrIds) {
             for (var i = 0, len = assetOrIds.length; i < len; ++i) {
@@ -644,6 +653,9 @@ var g;
             }
             return ret;
         };
+        /**
+         * @private
+         */
         AssetManager.prototype._createAssetFor = function (idOrConf) {
             var id;
             var uri;
@@ -715,10 +727,14 @@ var g;
         };
         /**
          * 現在ロード中のアセットの数。(デバッグ用; 直接の用途はない)
+         * @private
          */
         AssetManager.prototype._countLoadingAsset = function () {
             return Object.keys(this._loadings).length;
         };
+        /**
+         * @private
+         */
         AssetManager.prototype._onAssetError = function (asset, error) {
             // ロード中に Scene が破棄されていた場合などで、asset が破棄済みになることがある
             if (this.destroyed() || asset.destroyed())
@@ -735,6 +751,9 @@ var g;
             for (var i = 0; i < hs.length; ++i)
                 hs[i]._onAssetError(asset, error, this);
         };
+        /**
+         * @private
+         */
         AssetManager.prototype._onAssetLoad = function (asset) {
             // ロード中に Scene が破棄されていた場合などで、asset が破棄済みになることがある
             if (this.destroyed() || asset.destroyed())
@@ -788,13 +807,14 @@ var g;
         var resolvedPath;
         var resolvedVirtualPath;
         var liveAssetVirtualPathTable = game._assetManager._liveAssetVirtualPathTable;
+        var moduleMainScripts = game._assetManager._moduleMainScripts;
         // 0. アセットIDらしい場合はまず当該アセットを探す
         if (path.indexOf("/") === -1) {
             if (game._assetManager._assets.hasOwnProperty(path))
                 targetScriptAsset = game._assetManager._assets[path];
         }
         // 1. If X is a core module,
-        // (何もしない。コアモジュールには対応していない。ゲーム開発者は自でコアモジュールへの依存を解決する必要がある)
+        // (何もしない。コアモジュールには対応していない。ゲーム開発者は自分でコアモジュールへの依存を解決する必要がある)
         if (/^\.\/|^\.\.\/|^\//.test(path)) {
             // 2. If X begins with './' or '/' or '../'
             resolvedPath = g.PathUtil.resolvePath(basedir, path);
@@ -831,6 +851,10 @@ var g;
         else {
             // 3. LOAD_NODE_MODULES(X, dirname(Y))
             // `path` は node module の名前であると仮定して探す
+            // akashic-engine独自拡張: 対象の `path` が `moduleMainScripts` に指定されていたらそちらを参照する
+            if (moduleMainScripts[path]) {
+                targetScriptAsset = game._assetManager._assets[moduleMainScripts[path]];
+            }
             if (!targetScriptAsset) {
                 var dirs = currentModule ? currentModule.paths : [];
                 dirs.push("node_modules");
@@ -932,11 +956,17 @@ var g;
             this._g = this._module._g;
             this._started = false;
         }
+        /**
+         * @private
+         */
         ScriptAssetContext.prototype._cachedValue = function () {
             if (!this._started)
                 throw g.ExceptionFactory.createAssertionError("ScriptAssetContext#_cachedValue: not executed yet.");
             return this._module.exports;
         };
+        /**
+         * @private
+         */
         ScriptAssetContext.prototype._executeScript = function (currentModule) {
             if (this._started)
                 return this._module.exports;
@@ -1594,10 +1624,16 @@ var g;
                     this._remove(handler);
             }
         };
+        /**
+         * @private
+         */
         Trigger.prototype._reset = function () {
             this._handlers = [];
             this._deactivateChain();
         };
+        /**
+         * @private
+         */
         Trigger.prototype._activateChain = function () {
             if (!this.chain)
                 return;
@@ -1605,6 +1641,9 @@ var g;
                 return;
             this.chain.handle(this, this._onChainFire);
         };
+        /**
+         * @private
+         */
         Trigger.prototype._deactivateChain = function () {
             if (!this.chain)
                 return;
@@ -1612,6 +1651,9 @@ var g;
                 return;
             this.chain.remove(this, this._onChainFire);
         };
+        /**
+         * @private
+         */
         Trigger.prototype._remove = function (handler) {
             var index = this._handlers.indexOf(handler);
             if (index === -1)
@@ -1620,6 +1662,9 @@ var g;
             if (!this._handlers.length)
                 this._deactivateChain();
         };
+        /**
+         * @private
+         */
         Trigger.prototype._onChainFire = function (e) {
             this.fire(e);
         };
@@ -1645,6 +1690,9 @@ var g;
             _this.filter = filter;
             return _this;
         }
+        /**
+         * @private
+         */
         ConditionalChainTrigger.prototype._onChainFire = function (e) {
             if (this.filter && !this.filter.call(this.filterOwner, e))
                 return;
@@ -1726,6 +1774,9 @@ var g;
         TimerIdentifier.prototype.destroyed = function () {
             return this._timer === undefined;
         };
+        /**
+         * @private
+         */
         TimerIdentifier.prototype._fire = function () {
             this._handler.call(this._handlerOwner);
             if (this._fired) {
@@ -1839,12 +1890,16 @@ var g;
         };
         /**
          * すべてのTimerを時間経過させる。
+         * @private
          */
         TimerManager.prototype._tick = function () {
             var timers = this._timers.concat();
             for (var i = 0; i < timers.length; ++i)
                 timers[i].tick();
         };
+        /**
+         * @private
+         */
         TimerManager.prototype._onTimeoutFired = function (identifier) {
             var index = this._identifiers.indexOf(identifier);
             if (index < 0)
@@ -1854,6 +1909,9 @@ var g;
             identifier.destroy();
             this.deleteTimer(timer);
         };
+        /**
+         * @private
+         */
         TimerManager.prototype._clear = function (identifier) {
             var index = this._identifiers.indexOf(identifier);
             if (index < 0)
@@ -1944,6 +2002,7 @@ var g;
          * オーバーライド先のメソッドはこのメソッドを呼びださなければならない。
          *
          * @param muted ミュート状態にするか否か
+         * @private
          */
         AudioPlayer.prototype._changeMuted = function (muted) {
             this._muted = muted;
@@ -1957,6 +2016,7 @@ var g;
          * オーバーライド先のメソッドはこのメソッドを呼びださなければならない。
          *
          * @param rate 再生速度の倍率。0以上でなければならない。1.0で等倍である。
+         * @private
          */
         AudioPlayer.prototype._changePlaybackRate = function (rate) {
             this._playbackRate = rate;
@@ -1973,6 +2033,7 @@ var g;
          * しかしそれ以外の再生速度が指定された場合、実装はまるで音量がゼロであるかのように振舞ってもよい。
          *
          * このメソッドが偽を返す場合、エンジンは音声の非等倍速度再生に対するデフォルトの処理を実行する。
+         * @private
          */
         AudioPlayer.prototype._supportsPlaybackRate = function () {
             return false;
@@ -2027,6 +2088,9 @@ var g;
         AudioSystem.prototype.requestDestroy = function (asset) {
             this._destroyRequestedAssets[asset.id] = asset;
         };
+        /**
+         * @private
+         */
         AudioSystem.prototype._setMuted = function (value) {
             var before = this._muted;
             this._muted = !!value;
@@ -2034,6 +2098,9 @@ var g;
                 this._onMutedChanged();
             }
         };
+        /**
+         * @private
+         */
         AudioSystem.prototype._setPlaybackRate = function (value) {
             if (value < 0 || isNaN(value) || typeof value !== "number")
                 throw g.ExceptionFactory.createAssertionError("AudioSystem#playbackRate: expected: greater or equal to 0.0, actual: " + value);
@@ -2043,12 +2110,21 @@ var g;
                 this._onPlaybackRateChanged();
             }
         };
+        /**
+         * @private
+         */
         AudioSystem.prototype._onVolumeChanged = function () {
             throw g.ExceptionFactory.createPureVirtualError("AudioSystem#_onVolumeChanged");
         };
+        /**
+         * @private
+         */
         AudioSystem.prototype._onMutedChanged = function () {
             throw g.ExceptionFactory.createPureVirtualError("AudioSystem#_onMutedChanged");
         };
+        /**
+         * @private
+         */
         AudioSystem.prototype._onPlaybackRateChanged = function () {
             throw g.ExceptionFactory.createPureVirtualError("AudioSystem#_onPlaybackRateChanged");
         };
@@ -2092,12 +2168,21 @@ var g;
                 return;
             this._player.stop();
         };
+        /**
+         * @private
+         */
         MusicAudioSystem.prototype._onVolumeChanged = function () {
             this.player.changeVolume(this._volume);
         };
+        /**
+         * @private
+         */
         MusicAudioSystem.prototype._onMutedChanged = function () {
             this.player._changeMuted(this._muted);
         };
+        /**
+         * @private
+         */
         MusicAudioSystem.prototype._onPlaybackRateChanged = function () {
             var player = this.player;
             player._changePlaybackRate(this._playbackRate);
@@ -2105,6 +2190,9 @@ var g;
                 this._onUnsupportedPlaybackRateChanged();
             }
         };
+        /**
+         * @private
+         */
         MusicAudioSystem.prototype._onUnsupportedPlaybackRateChanged = function () {
             // 再生速度非対応の場合のフォールバック: 鳴らそうとして止めていた音があれば鳴らし直す
             if (this._playbackRate === 1.0) {
@@ -2117,6 +2205,9 @@ var g;
                 }
             }
         };
+        /**
+         * @private
+         */
         MusicAudioSystem.prototype._onPlayerPlayed = function (e) {
             if (e.player !== this._player)
                 throw g.ExceptionFactory.createAssertionError("MusicAudioSystem#_onPlayerPlayed: unexpected audio player");
@@ -2128,6 +2219,9 @@ var g;
                 this._suppressingAudio = e.audio;
             }
         };
+        /**
+         * @private
+         */
         MusicAudioSystem.prototype._onPlayerStopped = function (e) {
             if (this._destroyRequestedAssets[e.audio.id]) {
                 delete this._destroyRequestedAssets[e.audio.id];
@@ -2166,18 +2260,27 @@ var g;
                 players[i].stop(); // auto remove
             }
         };
+        /**
+         * @private
+         */
         SoundAudioSystem.prototype._onMutedChanged = function () {
             var players = this.players;
             for (var i = 0; i < players.length; ++i) {
                 players[i]._changeMuted(this._muted);
             }
         };
+        /**
+         * @private
+         */
         SoundAudioSystem.prototype._onPlaybackRateChanged = function () {
             var players = this.players;
             for (var i = 0; i < players.length; ++i) {
                 players[i]._changePlaybackRate(this._playbackRate);
             }
         };
+        /**
+         * @private
+         */
         SoundAudioSystem.prototype._onPlayerPlayed = function (e) {
             if (e.player._supportsPlaybackRate())
                 return;
@@ -2186,6 +2289,9 @@ var g;
                 e.player.stop();
             }
         };
+        /**
+         * @private
+         */
         SoundAudioSystem.prototype._onPlayerStopped = function (e) {
             var index = this.players.indexOf(e.player);
             if (index < 0)
@@ -2197,6 +2303,9 @@ var g;
                 e.audio.destroy();
             }
         };
+        /**
+         * @private
+         */
         SoundAudioSystem.prototype._onVolumeChanged = function () {
             for (var i = 0; i < this.players.length; ++i) {
                 this.players[i].changeVolume(this._volume);
@@ -2387,6 +2496,7 @@ var g;
         };
         /**
          * 公開のプロパティから内部の変換行列キャッシュを更新する。
+         * @private
          */
         Object2D.prototype._updateMatrix = function () {
             if (this.angle || this.scaleX !== 1 || this.scaleY !== 1) {
@@ -2889,6 +2999,9 @@ var g;
         E.prototype.calculateBoundingRect = function (c) {
             return this._calculateBoundingRect(undefined, c);
         };
+        /**
+         * @private
+         */
         E.prototype._calculateBoundingRect = function (m, c) {
             var matrix = this.getMatrix();
             if (m) {
@@ -2934,6 +3047,9 @@ var g;
             }
             return result;
         };
+        /**
+         * @private
+         */
         E.prototype._enableTouchPropagation = function () {
             var p = this.parent;
             while (p instanceof E && !p._hasTouchableChildren) {
@@ -2941,6 +3057,9 @@ var g;
                 p = p.parent;
             }
         };
+        /**
+         * @private
+         */
         E.prototype._disableTouchPropagation = function () {
             var p = this.parent;
             while (p instanceof E && p._hasTouchableChildren) {
@@ -2950,6 +3069,9 @@ var g;
                 p = p.parent;
             }
         };
+        /**
+         * @private
+         */
         E.prototype._isTargetOperation = function (e) {
             if (this.state & 1 /* Hidden */)
                 return false;
@@ -3189,12 +3311,18 @@ var g;
             this._handler = undefined;
             this._valueStoreSerialization = serialization;
         }
+        /**
+         * @private
+         */
         StorageLoader.prototype._load = function (handler) {
             this._handler = handler;
             if (this._storage._load) {
                 this._storage._load.call(this._storage, this._valueStore._keys, this, this._valueStoreSerialization);
             }
         };
+        /**
+         * @private
+         */
         // 値の取得が完了したタイミングで呼び出される。
         // `values` は `this._valueStore._keys` に対応する値を表す `StorageValue` の配列。
         // 順番は `this._valueStore._keys` と同じでなければならない。
@@ -3206,6 +3334,9 @@ var g;
             if (this._handler)
                 this._handler._onStorageLoaded();
         };
+        /**
+         * @private
+         */
         StorageLoader.prototype._onError = function (error) {
             if (this._handler)
                 this._handler._onStorageLoadError(error);
@@ -3240,14 +3371,23 @@ var g;
         Storage.prototype.requestValuesForJoinPlayer = function (keys) {
             this._requestedKeysForJoinPlayer = keys;
         };
+        /**
+         * @private
+         */
         Storage.prototype._createLoader = function (keys, serialization) {
             return new StorageLoader(this, keys, serialization);
         };
+        /**
+         * @private
+         */
         // ストレージに値の書き込むを行う関数を登録する。
         // 登録した関数内の `this` は `Storage` を指す。
         Storage.prototype._registerWrite = function (write) {
             this._write = write;
         };
+        /**
+         * @private
+         */
         // ストレージから値の読み込みを行う関数を登録する。
         // 登録した関数内の `this` は `Storage` を指す。
         // 読み込み完了した場合は、登録した関数内で `loader._onLoaded(values)` を呼ばなければならない。
@@ -3302,6 +3442,9 @@ var g;
         SceneAssetHolder.prototype.callHandler = function () {
             this._handler.call(this._handlerOwner);
         };
+        /**
+         * @private
+         */
         SceneAssetHolder.prototype._onAssetError = function (asset, error, assetManager) {
             if (this.destroyed() || this._scene.destroyed())
                 return;
@@ -3321,6 +3464,9 @@ var g;
             }
             this._scene.assetLoadCompleted.fire(asset);
         };
+        /**
+         * @private
+         */
         SceneAssetHolder.prototype._onAssetLoad = function (asset) {
             if (this.destroyed() || this._scene.destroyed())
                 return;
@@ -3728,17 +3874,29 @@ var g;
             this._assetHolders.push(holder);
             holder.request();
         };
+        /**
+         * @private
+         */
         Scene.prototype._activate = function () {
             this.state = SceneState.Active;
             this.stateChanged.fire(this.state);
         };
+        /**
+         * @private
+         */
         Scene.prototype._deactivate = function () {
             this.state = SceneState.Deactive;
             this.stateChanged.fire(this.state);
         };
+        /**
+         * @private
+         */
         Scene.prototype._needsLoading = function () {
             return this._sceneAssetHolder.waitingAssetsCount > 0 || (this._storageLoader && !this._storageLoader._loaded);
         };
+        /**
+         * @private
+         */
         Scene.prototype._load = function () {
             if (this._loaded)
                 return;
@@ -3751,6 +3909,9 @@ var g;
             if (!needsWait)
                 this._notifySceneReady();
         };
+        /**
+         * @private
+         */
         Scene.prototype._onSceneAssetsLoad = function () {
             if (!this._loaded) {
                 // prefetch() で開始されたアセット読み込みを完了したが、_load() がまだ呼ばれていない。
@@ -3764,22 +3925,37 @@ var g;
             }
             this._notifySceneReady();
         };
+        /**
+         * @private
+         */
         Scene.prototype._onStorageLoadError = function (error) {
             this.game.terminateGame();
         };
+        /**
+         * @private
+         */
         Scene.prototype._onStorageLoaded = function () {
             if (this._sceneAssetHolder.waitingAssetsCount === 0)
                 this._notifySceneReady();
         };
+        /**
+         * @private
+         */
         Scene.prototype._notifySceneReady = function () {
             // 即座に `_ready` をfireすることはしない。tick()のタイミングで行うため、リクエストをgameに投げておく。
             this._loadingState = SceneLoadState.Ready;
             this.game._fireSceneReady(this);
         };
+        /**
+         * @private
+         */
         Scene.prototype._fireReady = function () {
             this._ready.fire(this);
             this._loadingState = SceneLoadState.ReadyFired;
         };
+        /**
+         * @private
+         */
         Scene.prototype._fireLoaded = function () {
             this.loaded.fire(this);
             this._loadingState = SceneLoadState.LoadedFired;
@@ -3865,6 +4041,9 @@ var g;
             this.game._fireSceneLoaded(this._targetScene);
             this._clearTargetScene();
         };
+        /**
+         * @private
+         */
         LoadingScene.prototype._clearTargetScene = function () {
             if (!this._targetScene)
                 return;
@@ -3872,6 +4051,9 @@ var g;
             this._targetScene.assetLoaded.removeAll(this);
             this._targetScene = undefined;
         };
+        /**
+         * @private
+         */
         LoadingScene.prototype._doReset = function () {
             this.targetReset.fire(this._targetScene);
             if (this._targetScene._loadingState < g.SceneLoadState.ReadyFired) {
@@ -3884,10 +4066,16 @@ var g;
             }
             return true;
         };
+        /**
+         * @private
+         */
         LoadingScene.prototype._fireTriggerOnTargetAssetLoad = function (asset) {
             this._onTargetAssetLoad(asset);
             this.targetAssetLoaded.fire(asset);
         };
+        /**
+         * @private
+         */
         LoadingScene.prototype._fireTriggerOnTargetReady = function (scene) {
             this.targetReady.fire(scene);
             if (!this._explicitEnd) {
@@ -3902,6 +4090,7 @@ var g;
          *
          * 現在はこれの代わりに `targetAssetLoaded` をhandleすること。
          * @deprecated
+         * @private
          */
         LoadingScene.prototype._onTargetAssetLoad = function (asset) {
             return true;
@@ -3978,6 +4167,9 @@ var g;
             _this.targetAssetLoaded.handle(_this, _this._onTargetAssetLoaded);
             return _this;
         }
+        /**
+         * @private
+         */
         DefaultLoadingScene.prototype._onLoaded = function () {
             var gauge;
             this.append(new CameraCancellingE({
@@ -4013,6 +4205,9 @@ var g;
             this._gauge = gauge;
             return true; // Trigger 登録を解除する
         };
+        /**
+         * @private
+         */
         DefaultLoadingScene.prototype._onUpdateGuage = function () {
             var BLINK_RANGE = 50;
             var BLINK_PER_SEC = 2 / 3;
@@ -4023,6 +4218,9 @@ var g;
             this._gauge.cssColor = "rgb(" + c + "," + c + "," + c + ")";
             this._gauge.modified();
         };
+        /**
+         * @private
+         */
         DefaultLoadingScene.prototype._onTargetReset = function (targetScene) {
             if (this._gauge) {
                 this._gauge.width = 0;
@@ -4031,6 +4229,9 @@ var g;
             this._totalWaitingAssetCount = targetScene._sceneAssetHolder.waitingAssetsCount;
         };
         // 歴史的経緯により存在する `LoadingScene#_onTargetAssetLoad` をオーバーライドしては *いない* 点に注意。
+        /**
+         * @private
+         */
         DefaultLoadingScene.prototype._onTargetAssetLoaded = function (asset) {
             var waitingAssetsCount = this._targetScene._sceneAssetHolder.waitingAssetsCount;
             this._gauge.width = Math.ceil((1 - waitingAssetsCount / this._totalWaitingAssetCount) * this._barWidth);
@@ -4082,14 +4283,23 @@ var g;
             }
             return _this;
         }
+        /**
+         * @private
+         */
         Sprite.prototype._onUpdate = function () {
             this.modified();
         };
+        /**
+         * @private
+         */
         Sprite.prototype._onAnimatingStarted = function () {
             if (!this.update.isHandled(this, this._onUpdate)) {
                 this.update.handle(this, this._onUpdate);
             }
         };
+        /**
+         * @private
+         */
         Sprite.prototype._onAnimatingStopped = function () {
             if (!this.destroyed()) {
                 this.update.remove(this, this._onUpdate);
@@ -4246,11 +4456,17 @@ var g;
             this._modifiedSelf(isBubbling);
             _super.prototype.modified.call(this, isBubbling);
         };
+        /**
+         * @private
+         */
         FrameSprite.prototype._onElapsed = function () {
             if (++this.frameNumber >= this.frames.length)
                 this.frameNumber = 0;
             this.modified();
         };
+        /**
+         * @private
+         */
         FrameSprite.prototype._free = function () {
             if (!this._timer)
                 return;
@@ -4259,6 +4475,9 @@ var g;
                 this.scene.deleteTimer(this._timer);
             this._timer = undefined;
         };
+        /**
+         * @private
+         */
         FrameSprite.prototype._changeFrame = function () {
             var frame = this.frames[this.frameNumber];
             var sep = Math.floor(this.surface.width / this.srcWidth);
@@ -4310,14 +4529,23 @@ var g;
             _this._invalidateSelf();
             return _this;
         }
+        /**
+         * @private
+         */
         Tile.prototype._onUpdate = function () {
             this.invalidate();
         };
+        /**
+         * @private
+         */
         Tile.prototype._onAnimatingStarted = function () {
             if (!this.update.isHandled(this, this._onUpdate)) {
                 this.update.handle(this, this._onUpdate);
             }
         };
+        /**
+         * @private
+         */
         Tile.prototype._onAnimatingStopped = function () {
             if (!this.destroyed()) {
                 this.update.remove(this, this._onUpdate);
@@ -4742,7 +4970,7 @@ var g;
             this._main = gameConfiguration.main;
             this._mainParameter = undefined;
             this._configuration = gameConfiguration;
-            this._assetManager = new g.AssetManager(this, gameConfiguration.assets, gameConfiguration.audio);
+            this._assetManager = new g.AssetManager(this, gameConfiguration.assets, gameConfiguration.audio, gameConfiguration.moduleMainScripts);
             var operationPluginsField = (gameConfiguration.operationPlugins || []);
             this._operationPluginManager = new g.OperationPluginManager(this, operationPluginViewInfo, operationPluginsField);
             this._operationPluginOperated = new g.Trigger();
@@ -5014,8 +5242,9 @@ var g;
          * 複数のイベントフィルタが存在する場合、そのすべてが適用される。適用順は登録の順である。
          *
          * @param filter 追加するイベントフィルタ
+         * @param handleEmpty イベントが存在しない場合でも定期的にフィルタを呼び出すか否か。省略された場合、偽。
          */
-        Game.prototype.addEventFilter = function (filter) {
+        Game.prototype.addEventFilter = function (filter, handleEmpty) {
             throw g.ExceptionFactory.createPureVirtualError("Game#addEventFilter");
         };
         /**
@@ -5063,17 +5292,29 @@ var g;
         Game.prototype.saveSnapshot = function (snapshot, timestamp) {
             throw g.ExceptionFactory.createPureVirtualError("Game#saveSnapshot");
         };
+        /**
+         * @private
+         */
         Game.prototype._fireSceneReady = function (scene) {
             this._sceneChangeRequests.push({ type: 3 /* FireReady */, scene: scene });
         };
+        /**
+         * @private
+         */
         Game.prototype._fireSceneLoaded = function (scene) {
             if (scene._loadingState < g.SceneLoadState.LoadedFired) {
                 this._sceneChangeRequests.push({ type: 4 /* FireLoaded */, scene: scene });
             }
         };
+        /**
+         * @private
+         */
         Game.prototype._callSceneAssetHolderHandler = function (assetHolder) {
             this._sceneChangeRequests.push({ type: 5 /* CallAssetHolderHandler */, assetHolder: assetHolder });
         };
+        /**
+         * @private
+         */
         Game.prototype._normalizeConfiguration = function (gameConfiguration) {
             if (!gameConfiguration)
                 throw g.ExceptionFactory.createAssertionError("Game#_normalizeConfiguration: invalid arguments");
@@ -5091,14 +5332,21 @@ var g;
                 throw g.ExceptionFactory.createAssertionError("Game#_normalizeConfiguration: height must be given as a number");
             return gameConfiguration;
         };
+        /**
+         * @private
+         */
         Game.prototype._setAudioPlaybackRate = function (playbackRate) {
             this._audioSystemManager._setPlaybackRate(playbackRate);
         };
+        /**
+         * @private
+         */
         Game.prototype._setMuted = function (muted) {
             this._audioSystemManager._setMuted(muted);
         };
         /**
          * g.OperationEventのデータをデコードする。
+         * @private
          */
         Game.prototype._decodeOperationPluginOperation = function (code, op) {
             var plugins = this._operationPluginManager.plugins;
@@ -5108,6 +5356,7 @@ var g;
         };
         /**
          * ゲーム状態のリセット。
+         * @private
          */
         Game.prototype._reset = function (param) {
             this._operationPluginManager.stopAll();
@@ -5162,6 +5411,7 @@ var g;
          * 存在するシーンをすべて(_initialScene以外; あるなら)破棄し、グローバルアセットを読み込み、完了後ゲーム開発者の実装コードの実行を開始する。
          * このメソッドの二度目以降の呼び出しの前には、 `this._reset()` を呼び出す必要がある。
          * @param param ゲームのエントリポイントに渡す値
+         * @private
          */
         Game.prototype._loadAndStart = function (param) {
             this._mainParameter = param || {};
@@ -5177,6 +5427,7 @@ var g;
         /**
          * グローバルアセットの読み込みを開始する。
          * 単体テスト用 (mainSceneなど特定アセットの存在を前提にする_loadAndStart()はテストに使いにくい) なので、通常ゲーム開発者が利用することはない
+         * @private
          */
         Game.prototype._startLoadingGlobalAssets = function () {
             if (this.isLoaded)
@@ -5184,6 +5435,9 @@ var g;
             this.pushScene(this._initialScene);
             this._flushSceneChangeRequests();
         };
+        /**
+         * @private
+         */
         Game.prototype._updateEventTriggers = function (scene) {
             this.modified = true;
             if (!scene) {
@@ -5201,15 +5455,24 @@ var g;
             this._eventTriggerMap[g.EventType.Operation] = scene.operation;
             scene._activate();
         };
+        /**
+         * @private
+         */
         Game.prototype._onInitialSceneLoaded = function () {
             this._initialScene.loaded.remove(this, this._onInitialSceneLoaded);
             this.assets = this._initialScene.assets;
             this.isLoaded = true;
             this._loaded.fire();
         };
+        /**
+         * @private
+         */
         Game.prototype._leaveGame = function () {
             throw g.ExceptionFactory.createPureVirtualError("Game#_leaveGame");
         };
+        /**
+         * @private
+         */
         Game.prototype._terminateGame = function () {
             // do nothing.
         };
@@ -5220,6 +5483,7 @@ var g;
          * 通常このメソッドは、毎フレーム一度、フレームの最後に呼び出されることを期待する (`Game#tick()` がこの呼び出しを行う)。
          * ただしゲーム開始時 (グローバルアセット読み込み・スナップショットローダ起動後またはmainScene実行開始時) に関しては、
          * シーン追加がゲーム開発者の記述によらない (`tick()` の外側である) ため、それぞれの箇所で明示的にこのメソッドを呼び出す。
+         * @private
          */
         Game.prototype._flushSceneChangeRequests = function () {
             do {
@@ -5408,6 +5672,9 @@ var g;
             };
             return ser;
         };
+        /**
+         * @private
+         */
         Camera2D.prototype._applyTransformToRenderer = function (renderer) {
             if (this.angle || this.scaleX !== 1 || this.scaleY !== 1) {
                 // Note: this.scaleX/scaleYが0の場合描画した結果何も表示されない事になるが、特殊扱いはしない
@@ -5419,6 +5686,9 @@ var g;
             if (this.opacity !== 1)
                 renderer.opacity(this.opacity);
         };
+        /**
+         * @private
+         */
         Camera2D.prototype._updateMatrix = function () {
             // カメラの angle, x, y はエンティティと逆方向に作用することに注意。
             if (this.angle || this.scaleX !== 1 || this.scaleY !== 1) {
@@ -6037,6 +6307,9 @@ var g;
             this._childrenSurface = undefined;
             _super.prototype.destroy.call(this);
         };
+        /**
+         * @private
+         */
         Pane.prototype._renderBackground = function () {
             if (this._bgSurface && !this._bgSurface.destroyed()) {
                 this._bgSurface.destroy();
@@ -6048,6 +6321,9 @@ var g;
                 this._bgSurface = undefined;
             }
         };
+        /**
+         * @private
+         */
         Pane.prototype._renderChildren = function (camera) {
             var isNew = this._oldWidth !== this.width || this._oldHeight !== this.height || this._paddingChanged;
             if (isNew) {
@@ -6069,6 +6345,9 @@ var g;
             }
             this._childrenRenderer.end();
         };
+        /**
+         * @private
+         */
         Pane.prototype._initialize = function () {
             var p = this._padding === undefined ? 0 : this._padding;
             var r;
@@ -6095,6 +6374,7 @@ var g;
         /**
          * このPaneの包含矩形を計算する。
          * Eを継承する他のクラスと異なり、Paneは子要素の位置を包括矩形に含まない。
+         * @private
          */
         Pane.prototype._calculateBoundingRect = function (m, c) {
             var matrix = this.getMatrix();
@@ -6311,6 +6591,9 @@ var g;
             this._accessScore = 0;
             this._usedRectangleAreaSize = { width: 0, height: 0 };
         }
+        /**
+         * @private
+         */
         SurfaceAtlas.prototype._acquireSurfaceAtlasSlot = function (width, height) {
             // Renderer#drawImage()でサーフェス上の一部を描画するとき、
             // 指定した部分に隣接する画素がにじみ出る現象が確認されている。
@@ -6350,6 +6633,9 @@ var g;
             this._updateUsedRectangleAreaSize(acquiredSlot);
             return acquiredSlot;
         };
+        /**
+         * @private
+         */
         SurfaceAtlas.prototype._updateUsedRectangleAreaSize = function (slot) {
             var slotRight = slot.x + slot.width;
             var slotBottom = slot.y + slot.height;
@@ -6559,6 +6845,9 @@ var g;
             var bitmapFont = new g.BitmapFont(surface, glyphAreaMap, 0, this.size, missingGlyph);
             return bitmapFont;
         };
+        /**
+         * @private
+         */
         DynamicFont.prototype._removeLowUseAtlas = function () {
             var minScore = Number.MAX_VALUE;
             var lowScoreAtlasIndex = -1;
@@ -6571,6 +6860,9 @@ var g;
             var removedAtlas = this._atlases.splice(lowScoreAtlasIndex, 1)[0];
             return removedAtlas;
         };
+        /**
+         * @private
+         */
         DynamicFont.prototype._reallocateAtlas = function () {
             if (this._atlases.length >= this.hint.maxAtlasNum) {
                 var atlas = this._removeLowUseAtlas();
@@ -6590,6 +6882,9 @@ var g;
             this._atlases.push(this._resourceFactory.createSurfaceAtlas(this._atlasSize.width, this._atlasSize.height));
             this._currentAtlasIndex = this._atlases.length - 1;
         };
+        /**
+         * @private
+         */
         DynamicFont.prototype._addToAtlas = function (glyph) {
             var atlas = null;
             var slot = null;
@@ -6646,6 +6941,9 @@ var g;
             this._muted = false;
             this._playbackRate = 1.0;
         }
+        /**
+         * @private
+         */
         AudioSystemManager.prototype._setMuted = function (muted) {
             if (this._muted === muted)
                 return;
@@ -6657,6 +6955,9 @@ var g;
                 systems[id]._setMuted(muted);
             }
         };
+        /**
+         * @private
+         */
         AudioSystemManager.prototype._setPlaybackRate = function (rate) {
             if (this._playbackRate === rate)
                 return;
@@ -6850,6 +7151,9 @@ var g;
             this._destroyLines();
             _super.prototype.destroy.call(this);
         };
+        /**
+         * @private
+         */
         MultiLineLabel.prototype._offsetX = function (width) {
             switch (this.textAlign) {
                 case g.TextAlign.Left:
@@ -6862,6 +7166,9 @@ var g;
                     return 0;
             }
         };
+        /**
+         * @private
+         */
         MultiLineLabel.prototype._lineBrokenText = function () {
             var splited = this.text.split(/\r\n|\r|\n/);
             if (this.lineBreak) {
