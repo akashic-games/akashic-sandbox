@@ -1,18 +1,16 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "noLib": false,
-    "noImplicitAny": true,
     "module": "commonjs",
-    "outDir": "../../js"
+    "declaration": false,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "noLib": false,
+    "jsx": "react",
+    "outDir": "dist"
   },
-  "filesGlob": [
-    "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
-    "./**/*.ts"
-  ],
   "files": [
-    "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
-    "./TimeKeeper.ts",
-    "./SandboxScriptAsset.ts"
+    "./index.tsx"
   ]
 }
