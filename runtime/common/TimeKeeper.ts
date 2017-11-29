@@ -55,4 +55,8 @@ export class TimeKeeper {
 		this.setTime(this.now());
 		this._rate = rate;
 	}
+
+	setLimit(limit: number): void {
+		this._limit = limit;
+	}
 }
