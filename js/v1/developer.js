@@ -48,6 +48,7 @@ function setupDeveloperMenu(param) {
 		selfName: props.sandboxPlayer.name,
 		path: props.path,
 		gameId: props.gameId,
+		events: window.events ? window.events : {},
 		cameras: [],
 		focusingCameraIndex: undefined,
 		inputPlayerName: null,
@@ -476,19 +477,28 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	function sendEvents() {
-		if (!config.eventsToSend) {
-			console.log("No events to send.");
-			return;
-		}
+	function insertEventString (str) {
+		console.log(str);
+		data.config.eventsToSend = str;
+	}
+
+	function sendEventsWichValue(str) {
 		var es = [];
 		try {
-			es = JSON.parse(config.eventsToSend);
+			es = JSON.parse(str);
 		} catch (e) {
 			alert(e);
 			console.log(e);
 		}
 		es.forEach(function (e) { amflow.sendEvent(e); });
+	}
+
+	function sendEvents() {
+		if (!config.eventsToSend) {
+			console.log("No events to send.");
+			return;
+		}
+		sendEventsWichValue(config.eventsToSend);
 	}
 
 	function focusBoundingRect(id) {
@@ -999,7 +1009,9 @@ function setupDeveloperMenu(param) {
 			onAutoSendEventsChanged: function() {
 				saveConfig();
 			},
+			insertEventString: insertEventString,
 			sendEvents: sendEvents,
+			sendEventsWichValue: sendEventsWichValue,
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},

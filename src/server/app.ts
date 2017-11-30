@@ -9,6 +9,8 @@ import gameRoute = require("./routes/game");
 import testRoute = require("./routes/test");
 import sr = require("./request/ScriptRequest");
 
+import sandboxjsonHandler = require("./routes/sandboxjson");
+
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
 	cascadeBases?: string[];
@@ -83,6 +85,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use((req, res, next) => {
 		res.header("Access-Control-Allow-Origin", "*");
 		res.locals.environment = environment;
+		res.locals.events = ["dog","horse","bird", "human"];
 		next();
 	});
 
@@ -123,6 +126,12 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/js/", express.static(jsBase));
 	app.use("/css/", express.static(cssBase));
 	app.use("/thirdparty/", express.static(thridpartyBase));
+
+	app.use("/sandboxjson/", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+		req.baseDir = app.gameBase;
+		next();
+	});
+	app.use("/sandboxjson/", <express.RequestHandler>sandboxjsonHandler);
 
 	// /game/ は sandbox をブラウザで開く場合に利用、/raw_game/ は /engine のエンジン設定ファイルを使う場合に利用
 	app.use("/game", <express.RequestHandler>jsRoute);
