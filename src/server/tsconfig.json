@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "../../lib/",
+
+    "strict": true,
+    // "noImplicitAny": true,
+    // "strictNullChecks": true,
+    // "strictFunctionTypes": true,
+    // "noImplicitThis": true,
+    // "alwaysStrict": true,
+
+    "noUnusedLocals": true,
+    "noImplicitReturns": true
+  },
+  "files": [
+    "./ect.d.ts",
+    "./cli.ts"
+  ]
+}

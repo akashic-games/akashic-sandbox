@@ -1,0 +1,9 @@
+if (!("gScriptContainer" in window))
+	window.gScriptContainer = {};
+gScriptContainer["<%- @id %>"] = function(g) {
+	(function(exports, require, module, __filename, __dirname) {
+
+<%- @scriptContent %>
+
+	})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);
+}
