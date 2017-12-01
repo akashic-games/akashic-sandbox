@@ -26,6 +26,9 @@ function setupDeveloperMenu(param) {
 	if (config.showGrid == null) {
 		config.showGrid = false;
 	}
+	config.autoSendEvents = config.autoSendEvents || !!window.sandboxConfig.autoSendEvents;
+	config.eventsToSend = !!window.sandboxConfig.autoSendEvents ? window.sandboxConfig.events[window.sandboxConfig.autoSendEvents] : config.eventsToSend;
+
 	var props = window.sandboxDeveloperProps;
 	var amflow = props.amflow;
 
@@ -48,7 +51,7 @@ function setupDeveloperMenu(param) {
 		selfName: props.sandboxPlayer.name,
 		path: props.path,
 		gameId: props.gameId,
-		events: window.events ? window.events : {},
+		events: window.sandboxConfig.events ? window.sandboxConfig.events : {},
 		cameras: [],
 		focusingCameraIndex: undefined,
 		inputPlayerName: null,
@@ -89,6 +92,7 @@ function setupDeveloperMenu(param) {
 			return true;
 		});
 	}
+
 	if (config.autoSendEvents && !param.isReplay) {
 		props.game._loaded.handle(function () {
 			sendEvents();
@@ -101,7 +105,6 @@ function setupDeveloperMenu(param) {
 	devBtn.addEventListener("click", function() {
 		data.showMenu = !data.showMenu;
 	});
-
 
 	// 設定をlocalStorageに保存する関数
 	function saveConfig() {

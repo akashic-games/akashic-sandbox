@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title><%= @title %></title>
 <script type="text/javascript" src="/thirdparty/js/md5.min.js"></script>
+<script type="text/javascript" src="/sandboxjson/"></script>
 <script type="text/javascript" src="/js/v<%= @version %>/akashic-engine.js"></script>
 
 <script type="text/javascript" src="/js/v<%= @version %>/game-driver.strip.js"></script>
@@ -16,7 +17,6 @@ window.g = require("@akashic/akashic-engine");
 <script type="text/javascript" src="/js/game-storage.strip.js"></script>
 <script type="text/javascript" src="/js/v<%= @version %>/logger.js"></script>
 <script type="text/javascript" src="/js/v<%= @version %>/sandbox.js"></script>
-<script type="text/javascript" src="/sandboxjson/"></script>
 <% if @devMode : %>
 <link rel="stylesheet" href="/thirdparty/css/pure-min.css">
 <link rel="stylesheet" href="/thirdparty/css/font-awesome.min.css">
