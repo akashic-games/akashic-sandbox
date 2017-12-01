@@ -484,7 +484,6 @@ function setupDeveloperMenu(param) {
 	}
 
 	function insertEventString (str) {
-		console.log(str);
 		data.config.eventsToSend = str;
 	}
 
