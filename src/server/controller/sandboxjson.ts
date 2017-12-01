@@ -20,7 +20,7 @@ var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Re
 
 		res.contentType("text/javascript");
 		res.send(
-			createLoadingScript(JSON.stringify(sandboxConfig))
+			createLoadingScript(sandboxConfig)
 		);
 	} catch (error) {
 		console.log("sandbox-error", JSON.stringify(error), error);
@@ -39,14 +39,15 @@ function completeConfigParams(c: SandboxConfig): SandboxConfig {
 
 	var config = {
 		autoSendEvents: c.autoSendEvents ? c.autoSendEvents : "",
-		events: c.events ? c.events : {}
+		events: c.events ? c.events : {},
+		showMenu: c.showMenu ? c.showMenu : false
 	};
 	return config;
 }
 
 function createLoadingScript(content?: any): string {
 	content = content ? content : {};
-	return "window.sandboxConfig = " + JSON.stringify(content);
+	return "window.sandboxDeveloperProps = {};window.sandboxDeveloperProps.sandboxConfig = " + JSON.stringify(content);
 }
 
 interface SandboxConfig {
@@ -55,4 +56,7 @@ interface SandboxConfig {
 
 	/** sandboxでリストアップされるイベント */
 	events?: { [key: string]: string };
+
+	/** ページ読み込み時にデベロッパーメニューを開く */
+	showMenu?: boolean;
 }

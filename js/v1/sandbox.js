@@ -45,7 +45,7 @@ window.addEventListener("load", function() {
 			gameId: sandboxGameId,
 			path: gamePath,
 			sandboxPlayer: sandboxPlayer,
-			sandboxConfig: window.sandboxConfig
+			sandboxConfig: window.sandboxDeveloperProps.sandboxConfig
 		};
 
 		// preventDefaultを抑制するかを確認するためだけにLocalStorageの設定を読み込む

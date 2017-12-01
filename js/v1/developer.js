@@ -26,8 +26,11 @@ function setupDeveloperMenu(param) {
 	if (config.showGrid == null) {
 		config.showGrid = false;
 	}
-	config.autoSendEvents = config.autoSendEvents || !!window.sandboxConfig.autoSendEvents;
-	config.eventsToSend = !!window.sandboxConfig.autoSendEvents ? window.sandboxConfig.events[window.sandboxConfig.autoSendEvents] : config.eventsToSend;
+
+	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
+
+	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEvents;
+	config.eventsToSend = !!sandboxConfig.autoSendEvents ? sandboxConfig.events[sandboxConfig.autoSendEvents] : config.eventsToSend;
 
 	var props = window.sandboxDeveloperProps;
 	var amflow = props.amflow;
@@ -45,13 +48,13 @@ function setupDeveloperMenu(param) {
 
 	// vue.jsにバインドするデータ
 	var data = {
-		showMenu: false,
+		showMenu: sandboxConfig.showMenu ? sandboxConfig.showMenu : false,
 		players: [],
 		selfId: props.sandboxPlayer.id,
 		selfName: props.sandboxPlayer.name,
 		path: props.path,
 		gameId: props.gameId,
-		events: window.sandboxConfig.events ? window.sandboxConfig.events : {},
+		events: sandboxConfig.events ? sandboxConfig.events : {},
 		cameras: [],
 		focusingCameraIndex: undefined,
 		inputPlayerName: null,
