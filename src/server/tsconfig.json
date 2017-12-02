@@ -17,6 +17,6 @@
   },
   "files": [
     "./ect.d.ts",
-    "./cli.ts"
+    "./bootstrap.ts"
   ]
 }

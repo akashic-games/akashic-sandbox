@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as http from "http";
+import * as commander from "commander";
 import { createApp } from "./app";
 
 function normalizePort(port: string): number | string {
@@ -52,3 +53,16 @@ export function run(param: RunParameterObject) {
 	console.log("hosting game: " + gameJsonPath);
 	console.log("please access to http://localhost:%d/game/ by Web browser (or use -O option)", port);
 }
+
+commander
+	.version(require("../package.json").version)
+	.usage("[options] <game path>")
+	.option("--cascade <path>", "path to contents to cascade", (val, acc) => acc.concat(val), [])
+	.option("-p, --port <port>", "number of listen port. default 3000", parseInt)
+	.parse(process.argv);
+
+run({
+	gameBase: commander.args[0],
+	port: commander.port,
+	cascadeBases: commander.cascade
+});

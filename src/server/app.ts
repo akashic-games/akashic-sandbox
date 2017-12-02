@@ -1,9 +1,10 @@
-// import * as fs from "fs";
 import * as path from "path";
 import * as express from "express";
 import * as ECT from "ect";
-import { createGameRouter } from "./game/createGameRouter";
-// import { readReuestedRuntimeVersion } from "./util";
+import { readReuestedRuntimeVersion } from "./util";
+import { createGameRouter } from "./middleware/game";
+import { createConfigurationRouter } from "./middleware/configuration";
+import { createEngineConfRouter } from "./middleware/engine";
 
 export interface CreateAppParameterObject {
 	gameBase?: string;
@@ -12,12 +13,13 @@ export interface CreateAppParameterObject {
 
 export function createApp(param: CreateAppParameterObject): express.Express {
 	const gameBase = param.gameBase || ".";
-	// const gameJsonPath = path.join(gameBase, "game.json");
-	// const runtimeVersion = readReuestedRuntimeVersion(gameJsonPath);
+	const cascadeBases = param.cascadeBases || [];
+	const gameJsonPath = path.join(gameBase, "game.json");
+	const runtimeVersion = readReuestedRuntimeVersion(gameJsonPath);
 	const app = express();
 	const isDev = (app.get("env") === "development");
-	const ect = ECT({ watch: isDev, root: path.join(__dirname, "..", "views"), ext: ".ect" });
 
+	const ect = ECT({ watch: isDev, root: path.join(__dirname, "..", "views"), ext: ".ect" });
 	app.set("views", path.join(__dirname, "..", "views"));
 	app.engine("ect", ect.render);
 	app.set("view engine", "ect");
@@ -27,8 +29,28 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 		next();
 	});
 
-	app.use("/game/", createGameRouter({ gameBase }));
+	// app.use("^\/$", (req, res, next) => {
+	// 	res.redirect("/game/");
+	// });
+	// app.use("^\/game$", (req, res, next) => {
+	// 	res.redirect("/game/");
+	// });
+	// app.use("/js/", express.static(jsBase));
+	// app.use("/css/", express.static(cssBase));
+	// app.use("/thirdparty/", express.static(thridpartyBase));
+	//
+	// app.use("/basepath/", (req, res, next) => {
+	// 	res.send(app.gameBase);
+	// });
 
+	app.use("/game/", createGameRouter({ gameBase }));
+	app.use("/raw_game/", express.static(gameBase));
+	cascadeBases.forEach((base, i) => {
+		app.use("/cascade/" + i, createGameRouter({ gameBase: base }));
+		app.use("/raw_cascade/" + i, express.static(base));
+	});
+	app.use("/configuration/", createConfigurationRouter({ cascadeLength: cascadeBases.length }));
+	app.use("/engine", createEngineConfRouter({ runtimeVersion }));
 	app.use((req, res, next) => res.sendStatus(404));
 	app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
 		console.error(err);

@@ -11,7 +11,7 @@ export function createGameRouter(param: CreateGameRouterParamterObject): express
 	router.get("/:scriptName(*.js$)", (req, res, next) => {
 		const scriptPath = path.join(param.gameBase, req.params.scriptName);
 		if (!req.query.id) {
-			res.status(400).send("Bad Request: the `id` query parameter must be given");
+			res.status(400).send("Bad Request: the `id` query parameter required");
 			return;
 		}
 		if (/^\.\.\//.test(path.relative(param.gameBase, scriptPath))) {
@@ -22,7 +22,6 @@ export function createGameRouter(param: CreateGameRouterParamterObject): express
 			res.sendStatus(404);
 			return;
 		}
-
 		const content = fs.readFileSync(scriptPath);
 		res.contentType("text/javascript");
 		res.render("script", {

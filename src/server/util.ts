@@ -20,6 +20,6 @@ export function readReuestedRuntimeVersion(gameJsonPath: string): string {
 		ver = (ver as any).toString();
 	}
 	if (ver !== "1" && ver !== "2")
-		throw new Error("Invalid runtime version: environment[\"sandbox-runtime\"] in game.json must be \"1\" or \"2\", currently.");
+		throw new Error("Invalid runtime version: environment[\"sandbox-runtime\"] in game.json must be \"1\" or \"2\" currently.");
 	return ver;
 }
