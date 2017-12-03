@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as mobx from "mobx";
 import { observer } from 'mobx-react';
-import styled from "styled-components";
 import { Store } from "../store/Store";  // should be interface?
+import * as styles from "./Game.css";
 
 export interface GameProps {
 	store: Store;
@@ -26,7 +26,7 @@ export class Game extends React.Component<GameProps, {}> {
 	}
 
 	render() {
-		return <div ref={this._onRef}/>;
+		return <div className={styles["game"]} ref={this._onRef}/>;
 	}
 
 	private _onRef = (e: HTMLDivElement) => {

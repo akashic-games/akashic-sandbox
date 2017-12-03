@@ -12,6 +12,7 @@
     "outDir": "dist"
   },
   "files": [
+    "./css.d.ts",
     "./index.ts"
   ]
 }
