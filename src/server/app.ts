@@ -18,9 +18,10 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 	const runtimeVersion = readReuestedRuntimeVersion(gameJsonPath);
 	const app = express();
 	const isDev = (app.get("env") === "development");
+	const appRoot = path.join(__dirname, "..");
 
-	const ect = ECT({ watch: isDev, root: path.join(__dirname, "..", "views"), ext: ".ect" });
-	app.set("views", path.join(__dirname, "..", "views"));
+	const ect = ECT({ watch: isDev, root: path.join(appRoot, "views"), ext: ".ect" });
+	app.set("views", path.join(appRoot, "views"));
 	app.engine("ect", ect.render);
 	app.set("view engine", "ect");
 
@@ -35,7 +36,6 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 	// app.use("^\/game$", (req, res, next) => {
 	// 	res.redirect("/game/");
 	// });
-	// app.use("/js/", express.static(jsBase));
 	// app.use("/css/", express.static(cssBase));
 	// app.use("/thirdparty/", express.static(thridpartyBase));
 	//
@@ -43,7 +43,11 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 	// 	res.send(app.gameBase);
 	// });
 
+	app.use("/dist/", express.static(path.join(appRoot, "dist")));
 	app.use("/game/", createGameRouter({ gameBase }));
+	app.use("/game/", (req, res, next) => {
+		res.sendFile(path.join(appRoot, "static", (runtimeVersion === "1") ? "game1x.html" : "game2x.html"));
+	});
 	app.use("/raw_game/", express.static(gameBase));
 	cascadeBases.forEach((base, i) => {
 		app.use("/cascade/" + i, createGameRouter({ gameBase: base }));

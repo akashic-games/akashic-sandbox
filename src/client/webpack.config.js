@@ -2,15 +2,17 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  devtool: 'eval',
+  // devtool: 'eval',
   context: __dirname,
-  entry: [
-    'webpack-dev-server/client?http://localhost:3000',
-    './index'
-  ],
+  entry: {
+    _devserver: 'webpack-dev-server/client?http://localhost:3000',
+    index: './index',
+    runner1x: '../runtime/v1/runner.ts',
+    runner2x: '../runtime/v2/runner.ts'
+  },
   output: {
     path: path.resolve(__dirname, "..", "..", "dist"),
-    filename: 'bundle.js',
+    filename: '[name]-bundle.js',
     publicPath: '/static/'
   },
   resolve: {
@@ -23,13 +25,6 @@ module.exports = {
         loader: "ts-loader",
         options: {
 					configFile: "tsconfig.json"
-        }
-      },
-      {
-				test: /\.nervertsx?$/,
-        loader: "awesome-typescript-loader",
-        options: {
-					configFileName: "./tsconfig.json"
         }
       },
       {

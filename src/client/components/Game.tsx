@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {action} from "mobx";
-import {observer} from 'mobx-react';
+import * as mobx from "mobx";
+import { observer } from 'mobx-react';
 import styled from "styled-components";
 import { Store } from "../store/Store";  // should be interface?
 
@@ -8,15 +8,31 @@ export interface GameProps {
 	store: Store;
 }
 
-const GameElem = styled.div`
-  width: 500px;
-  height: 400px;
-	background: black;
-`;
-
 @observer
 export class Game extends React.Component<GameProps, {}> {
+	private _elem: HTMLDivElement;
+
+	constructor(props: GameProps) {
+		super(props);
+		this._elem = null;
+
+		mobx.when(
+			() => !!this.props.store.gameStore.containerElement,
+			() => {
+				if (this._elem)
+					this._elem.appendChild(this.props.store.gameStore.containerElement)
+			}
+		);
+	}
+
 	render() {
-		return <GameElem />;
+		return <div ref={this._onRef}/>;
+	}
+
+	private _onRef = (e: HTMLDivElement) => {
+		this._elem = e;
+		if (e && this.props.store.gameStore.containerElement) {
+			this._elem.appendChild(this.props.store.gameStore.containerElement)
+		}
 	}
 }

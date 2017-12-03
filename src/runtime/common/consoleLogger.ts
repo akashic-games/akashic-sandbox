@@ -1,5 +1,5 @@
 export interface LogData {
-	level: "debug" | "info" | "warn" | "error";
+	level: string;
 	message: string;
 	cause?: any;
 }

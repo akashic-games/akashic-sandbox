@@ -1,3 +1,5 @@
+import { PerfRecord } from "./PerfRecord";
+
 export interface RunnerLike {
 	containerElement: HTMLDivElement;
 	initialize(): Promise<void>;
@@ -5,6 +7,8 @@ export interface RunnerLike {
 }
 
 export interface RunnerParameterObject {
+	configurationUrl: string;
+	assetBase: string;
 	nameHash: string;
 	disablePreventDefaultOnScreen?: boolean;
 	onNotifyPerformance?: (record: PerfRecord) => void;

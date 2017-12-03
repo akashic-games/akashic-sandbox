@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "lib": ["es2015", "dom", "es2015.promise"],
     "module": "commonjs",
     "declaration": false,
     "noImplicitAny": false,
@@ -11,6 +12,6 @@
     "outDir": "dist"
   },
   "files": [
-    "./index.tsx"
+    "./index.ts"
   ]
 }

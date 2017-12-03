@@ -4,7 +4,9 @@ interface Window {
 	gScriptContainer: {[key: string]: Function};
 }
 
-class SandboxScriptAsset extends g.ScriptAsset {
+declare var window: Window;
+
+export class SandboxScriptAsset extends g.ScriptAsset {
 	private _loading: boolean;
 	private _script: string;
 
@@ -22,7 +24,7 @@ class SandboxScriptAsset extends g.ScriptAsset {
 		script.onerror = () => {
 			this._loading = false;
 		};
-		script.src = this.path;
+		script.src = this.path + "?id=" + this.id;
 		this._loading = true;
 		container.appendChild(script);
 	}
@@ -39,7 +41,7 @@ class SandboxScriptAsset extends g.ScriptAsset {
 				loader._onAssetError(this, g.ExceptionFactory.createAssetLoadError("can not load script"));
 			}
 		};
-		setTimeout(waitLoader, this.loading ? 100 : 0);
+		setTimeout(waitLoader, this._loading ? 100 : 0);
 	}
 
 	execute(execEnv: g.ScriptAssetExecuteEnvironment): any {

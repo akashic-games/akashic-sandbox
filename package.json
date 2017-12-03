@@ -5,9 +5,10 @@
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node lib/bootstrap.js",
+    "start:dev": "node server.js",
     "build:server": "tsc -p ./src/server",
-    "build": "webpack --config ./src/client/webpack.config.js",
+    "build:client": "webpack --config ./src/client/webpack.config.js",
     "copy": "node build/copyfiles.js"
   },
   "author": "DWANGO Co., Ltd.",
