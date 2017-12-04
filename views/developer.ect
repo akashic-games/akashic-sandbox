@@ -135,7 +135,7 @@
 					<tbody>
 						<tr v-for="(e, index) in events">
 							<td>
-								<a class="pure-button" v-on:click="sendEventsWichValue(events[e])">Send</a>
+								<a class="pure-button" v-on:click="sendEventsWithValue(events[e])">Send</a>
 								<a class="pure-button" v-on:click="insertEventString(events[e])">Copy</a>
 							</td>
 							<td v-text="e"></td>

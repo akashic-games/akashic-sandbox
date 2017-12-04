@@ -29,8 +29,8 @@ function setupDeveloperMenu(param) {
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
-	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEvents;
-	config.eventsToSend = !!sandboxConfig.autoSendEvents ? sandboxConfig.events[sandboxConfig.autoSendEvents] : config.eventsToSend;
+	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
+	config.eventsToSend = !!sandboxConfig.autoSendEventName ? sandboxConfig.events[sandboxConfig.autoSendEventName] : config.eventsToSend;
 
 	var props = window.sandboxDeveloperProps;
 	var amflow = props.amflow;
@@ -486,7 +486,7 @@ function setupDeveloperMenu(param) {
 		data.config.eventsToSend = str;
 	}
 
-	function sendEventsWichValue(str) {
+	function sendEventsWithValue(str) {
 		var es = [];
 		try {
 			es = JSON.parse(str);
@@ -502,7 +502,7 @@ function setupDeveloperMenu(param) {
 			console.log("No events to send.");
 			return;
 		}
-		sendEventsWichValue(config.eventsToSend);
+		sendEventsWithValue(config.eventsToSend);
 	}
 
 	function focusBoundingRect(id) {
@@ -1015,7 +1015,7 @@ function setupDeveloperMenu(param) {
 			},
 			insertEventString: insertEventString,
 			sendEvents: sendEvents,
-			sendEventsWichValue: sendEventsWichValue,
+			sendEventsWithValue: sendEventsWithValue,
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},
