@@ -1,0 +1,39 @@
+.sticky-pane-right {
+	position: fixed;
+	right: 0;
+	top: 0;
+	height: 100%;
+}
+	.sticky-pane-right .resizer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 2px;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.01);
+		border-right: 1px solid var(--tool-border-color);
+		cursor: col-resize;
+	}
+	.sticky-pane-right .content {
+		margin-left: 2px;
+	}
+
+.sticky-pane-bottom {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
+	.sticky-pane-bottom .resizer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: rgba(0, 0, 0, 0.01);
+		border-bottom: 1px solid var(--tool-border-color);
+		cursor: row-resize;
+	}
+	.sticky-pane-bottom .content {
+		margin-top: 2px;
+	}

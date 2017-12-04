@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
 	// devtool: 'eval',
@@ -13,11 +14,14 @@ module.exports = {
 	output: {
 		path: path.resolve(__dirname, "..", "..", "dist"),
 		filename: '[name]-bundle.js',
-		publicPath: '/static/'
+		publicPath: '/dist/'
 	},
 	resolve: {
 		extensions: ['.js', '.ts', '.tsx']
 	},
+	plugins: [
+		new ExtractTextPlugin("styles.css"),
+	],
 	module: {
 		rules: [
 			{
@@ -28,7 +32,12 @@ module.exports = {
 				}
 			},
 			{
+				test: /global\.css$/,
+				use: ExtractTextPlugin.extract({ fallback: "style-loader", use: "css-loader" })
+			},
+			{
 				test: /\.css$/,
+				exclude: /global\.css$/,
 				use: [
 					{ loader: "style-loader" },
 					{ loader: "css-loader?module&localIdentName=[path][name]--[local]--[hash:base64:5]" }

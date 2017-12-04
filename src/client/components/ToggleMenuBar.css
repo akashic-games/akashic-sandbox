@@ -1,0 +1,53 @@
+.bar {
+	box-sizing: border-box;
+	user-select: none;
+	cursor: default;
+	width: 100%;
+	padding: 0 0 0 5px;
+	border-bottom: 1px solid var(--tool-inner-border-color);
+	white-space: nowrap;
+
+  background: var(--tool-bg-color);
+  color: var(--tool-text-color);
+  border-left: 1px solid var(--tool-border-color);
+  font-family: var(--tool-font);
+  font-size: 0.85rem;
+
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+	.bar :global(.splitter) {
+		height: 15px;
+		width: 0px;
+		border-right: 1px solid var(--tool-border-color);
+		margin: 0 4px;
+		background: var(--tool-border-color);
+	}
+
+	.bar :global(.icon) {
+		margin: 0 5px;
+		color: var(--tool-color);
+	}
+		.bar :global(.icon):hover {
+			color: var(--tool-color-hover);
+		}
+		.bar :global(.icon):active {
+			color: var(--tool-color);
+		}
+		.bar :global(.icon[class~="disabled"]) {
+			color: var(--tool-color-disabled);
+		}
+
+	.bar :global(.item) {
+		display: inline-block;
+		padding: 5px 8px 4px 8px;
+		border-bottom: 1px solid transparent;
+	}
+		.bar :global(.item):hover {
+			background-color: var(--tool-bg-color-active);
+		}
+		.bar :global(.item[class~="active"]) {
+			border-bottom-color: var(--tool-bg-color-accent);
+		}

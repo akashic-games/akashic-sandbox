@@ -6,7 +6,8 @@ import { observer } from 'mobx-react';
 // import DevTools from 'mobx-react-devtools';
 import { RunnerConstructorLike } from "../runtime/common/RunnerLike";
 import { Store } from "./store/Store";
-import { Root } from "./components/Root";
+import { Root } from "./containers/Root";
+import "./global.css";
 import "./main.css";
 
 mobx.useStrict(true);
