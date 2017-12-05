@@ -30,7 +30,12 @@ function setupDeveloperMenu(param) {
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
 	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
-	config.eventsToSend = !!sandboxConfig.autoSendEventName ? sandboxConfig.events[sandboxConfig.autoSendEventName] : config.eventsToSend;
+	config.eventsToSend = !!sandboxConfig.autoSendEventName ? JSON.stringify(sandboxConfig.events[sandboxConfig.autoSendEventName]) : config.eventsToSend;
+
+	var events = {};
+	if (sandboxConfig.events) {
+		Object.keys(sandboxConfig.events).forEach(name => events[name] = JSON.stringify(sandboxConfig.events[name]))
+	}
 
 	var props = window.sandboxDeveloperProps;
 	var amflow = props.amflow;

@@ -8,7 +8,7 @@ import jsRoute = require("./routes/js");
 import gameRoute = require("./routes/game");
 import testRoute = require("./routes/test");
 import sr = require("./request/ScriptRequest");
-import sandboxConfigHandler = require("./routes/sandboxConfig");
+import sandboxConfigRoute = require("./routes/sandboxConfig");
 
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
@@ -128,7 +128,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/sandboxconfig/", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
 		req.baseDir = app.gameBase;
 		next();
-	}, <express.RequestHandler>sandboxConfigHandler);
+	}, <express.RequestHandler>sandboxConfigRoute);
 
 	// /game/ は sandbox をブラウザで開く場合に利用、/raw_game/ は /engine のエンジン設定ファイルを使う場合に利用
 	app.use("/game", <express.RequestHandler>jsRoute);
