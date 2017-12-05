@@ -3,14 +3,20 @@ import * as gdr from "@akashic/game-driver";
 import * as pb from "@akashic/pdi-browser";
 import * as gameStorage from "@akashic/game-storage";
 import { RunnerLike, RunnerParameterObject } from "../common/RunnerLike";
+import { CommonTriggerLike } from "../common/CommonTriggerLike";
 import { PerfRecord } from "../common/PerfRecord";
+import { EntityInfo } from "../common/EntityInfo";
 import { TimeKeeper } from "../common/TimeKeeper";
 import { calcReplayLastTime } from "../common/replayUtil";
 import { consoleLogger } from "../common/consoleLogger";
 import { SandboxScriptAsset } from "./SandboxScriptAsset";
+import { CommonTriggerV1 } from "./CommonTriggerV1";
 
 export class RunnerV1 implements RunnerLike {
 	containerElement: HTMLDivElement;
+	onNotifyPerformance: CommonTriggerLike<PerfRecord>;
+	onNotifyEntityChange: CommonTriggerLike<EntityInfo>
+	onError: CommonTriggerLike<any>
 	private _game: g.Game;
 	private _driver: any;
 	private _amflow: any;
@@ -22,6 +28,9 @@ export class RunnerV1 implements RunnerLike {
 
 	constructor(param: RunnerParameterObject) {
 		this.containerElement = document.createElement("div");
+		this.onNotifyPerformance = new CommonTriggerV1<PerfRecord>();
+		this.onNotifyEntityChange = new CommonTriggerV1<EntityInfo>();
+		this.onError = new CommonTriggerV1<any>();
 		this._game = null;
 		this._driver = null;
 		this._amflow = null;
@@ -87,9 +96,9 @@ export class RunnerV1 implements RunnerLike {
 			this._amflow = amflowClient;
 		});
 
-		const profiler = (!this._param.onNotifyPerformance) ? null : new gdr.SimpleProfiler({
+		const profiler = (!this._param.notifyPerformance) ? null : new gdr.SimpleProfiler({
 			interval: 200,
-			getValueHandler: this._param.onNotifyPerformance
+			getValueHandler: this.onNotifyPerformance.fire.bind(this.onNotifyPerformance)
 		});
 
 		return new Promise<void>((resolve, reject) => {
