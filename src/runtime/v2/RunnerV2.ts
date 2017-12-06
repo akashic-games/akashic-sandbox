@@ -5,7 +5,6 @@ import * as gameStorage from "@akashic/game-storage";
 import { RunnerLike, RunnerParameterObject } from "../types/RunnerLike";
 import { CommonTriggerLike } from "../types/CommonTriggerLike";
 import { PerfRecord } from "../types/PerfRecord";
-import { EntityInfo } from "../types/EntityInfo";
 import { TimeKeeper } from "../shared/TimeKeeper";
 import { calcReplayLastTime } from "../shared/replayUtil";
 import { consoleLogger } from "../shared/consoleLogger";
@@ -15,7 +14,6 @@ import { CommonTriggerV2 } from "./CommonTriggerV2";
 export class RunnerV2 implements RunnerLike {
 	containerElement: HTMLDivElement;
 	onNotifyPerformance: CommonTriggerLike<PerfRecord>;
-	onNotifyEntityChange: CommonTriggerLike<EntityInfo>
 	onError: CommonTriggerLike<any>
 	private _game: g.Game;
 	private _driver: any;
@@ -29,7 +27,6 @@ export class RunnerV2 implements RunnerLike {
 	constructor(param: RunnerParameterObject) {
 		this.containerElement = document.createElement("div");
 		this.onNotifyPerformance = new CommonTriggerV2<PerfRecord>();
-		this.onNotifyEntityChange = new CommonTriggerV2<EntityInfo>();
 		this.onError = new CommonTriggerV2<any>();
 		this._game = null;
 		this._driver = null;
