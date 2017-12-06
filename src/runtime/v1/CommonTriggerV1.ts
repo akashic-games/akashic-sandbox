@@ -1,5 +1,5 @@
 import * as g from "@akashic/akashic-engine";
-import * as ct from "../common/CommonTriggerLike";
+import * as ct from "../types/CommonTriggerLike";
 
 export class CommonTriggerV1<T> implements ct.CommonTriggerLike<T> {
 	private _trigger: g.Trigger<T>;

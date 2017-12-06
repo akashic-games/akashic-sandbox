@@ -1,6 +1,6 @@
 import { main } from "./main";
-import { RunnerConstructorLike } from "../runtime/common/RunnerLike";
-import { AkashicSandboxGlobal } from "../runtime/common/AkashicSandboxGlobal";
+import { RunnerConstructorLike } from "../runtime/types/RunnerLike";
+import { AkashicSandboxGlobal } from "../runtime/types/AkashicSandboxGlobal";
 
 declare var window: Window;
 interface Window {

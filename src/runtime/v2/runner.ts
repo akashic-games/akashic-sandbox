@@ -1,4 +1,4 @@
-import { AkashicSandboxGlobal } from "../common/AkashicSandboxGlobal";
+import { AkashicSandboxGlobal } from "../types/AkashicSandboxGlobal";
 import { RunnerV2 } from "./RunnerV2";
 import { CommonTriggerV2 } from "./CommonTriggerV2";
 

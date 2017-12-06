@@ -1,5 +1,5 @@
 import { observable, computed } from 'mobx';
-import { RunnerLike } from "../../runtime/common/RunnerLike";
+import { RunnerLike } from "../../runtime/types/RunnerLike";
 
 export class GameStore {
 	private _runner: RunnerLike;
