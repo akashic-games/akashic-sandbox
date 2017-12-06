@@ -9,7 +9,7 @@ var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Re
 
 	if (! fs.existsSync(scriptPath)) {
 		res.contentType("text/javascript");
-		res.send(createLoadingScript());
+		res.send(createLoadingScript({}));
 		return;
 	}
 	var sandboxConfig;
@@ -18,7 +18,7 @@ var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Re
 		delete require.cache[require.resolve(scriptPath)]; // 設定ファイルの更新に追従するためアクセス毎にキャッシュを削除する
 		sandboxConfig = completeConfigParams(sandboxConfig);
 	} catch (error) {
-		// do nothing
+		console.log(error);
 	}
 	res.contentType("text/javascript");
 	res.send(createLoadingScript(sandboxConfig));
@@ -26,7 +26,7 @@ var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Re
 
 module.exports = controller;
 
-function completeConfigParams(c: SandboxConfig = {}): SandboxConfig {
+function completeConfigParams(c: SandboxConfig): SandboxConfig {
 	var config = {
 		autoSendEvents: c.autoSendEventName ? c.autoSendEventName : "",
 		events: c.events ? c.events : {},
@@ -35,7 +35,7 @@ function completeConfigParams(c: SandboxConfig = {}): SandboxConfig {
 	return config;
 }
 
-function createLoadingScript(content: any = {}): string {
+function createLoadingScript(content: any): string {
 	return "window.sandboxDeveloperProps = window.sandboxDeveloperProps || {};window.sandboxDeveloperProps.sandboxConfig = " + JSON.stringify(content);
 }
 
