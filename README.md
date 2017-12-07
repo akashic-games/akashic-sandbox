@@ -78,6 +78,7 @@ var config = {
 		event1: [32, null, "9999", {var: "var"}, false]
 	}
 }
+module.exports = config;
 ```
 
 ## ビルド方法
