@@ -7,13 +7,13 @@ module.exports = {
 	context: __dirname,
 	entry: {
 		_devserver: 'webpack-dev-server/client?http://localhost:3000',
-		index: './index',
-		runner1x: '../runtime/v1/runner.ts',
-		runner2x: '../runtime/v2/runner.ts'
+		bundle: './index',
+		runtime1x: '../runtime/v1/setupRuntimeV1.ts',
+		runtime2x: '../runtime/v2/setupRuntimeV2.ts'
 	},
 	output: {
 		path: path.resolve(__dirname, "..", "..", "dist"),
-		filename: '[name]-bundle.js',
+		filename: '[name].js',
 		publicPath: '/dist/'
 	},
 	resolve: {

@@ -1,11 +1,11 @@
 import { RunnerConstructorLike } from "./RunnerLike";
 import { CommonTriggerLike, CommonTriggerConstructorLike } from "./CommonTriggerLike";
-import { EntityInfo } from "../types/EntityInfo";
-import { SceneInfo } from "../types/SceneInfo";
+import { EntityChangeInfo } from "../types/EntityChangeInfo";
+import { SceneChangeInfo } from "../types/SceneChangeInfo";
 
 export interface Notifiers {
-	onNotifyEntityChange: CommonTriggerLike<EntityInfo>;
-	onNotifySceneChange: CommonTriggerLike<SceneInfo>;
+	onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>;
+	onNotifySceneChange: CommonTriggerLike<SceneChangeInfo>;
 }
 
 export interface AkashicSandboxGlobal {

@@ -1,25 +1,24 @@
 import { CommonTriggerLike } from "../types/CommonTriggerLike";
-import { EntityInfo } from "../types/EntityInfo";
-import { SceneInfo } from "../types/SceneInfo";
+import { EntityChangeInfo } from "../types/EntityChangeInfo";
+import { SceneChangeInfo } from "../types/SceneChangeInfo";
 
 // このファイルは、 `g` の一部処理をフックして devtool 側から参照できるようにするものである。
 // `g` の型が異なるため、厳密には runtime/v1, runtime/v2 それぞれで抱えねばならない。
 // が、現在のところほとんど処理が同じであること、またどのみち Function.prototype.apply の影響で
 // 型情報はかなり失われるため、割り切って `g: any` として共通化しておく。
 
-export interface PatchArgs {
-	onNotifyEntityChange: CommonTriggerLike<EntityInfo>;
-	onNotifySceneChange: CommonTriggerLike<SceneInfo>;
+function listIds<T extends { id: number }>(xs?: T[]): number[] {
+	if (!xs)
+		return [];
+	let ret = [] as number[];
+	for (let i = 0; i < xs.length; ++i)
+		ret.push(xs[i].id);
+	return ret;
 }
 
-function patchRegister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityInfo>): void {
+function patchRegister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>): void {
 	const origRegister = g.Game.prototype.register;
 	g.Game.prototype.register = function (e: any): void {
-		let cids = [] as number[];
-		if (e.children) {
-			for (let i = 0; i < e.children.length; ++i)
-				cids.push(e.children[i].id);
-		}
 		onNotifyEntityChange.fire({
 			infoType: "register",
 			constructorName: e.constructor && e.constructor.name,
@@ -34,14 +33,14 @@ function patchRegister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityInf
 			scaleY: e.scaleY,
 			visible: e.visible(),
 			touchable: e.touchable,
-			childIds: cids,
+			childIds: listIds(e.children),
 			raw: e
 		});
 		origRegister.apply(this, arguments);
 	};
 }
 
-function patchUnregister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityInfo>): void {
+function patchUnregister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>): void {
 	const origUnregister = g.Game.prototype.unregister;
 	g.Game.prototype.unregister = function (e: any): void {
 		onNotifyEntityChange.fire({
@@ -52,14 +51,9 @@ function patchUnregister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityI
 	};
 }
 
-function patchModified(g: any, onNotifyEntityChange: CommonTriggerLike<EntityInfo>): void {
+function patchModified(g: any, onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>): void {
 	const origModified = g.E.prototype.modified;
 	g.E.prototype.modified = function () {
-		let cids = [] as number[];
-		if (this.children) {
-			for (let i = 0; i < this.children.length; ++i)
-				cids.push(this.children[i].id);
-		}
 		onNotifyEntityChange.fire({
 			infoType: "modified",
 			local: this.local,
@@ -73,14 +67,14 @@ function patchModified(g: any, onNotifyEntityChange: CommonTriggerLike<EntityInf
 			scaleY: this.scaleY,
 			visible: this.visible(),
 			touchable: this.touchable,
-			childIds: cids,
+			childIds: listIds(this),
 			raw: this
 		});
 		return origModified.apply(this, arguments);
 	};
 }
 
-function trapSceneChange(g: any, onNotifySceneChange: CommonTriggerLike<SceneInfo>): void {
+function trapSceneChange(g: any, onNotifySceneChange: CommonTriggerLike<SceneChangeInfo>): void {
 	Object.defineProperty(g.Game.prototype, "_sceneChanged", {
 		set: function (t: any) {
 			if (this._asb_sceneChanged === t)
@@ -93,6 +87,7 @@ function trapSceneChange(g: any, onNotifySceneChange: CommonTriggerLike<SceneInf
 				onNotifySceneChange.fire({
 					constructorName: v.constructor.name || null,
 					name: v.name || null,
+					children: listIds(v.children),
 					raw: v
 				});
 				origFire.apply(this, arguments);
@@ -102,6 +97,24 @@ function trapSceneChange(g: any, onNotifySceneChange: CommonTriggerLike<SceneInf
 			return this._asb_sceneChanged;
 		}
 	});
+}
+
+function patchSceneModified(g: any, onNotifySceneChange: CommonTriggerLike<SceneChangeInfo>): void {
+	const origModified = g.Scene.prototype.modified;
+	g.Scene.prototype.modified = function () {
+		onNotifySceneChange.fire({
+			constructorName: this.constructor.name || null,
+			name: this.name || null,
+			children: listIds(this.children),
+			raw: this
+		});
+		return origModified.apply(this, arguments);
+	};
+}
+
+export interface PatchArgs {
+	onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>;
+	onNotifySceneChange: CommonTriggerLike<SceneChangeInfo>;
 }
 
 export function patchAkashicEngine(g: any, arg: PatchArgs): void {

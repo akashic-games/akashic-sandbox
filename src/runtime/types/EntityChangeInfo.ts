@@ -40,4 +40,4 @@ export interface EntityUnregisterInfo {
 	id: number;
 }
 
-export type EntityInfo = EntityRegisterInfo | EntityModifiedInfo | EntityUnregisterInfo;
+export type EntityChangeInfo = EntityRegisterInfo | EntityModifiedInfo | EntityUnregisterInfo;
