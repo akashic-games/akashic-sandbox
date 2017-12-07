@@ -122,6 +122,28 @@
 					<textarea style="width:90%; min-height:200px" v-model="config.eventsToSend" v-on:change="onEventsToSendChanged" placeholder="Events to Send (Should be an array of events)"></textarea>
 					<submit class="pure-button pure-button-primary" v-on:click="sendEvents">Send Events</submit>
 				</form>
+				<h2>登録済みのイベント(Advanced)</h2>
+
+				<table class="pure-table">
+					<thead>
+						<tr>
+							<th>送る</th>
+							<th>#</th>
+							<th>event</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(e, index) in events">
+							<td>
+								<a class="pure-button" v-on:click="sendEventsWithValue(events[e])">Send</a>
+								<a class="pure-button" v-on:click="insertEventString(events[e])">Copy</a>
+							</td>
+							<td v-text="e"></td>
+							<td v-text="index.substr(0, 30) + '...'"></td>
+						</tr>
+					</tbody>
+				</table>
+
 			</div>
 		</div>
 		<div class="dev-menu-view" id="camera-view">

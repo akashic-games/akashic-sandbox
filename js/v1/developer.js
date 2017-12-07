@@ -26,6 +26,17 @@ function setupDeveloperMenu(param) {
 	if (config.showGrid == null) {
 		config.showGrid = false;
 	}
+
+	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
+
+	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
+	config.eventsToSend = !!sandboxConfig.autoSendEventName ? JSON.stringify(sandboxConfig.events[sandboxConfig.autoSendEventName]) : config.eventsToSend;
+
+	var events = {};
+	if (sandboxConfig.events) {
+		Object.keys(sandboxConfig.events).forEach(name => events[name] = JSON.stringify(sandboxConfig.events[name]))
+	}
+
 	var props = window.sandboxDeveloperProps;
 	var amflow = props.amflow;
 
@@ -42,12 +53,13 @@ function setupDeveloperMenu(param) {
 
 	// vue.jsにバインドするデータ
 	var data = {
-		showMenu: false,
+		showMenu: sandboxConfig.showMenu ? sandboxConfig.showMenu : false,
 		players: [],
 		selfId: props.sandboxPlayer.id,
 		selfName: props.sandboxPlayer.name,
 		path: props.path,
 		gameId: props.gameId,
+		events: sandboxConfig.events ? sandboxConfig.events : {},
 		cameras: [],
 		focusingCameraIndex: undefined,
 		inputPlayerName: null,
@@ -88,6 +100,7 @@ function setupDeveloperMenu(param) {
 			return true;
 		});
 	}
+
 	if (config.autoSendEvents && !param.isReplay) {
 		props.game._loaded.handle(function () {
 			sendEvents();
@@ -100,7 +113,6 @@ function setupDeveloperMenu(param) {
 	devBtn.addEventListener("click", function() {
 		data.showMenu = !data.showMenu;
 	});
-
 
 	// 設定をlocalStorageに保存する関数
 	function saveConfig() {
@@ -476,19 +488,27 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	function sendEvents() {
-		if (!config.eventsToSend) {
-			console.log("No events to send.");
-			return;
-		}
+	function insertEventString (str) {
+		data.config.eventsToSend = str;
+	}
+
+	function sendEventsWithValue(str) {
 		var es = [];
 		try {
-			es = JSON.parse(config.eventsToSend);
+			es = JSON.parse(str);
 		} catch (e) {
 			alert(e);
 			console.log(e);
 		}
 		es.forEach(function (e) { amflow.sendEvent(e); });
+	}
+
+	function sendEvents() {
+		if (!config.eventsToSend) {
+			console.log("No events to send.");
+			return;
+		}
+		sendEventsWithValue(config.eventsToSend);
 	}
 
 	function focusBoundingRect(id) {
@@ -999,7 +1019,9 @@ function setupDeveloperMenu(param) {
 			onAutoSendEventsChanged: function() {
 				saveConfig();
 			},
+			insertEventString: insertEventString,
 			sendEvents: sendEvents,
+			sendEventsWithValue: sendEventsWithValue,
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},
