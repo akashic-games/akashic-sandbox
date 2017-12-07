@@ -69,7 +69,7 @@ Akashic Engine 2.0 より前の内部モジュールを更新する場合、更�
 ```js
 var config = {
 	/** ゲーム実行時にeventsの同名メンバーをイベントとして送信します */
-	autoSendEvents: "event0",
+	autoSendEventName: "event0",
 	/** ゲーム実行時にデベロッパーメニューを開きます */
 	showMenu: true,
 	/** デベロッパーメニューに登録済みのイベントとして表示します */

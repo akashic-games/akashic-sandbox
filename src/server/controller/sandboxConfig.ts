@@ -5,14 +5,14 @@ import sr = require("../request/ScriptRequest");
 
 
 var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Response, next: Function) => {
-	var scriptPath = path.join(req.baseDir, "sandbox.config.js");
+	var scriptPath = path.resolve(path.join(req.baseDir, "sandbox.config.js"));
 
 	if (! fs.existsSync(scriptPath)) {
 		res.contentType("text/javascript");
 		res.send(createLoadingScript({}));
 		return;
 	}
-	var sandboxConfig;
+	var sandboxConfig = {};
 	try {
 		sandboxConfig = require(scriptPath);
 		delete require.cache[require.resolve(scriptPath)]; // 設定ファイルの更新に追従するためアクセス毎にキャッシュを削除する
@@ -28,7 +28,7 @@ module.exports = controller;
 
 function completeConfigParams(c: SandboxConfig): SandboxConfig {
 	var config = {
-		autoSendEvents: c.autoSendEventName ? c.autoSendEventName : "",
+		autoSendEventName: c.autoSendEventName ? c.autoSendEventName : "",
 		events: c.events ? c.events : {},
 		showMenu: !!c.showMenu
 	};
