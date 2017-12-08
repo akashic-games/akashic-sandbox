@@ -1,5 +1,10 @@
 # CHANGELOG
 
+
+## 0.13.10
+
+* JavaScriptコードからarrow functionを削除
+
 ## 0.13.9
 
 * 0.13.8 の修正が不十分だった問題を修正
