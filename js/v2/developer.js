@@ -59,7 +59,7 @@ function setupDeveloperMenu(param) {
 		selfName: props.sandboxPlayer.name,
 		path: props.path,
 		gameId: props.gameId,
-		events: sandboxConfig.events ? sandboxConfig.events : {},
+		events: events,
 		cameras: [],
 		focusingCameraIndex: undefined,
 		inputPlayerName: null,
