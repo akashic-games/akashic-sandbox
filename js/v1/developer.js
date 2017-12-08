@@ -34,7 +34,9 @@ function setupDeveloperMenu(param) {
 
 	var events = {};
 	if (sandboxConfig.events) {
-		Object.keys(sandboxConfig.events).forEach(name => events[name] = JSON.stringify(sandboxConfig.events[name]))
+		Object.keys(sandboxConfig.events).forEach(function (name) {
+			events[name] = JSON.stringify(sandboxConfig.events[name]);
+		});
 	}
 
 	var props = window.sandboxDeveloperProps;
