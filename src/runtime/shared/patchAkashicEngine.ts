@@ -19,9 +19,10 @@ function listIds<T extends { id: number }>(xs?: T[]): number[] {
 function patchRegister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>): void {
 	const origRegister = g.Game.prototype.register;
 	g.Game.prototype.register = function (e: any): void {
+		origRegister.apply(this, arguments);
 		onNotifyEntityChange.fire({
 			infoType: "register",
-			constructorName: e.constructor && e.constructor.name,
+			constructorName: e.constructor.name,
 			local: e.local,
 			id: e.id,
 			x: e.x,
@@ -36,7 +37,6 @@ function patchRegister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityCha
 			childIds: listIds(e.children),
 			raw: e
 		});
-		origRegister.apply(this, arguments);
 	};
 }
 
@@ -54,22 +54,25 @@ function patchUnregister(g: any, onNotifyEntityChange: CommonTriggerLike<EntityC
 function patchModified(g: any, onNotifyEntityChange: CommonTriggerLike<EntityChangeInfo>): void {
 	const origModified = g.E.prototype.modified;
 	g.E.prototype.modified = function () {
-		onNotifyEntityChange.fire({
-			infoType: "modified",
-			local: this.local,
-			id: this.id,
-			x: this.x,
-			y: this.y,
-			width: this.width,
-			height: this.height,
-			angle: this.angle,
-			scaleX: this.scaleX,
-			scaleY: this.scaleY,
-			visible: this.visible(),
-			touchable: this.touchable,
-			childIds: listIds(this),
-			raw: this
-		});
+		if (!(this.state & 4)) {  // 4 for Modified
+			onNotifyEntityChange.fire({
+				infoType: "modified",
+				local: this.local,
+				constructorName: this.constructor.name,
+				id: this.id,
+				x: this.x,
+				y: this.y,
+				width: this.width,
+				height: this.height,
+				angle: this.angle,
+				scaleX: this.scaleX,
+				scaleY: this.scaleY,
+				visible: this.visible(),
+				touchable: this.touchable,
+				childIds: listIds(this.children),
+				raw: this
+			});
+		}
 		return origModified.apply(this, arguments);
 	};
 }
@@ -85,9 +88,9 @@ function trapSceneChange(g: any, onNotifySceneChange: CommonTriggerLike<SceneCha
 			const origFire = (t as any).__asb_origFire = t.fire;
 			t.fire = function (v: any) {
 				onNotifySceneChange.fire({
-					constructorName: v.constructor.name || null,
+					constructorName: v.constructor.name,
 					name: v.name || null,
-					children: listIds(v.children),
+					childIds: listIds(v.children),
 					raw: v
 				});
 				origFire.apply(this, arguments);
@@ -102,12 +105,14 @@ function trapSceneChange(g: any, onNotifySceneChange: CommonTriggerLike<SceneCha
 function patchSceneModified(g: any, onNotifySceneChange: CommonTriggerLike<SceneChangeInfo>): void {
 	const origModified = g.Scene.prototype.modified;
 	g.Scene.prototype.modified = function () {
-		onNotifySceneChange.fire({
-			constructorName: this.constructor.name || null,
-			name: this.name || null,
-			children: listIds(this.children),
-			raw: this
-		});
+		if (!this.game.modified) {
+			onNotifySceneChange.fire({
+				constructorName: this.constructor.name,
+				name: this.name || null,
+				childIds: listIds(this.children),
+				raw: this
+			});
+		}
 		return origModified.apply(this, arguments);
 	};
 }
@@ -120,6 +125,7 @@ export interface PatchArgs {
 export function patchAkashicEngine(g: any, arg: PatchArgs): void {
 	patchRegister(g, arg.onNotifyEntityChange);
 	patchUnregister(g, arg.onNotifyEntityChange);
-	patchModified(g, arg.onNotifyEntityChange);
+	// patchModified(g, arg.onNotifyEntityChange);
 	trapSceneChange(g, arg.onNotifySceneChange);
+	patchSceneModified(g, arg.onNotifySceneChange);
 }

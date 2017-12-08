@@ -1,6 +1,6 @@
 export interface SceneChangeInfo {
 	constructorName: string | null;
 	name: string | null;
-	children: number[];
+	childIds: number[];
 	raw: any;
 }

@@ -1,5 +1,5 @@
 .game {
-	border: 1px solid darkgray;
+	xborder: 1px solid darkgray;
 	display: inline-block;
 	background: url("./pseudo-transparent-bg.png") silver;
 }

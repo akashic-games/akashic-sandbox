@@ -78,7 +78,7 @@ export class RunnerV1 implements RunnerLike {
 		this._timeKeeper = new TimeKeeper();
 
 		driver.gameCreatedTrigger.handle(game => {
-			game.logger.logged.handle(log => {
+			game.logger.logging.handle(log => {
 				const table = {
 					[g.LogLevel.Debug]: "debug",
 					[g.LogLevel.Info]: "info",

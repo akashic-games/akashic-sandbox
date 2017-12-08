@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as style from "./StickyPane.css";
+import * as styles from "./StickyPane.css";
 
 export interface StickyPaneProps {
 	pos: "right" | "bottom";
@@ -24,20 +24,20 @@ export class StickyPane extends React.Component<StickyPaneProps, StickyPaneState
 	constructor(props: StickyPaneProps) {
 		super(props);
 		this.state = {
-			width: props.initialWidth || Math.max(100, (this.props.minWidth || 10)),
-			height: props.initialHeight || Math.max(100, (this.props.minHeight || 10))
+			width: props.initialWidth || Math.max(400, (this.props.minWidth || 10)),
+			height: props.initialHeight || Math.max(400, (this.props.minHeight || 10))
 		};
 	}
 
 	render() {
 		const right = (this.props.pos === "right");
-		const baseClassName = right ? style["sticky-pane-right"] : style["sticky-pane-bottom"];
+		const baseClassName = right ? styles["sticky-pane-right"] : styles["sticky-pane-bottom"];
 		const className = baseClassName + (this.props.className ? (" " + this.props.className) : "");
 		const sizeStyle = right ? { width: this.state.width } : { height: this.state.height };
 		return <div className={className} style={sizeStyle}>
-			<div className={style["resizer"]}
+			<div className={styles["resizer"]}
 			     onMouseDown={right ? this.onMouseDownHorizontal : this.onMouseDownVertical} />
-			<div className={style["content"]}>
+			<div className={styles["content"]}>
 				{ this.props.children }
 			</div>
 		</div>;

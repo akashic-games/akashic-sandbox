@@ -22,6 +22,7 @@ export interface EntityModifiedInfo {
 	infoType: "modified";
 	id: number;
 	raw: any;
+	constructorName: string;
 	local: boolean;
 	x: number;
 	y: number;

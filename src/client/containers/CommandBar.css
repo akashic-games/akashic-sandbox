@@ -1,0 +1,43 @@
+
+.icon {
+  color: var(--tool-color);
+}
+  .icon:hover {
+    color: var(--tool-color-hover);
+  }
+	.icon[class~="disabled"] {
+	  color: var(--tool-color-disabled);
+	}
+
+.commandbar {
+  background: var(--tool-bg-color);
+  border-bottom: 1px solid var(--tool-border-color);
+  user-select: none;
+  cursor: default;
+  font-family: var(--tool-font);
+  padding: 5px;
+	display: flex;
+	align-items: center;
+}
+  .commandbar span {
+    display: inline-block;
+  }
+  .commandbar .icon {
+    padding: 0 5px;
+  }
+  .commandbar .texticon {
+    display: inline-block;
+    border-radius: 2px;
+    background: #ea3c3c;
+    color: white;
+    font-size: 0.8rem;
+    padding: 0 1ex;
+  }
+	.commandbar .splitter {
+		height: 15px;
+		width: 0px;
+		border-right: 1px solid var(--tool-border-color);
+		margin: 0 4px;
+		background: var(--tool-border-color);
+	}
+

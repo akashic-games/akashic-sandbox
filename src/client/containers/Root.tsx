@@ -1,9 +1,11 @@
 import * as React from 'react';
 import {action} from "mobx";
 import {observer} from 'mobx-react';
-import { Store } from "../store/Store";  // should be interface?
+import { Store } from "../store/Store";
 import { Game } from "./Game";
 import { Devtool } from "./Devtool";
+import { CommandBar } from "./CommandBar";
+import { EntityTree } from "./EntityTree";
 import { StickyPane } from "../components/StickyPane";
 import { ToggleMenuBar } from "../components/ToggleMenuBar";
 import * as styles from "./Root.css";
@@ -16,8 +18,8 @@ export interface RootProps {
 export class Root extends React.Component<RootProps, {}> {
 	render() {
 		return <div className={styles["root"]} onClick={this.onClick}>
+			<CommandBar />
 			<Game store={this.props.store} />
-			{ this.props.store.message }
 			<StickyPane className={styles["devtool"]} pos="right" >
 				<ToggleMenuBar className={styles["menubar"]}>
 					<span className="icon fa fa-times-circle"></span>
@@ -29,7 +31,7 @@ export class Root extends React.Component<RootProps, {}> {
 					<span className="item">Storage</span>
 					<span className="item">Settings</span>
 				</ToggleMenuBar>
-				HOGE
+				<EntityTree store={this.props.store} />
 			</StickyPane>
 		</div>;
 	}

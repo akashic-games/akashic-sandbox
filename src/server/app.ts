@@ -44,10 +44,10 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 	// });
 
 	app.use("/dist/", express.static(path.join(appRoot, "dist")));
-	app.use("/game/", createGameRouter({ gameBase }));
-	app.use("/game/", (req, res, next) => {
+	app.use(/\/game\/$/, (req, res, next) => {
 		res.sendFile(path.join(appRoot, "static", (runtimeVersion === "1") ? "game1x.html" : "game2x.html"));
 	});
+	app.use("/game/", createGameRouter({ gameBase }));
 	app.use("/raw_game/", express.static(gameBase));
 	cascadeBases.forEach((base, i) => {
 		app.use("/cascade/" + i, createGameRouter({ gameBase: base }));
