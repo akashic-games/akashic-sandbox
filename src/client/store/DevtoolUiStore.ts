@@ -3,6 +3,7 @@ import * as rt from "../../runtime/types";
 
 export interface EntityInfo {
 	constructorName: string;
+	id: number;
 	local: boolean;
 	x: number;
 	y: number;
@@ -28,39 +29,39 @@ export class DevtoolUiStore {
 	rawEntityTable: { [key: number]: any };
 	rawScene: any;
 	private _runner: rt.RunnerLike;
-	private _notifiers: rt.Notifiers;
+	private _watcher: rt.EngineWatcherLike;
 
-	constructor(runner: rt.RunnerLike, notifiers: rt.Notifiers) {
+	constructor(runner: rt.RunnerLike, watcher: rt.EngineWatcherLike) {
 		this.entityTable = observable.map<EntityInfo>();
 		this.sceneInfo = { constructorName: null, name: null, childIds: [] };
 		this.rawEntityTable = {};
 		this.rawScene = null;
 		this._runner = runner;
-		this._notifiers = notifiers;
-		notifiers.onNotifySceneChange.add(this._onNotifySceneChange);
-		notifiers.onNotifyEntityChange.add(this._onNotifyEntityChange);
+		this._watcher = watcher;
+		watcher.onNotifyContentChange.add(this._onNotifyContentChange);
 	}
 
 	@action
-	_onNotifySceneChange = (info: rt.SceneChangeInfo) => {
-		this.rawScene = info.raw;
-		info.raw = null;  // mobxに追跡されないよう生Sceneは削っておく(重要度未検証)
-		this.sceneInfo = info;
-	}
-
-	@action
-	_onNotifyEntityChange = (info: rt.EntityChangeInfo) => {
-		switch (info.infoType) {
-		case "register":
-		case "modified":
-			this.rawEntityTable[info.id] = info.raw;
-			info.raw = null;  // mobxに追跡されないよう生Eは削っておく(重要度未検証)
-			this.entityTable.set("" + info.id, info);
-			break;
-		case "unregister":
-			delete this.rawEntityTable[info.id];
-			this.entityTable.delete("" + info.id);
-			break;
+	_onNotifyContentChange = (cci: rt.ContentChangeInfo) => {
+		for (let i = 0; i < cci.entity.length; ++i) {
+			const info = cci.entity[i];
+			switch (info.infoType) {
+			case "register":
+			case "modified":
+				this.rawEntityTable[info.id] = info.raw;
+				info.raw = null;  // mobxに追跡されないよう生Eは削っておく(重要度未検証)
+				this.entityTable.set("" + info.id, info);
+				break;
+			case "unregister":
+				delete this.rawEntityTable[info.id];
+				this.entityTable.delete("" + info.id);
+				break;
+			default:
+				// never
+			}
 		}
+		this.rawScene = cci.scene.raw;
+		cci.scene.raw = null;  // mobxに追跡されないよう生Sceneは削っておく(重要度未検証)
+		this.sceneInfo = cci.scene;
 	}
 }

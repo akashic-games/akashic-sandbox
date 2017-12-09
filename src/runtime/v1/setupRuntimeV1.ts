@@ -1,8 +1,7 @@
 import * as g from "@akashic/akashic-engine";
 import { AkashicSandboxGlobal } from "../types/AkashicSandboxGlobal";
-import { EntityChangeInfo } from "../types/EntityChangeInfo";
-import { SceneChangeInfo } from "../types/SceneChangeInfo";
-import { patchAkashicEngine } from "../shared/patchAkashicEngine";
+import { ContentChangeInfo } from "../types/ContentChangeInfo";
+import { EngineWatcher } from "../shared/EngineWatcher";
 import { RunnerV1 } from "./RunnerV1";
 import { CommonTriggerV1 } from "./CommonTriggerV1";
 
@@ -18,9 +17,6 @@ if (!window.__akashicSandbox) {
 window.__akashicSandbox.Runner = RunnerV1;
 window.__akashicSandbox.Trigger = CommonTriggerV1;
 window.__akashicSandbox.patchEngine = function () {
-	const onNotifyEntityChange = new CommonTriggerV1<EntityChangeInfo>();
-	const onNotifySceneChange = new CommonTriggerV1<SceneChangeInfo>();
-	const ns = { onNotifyEntityChange, onNotifySceneChange };
-	patchAkashicEngine(g, ns);
-	return ns;
+	const onNotifyContentChange = new CommonTriggerV1<ContentChangeInfo>();
+	return new EngineWatcher(g, onNotifyContentChange);
 };

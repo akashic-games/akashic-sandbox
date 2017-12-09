@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {observer} from 'mobx-react';
 import { Store } from "../store/Store";
-import { DevtoolUiStore } from "../store/DevtoolUiStore";
+import { DevtoolUiStore, EntityInfo } from "../store/DevtoolUiStore";
 import * as styles from "./EntityTree.css";
 
 export interface EntityTreeProps {
@@ -19,6 +19,23 @@ class EntityChildren extends React.Component<{ devUiStore: DevtoolUiStore; ids: 
 	}
 }
 
+const EntityInlineInfo = observer((props: { entityInfo: EntityInfo }) => {
+	const ei = props.entityInfo;
+	return <span className={styles["inline-info"]}>
+		{ ` #${ei.id}` } {/*
+		{ (ei.x !== 0 || ei.y !== 0 || ei.width !== 0 || ei.height !== 0) ? ` (${ei.x},${ei.y})` : null }
+		{ (ei.width !== 0 || ei.height !== 0) ? ` ${ei.width}x${ei.height}` : null }
+		{ (ei.angle !== 0) ? ` ${ei.angle}&deg;` : null }
+		{ (ei.scaleX !== 1 || ei.scaleY !== 1)
+				? <span>
+						<span className={"fa fa-search-plus"} />
+						{ (ei.scaleX === ei.scaleY) ? ` ${ei.scaleX}%` : ` (${ei.scaleX}%,${ei.scaleY}%)` }
+					</span>
+				: null }
+		{ ei.touchable ? <span>&nbsp;<span className={"fa fa-hand-o-up"} /></span> : null } */}
+	</span>;
+});
+
 @observer
 class EntityTreeNode extends React.Component<{ devUiStore: DevtoolUiStore; id: number }, {}> {
 	render() {
@@ -32,21 +49,9 @@ class EntityTreeNode extends React.Component<{ devUiStore: DevtoolUiStore; id: n
 			<div className={styles["entity"]}>
 				<span className={"fa fa-fw " + (hasChild ? (open ? "fa-angle-down" : "fa-angle-right") : "")} />
 				{ ei.constructorName }
-				<span className={styles["inline-info"]}>
-					{ ` ${JSON.stringify(ei.childIds)} #${id}` }
-					{ (ei.x !== 0 || ei.y !== 0 || ei.width !== 0 || ei.height !== 0) ? ` (${ei.x},${ei.y})` : null }
-					{ (ei.width !== 0 || ei.height !== 0) ? ` ${ei.width}x${ei.height}` : null }
-					{ (ei.angle !== 0) ? ` ${ei.angle}&deg;` : null }
-					{ (ei.scaleX !== 1 || ei.scaleY !== 1)
-							? <span>
-									<span className={"fa fa-search-plus"} />
-									{ (ei.scaleX === ei.scaleY) ? ` ${ei.scaleX}%` : ` (${ei.scaleX}%,${ei.scaleY}%)` }
-								</span>
-							: null }
-					{ ei.touchable ? <span>&nbsp;<span className={"fa fa-hand-o-up"} /></span> : null }
-				</span>
+				<EntityInlineInfo entityInfo={ei} />
 			</div>
-			{ open ? <EntityChildren devUiStore={this.props.devUiStore} ids={ei.childIds} /> : null }
+			{ (open && ei.childIds.length > 0) ? <EntityChildren devUiStore={this.props.devUiStore} ids={ei.childIds} /> : null }
 		</div>;
 	}
 }

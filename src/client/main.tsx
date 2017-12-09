@@ -14,7 +14,8 @@ mobx.useStrict(true);
 
 export function main(sbg: AkashicSandboxGlobal) {
 
-	const ns = sbg.patchEngine();
+	const watcher = sbg.patchEngine();
+	watcher.start();
 
 	const runner = new sbg.Runner({
 		configurationUrl: "/configuration",
@@ -24,7 +25,7 @@ export function main(sbg: AkashicSandboxGlobal) {
 		disablePreventDefaultOnScreen: false
 	});
 
-	const store = new Store(runner, ns);
+	const store = new Store(runner, watcher);
 	ReactDOM.render(<Root store={store} />, document.getElementById('app'));
 	runner.initialize().then(() => runner.start());
 }

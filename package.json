@@ -7,9 +7,14 @@
   "scripts": {
     "start": "node lib/bootstrap.js",
     "start:dev": "node server.js",
-    "build:server": "tsc -p ./src/server",
-    "build:client": "webpack --config ./src/client/webpack.config.js",
-    "copy": "node build/copyfiles.js"
+    "clean:front": "shx rm -rf ./dist/",
+    "build:server": "shx rm -rf ./lib/ && tsc -p ./src/server",
+    "build:front": "npm run clean:front && npm run build:runtime && npm run build:client",
+    "build:runtime": "webpack --config ./src/runtime/webpack.config.dev.js",
+    "build:client": "webpack --config ./src/client/webpack.config.dev.js",
+    "build:front-prod": "npm run clean:front && npm run build:runtime-prod && npm run build:client-prod",
+    "build:runtime-prod": "webpack --config ./src/runtime/webpack.config.js",
+    "build:client-prod": "webpack --config ./src/client/webpack.config.js"
   },
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
@@ -19,6 +24,7 @@
   "files": [
     "bin",
     "lib",
+    "dist",
     "js",
     "css",
     "views",
@@ -56,6 +62,7 @@
     "file-loader": "~1.1.5",
     "font-awesome": "~4.7.0",
     "jasmine": "^2.1.1",
+    "shx": "~0.2.2",
     "style-loader": "~0.19.0",
     "supertest": "^1.2.0",
     "ts-loader": "~3.1.1",
