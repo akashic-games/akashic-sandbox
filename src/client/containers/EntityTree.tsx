@@ -15,10 +15,10 @@ export interface EntityTreeProps {
 @observer
 export class EntityTree extends React.Component<EntityTreeProps, {}> {
 	render() {
-		const { store, handlers } = this.props;
+		const { store, handlers, className } = this.props;
 		const { devtoolUiStore } = store;
 		const { sceneInfo } = devtoolUiStore;
-		return <div className={styles["entity-tree"] + (" " + this.props.className || "")}>
+		return <div className={styles["entity-tree"] + (className ? " " + className : "")}>
 			<div className={styles["entity"]}>
 				{ sceneInfo.constructorName }
 				{ sceneInfo.name ? <span className={styles["inline-info"]}>{sceneInfo.name}</span> : null }

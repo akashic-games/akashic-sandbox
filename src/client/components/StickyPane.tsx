@@ -4,6 +4,7 @@ import * as styles from "./StickyPane.css";
 export interface StickyPaneProps {
 	pos: "right" | "bottom";
 	className?: string;
+	innerClassName?: string;
 	initialWidth?: number;
 	initialHeight?: number;
 	minWidth?: number;
@@ -30,14 +31,16 @@ export class StickyPane extends React.Component<StickyPaneProps, StickyPaneState
 	}
 
 	render() {
-		const right = (this.props.pos === "right");
+		const { pos, className, innerClassName } = this.props;
+		const right = (pos === "right");
 		const baseClassName = right ? styles["sticky-pane-right"] : styles["sticky-pane-bottom"];
-		const className = baseClassName + (this.props.className ? (" " + this.props.className) : "");
+		const realClassName = baseClassName + (className ? (" " + className) : "");
+		const realInnerClassName = styles["content"] + (innerClassName ? (" " + innerClassName) : "");
 		const sizeStyle = right ? { width: this.state.width } : { height: this.state.height };
-		return <div className={className} style={sizeStyle}>
+		return <div className={realClassName} style={sizeStyle}>
 			<div className={styles["resizer"]}
 			     onMouseDown={right ? this.onMouseDownHorizontal : this.onMouseDownVertical} />
-			<div className={styles["content"]}>
+			<div className={realInnerClassName}>
 				{ this.props.children }
 			</div>
 		</div>;

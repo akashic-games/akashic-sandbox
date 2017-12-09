@@ -5,14 +5,20 @@
 }
 
 .devtool {
+	height: 100%;
+}
+
+.devtool-inner {
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
 	.devtool .menubar {
 		flex-grow: 0;
+		flex-shrink: 0;
 	}
 	.devtool .content {
 		overflow-y: scroll;
-		flex-grow: 2;
+		flex-grow: 1;
+		flex-shrink: 1;
 	}
