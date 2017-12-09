@@ -1,20 +1,11 @@
 .entity-tree {
 	background: var(--tool-bg-color-white);
-	padding: 4px;
+	padding: 4px 4px 4px 14px;
   font-size: 0.85rem;
 	font-family: var(--tool-font-monospace);
 	user-select: none;
 	cursor: default;
 }
-	.entity-tree .inline-info {
-		color: var(--tool-text-color-light);
-		xfont-family: var(--tool-font);
-		font-size: 85%;
-	}
-	.entity-tree .nest {
-		margin: 0 0 0 14px;
-		padding: 0;
-	}
 	.entity-tree .entity {
 		margin: 0;
 		padding: 1px 3px 0 0;

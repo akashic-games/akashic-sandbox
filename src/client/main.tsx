@@ -3,8 +3,9 @@ import * as ReactDOM from 'react-dom';
 import * as mobx from 'mobx';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-// import DevTools from 'mobx-react-devtools';
+// import Devtools from "mobx-react-devtools";
 import { AkashicSandboxGlobal } from "../runtime/types/AkashicSandboxGlobal";
+import { Handlers } from "./handlers/Handlers";
 import { Store } from "./store/Store";
 import { Root } from "./containers/Root";
 import "./global.css";
@@ -26,6 +27,9 @@ export function main(sbg: AkashicSandboxGlobal) {
 	});
 
 	const store = new Store(runner, watcher);
-	ReactDOM.render(<Root store={store} />, document.getElementById('app'));
+	const handlers = new Handlers(store);
+
+	ReactDOM.render(<Root store={store} handlers={handlers} />, document.getElementById('app'));
+	// ReactDOM.render(<div><Root store={store} /><Devtools /></div>, document.getElementById('app'));
 	runner.initialize().then(() => runner.start());
 }

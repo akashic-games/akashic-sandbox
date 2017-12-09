@@ -2,6 +2,7 @@ import * as React from 'react';
 import {action} from "mobx";
 import {observer} from 'mobx-react';
 import { Store } from "../store/Store";
+import { Handlers } from "../handlers/Handlers";
 import { Game } from "./Game";
 import { Devtool } from "./Devtool";
 import { CommandBar } from "./CommandBar";
@@ -12,14 +13,16 @@ import * as styles from "./Root.css";
 
 export interface RootProps {
 	store: Store;
+	handlers: Handlers;
 }
 
 @observer
 export class Root extends React.Component<RootProps, {}> {
 	render() {
+		const { store, handlers } = this.props;
 		return <div className={styles["root"]} onClick={this.onClick}>
 			<CommandBar />
-			<Game store={this.props.store} />
+			<Game store={store} />
 			<StickyPane className={styles["devtool"]} pos="right" >
 				<ToggleMenuBar className={styles["menubar"]}>
 					<span className="icon fa fa-times-circle"></span>
@@ -31,7 +34,7 @@ export class Root extends React.Component<RootProps, {}> {
 					<span className="item">Storage</span>
 					<span className="item">Settings</span>
 				</ToggleMenuBar>
-				<EntityTree store={this.props.store} />
+				<EntityTree className={styles["content"]} store={store} handlers={handlers} />
 			</StickyPane>
 		</div>;
 	}

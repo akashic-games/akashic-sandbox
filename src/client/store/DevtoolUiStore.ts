@@ -26,6 +26,7 @@ export interface SceneInfo {
 export class DevtoolUiStore {
 	@observable sceneInfo: SceneInfo;
 	entityTable: ObservableMap<EntityInfo>;
+	entityExpandTable: ObservableMap<boolean>;
 	rawEntityTable: { [key: number]: any };
 	rawScene: any;
 	private _runner: rt.RunnerLike;
@@ -33,6 +34,7 @@ export class DevtoolUiStore {
 
 	constructor(runner: rt.RunnerLike, watcher: rt.EngineWatcherLike) {
 		this.entityTable = observable.map<EntityInfo>();
+		this.entityExpandTable = observable.map<boolean>();
 		this.sceneInfo = { constructorName: null, name: null, childIds: [] };
 		this.rawEntityTable = {};
 		this.rawScene = null;
@@ -42,19 +44,28 @@ export class DevtoolUiStore {
 	}
 
 	@action
-	_onNotifyContentChange = (cci: rt.ContentChangeInfo) => {
+	setExpandEntity(eid: number, expand: boolean): void {
+		this.entityExpandTable.set("" + eid, expand);
+	}
+
+	@action
+	private _onNotifyContentChange = (cci: rt.ContentChangeInfo) => {
 		for (let i = 0; i < cci.entity.length; ++i) {
 			const info = cci.entity[i];
+			const eid = info.id;
 			switch (info.infoType) {
 			case "register":
+				this.entityExpandTable.set("" + eid, false);
+				// fall-through
 			case "modified":
-				this.rawEntityTable[info.id] = info.raw;
+				this.rawEntityTable[eid] = info.raw;
 				info.raw = null;  // mobxに追跡されないよう生Eは削っておく(重要度未検証)
-				this.entityTable.set("" + info.id, info);
+				this.entityTable.set("" + eid, info);
 				break;
 			case "unregister":
-				delete this.rawEntityTable[info.id];
-				this.entityTable.delete("" + info.id);
+				delete this.rawEntityTable[eid];
+				this.entityTable.delete("" + eid);
+				this.entityExpandTable.delete("" + eid);
 				break;
 			default:
 				// never

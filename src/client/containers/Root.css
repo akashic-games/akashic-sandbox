@@ -12,3 +12,7 @@
 	.devtool .menubar {
 		flex-grow: 0;
 	}
+	.devtool .content {
+		overflow-y: scroll;
+		flex-grow: 2;
+	}
