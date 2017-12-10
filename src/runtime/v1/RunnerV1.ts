@@ -5,8 +5,9 @@ import * as gameStorage from "@akashic/game-storage";
 import { RunnerLike, RunnerParameterObject } from "../types/RunnerLike";
 import { CommonTriggerLike } from "../types/CommonTriggerLike";
 import { PerfRecord } from "../types/PerfRecord";
+import { BoundingRectData } from "../types/BoundingRectData";
 import { TimeKeeper } from "../shared/TimeKeeper";
-import { calcReplayLastTime } from "../shared/replayUtil";
+import { calculateEntityBoundingRect } from "../shared/entityUtil";
 import { consoleLogger } from "../shared/consoleLogger";
 import { SandboxScriptAsset } from "./SandboxScriptAsset";
 import { CommonTriggerV1 } from "./CommonTriggerV1";
@@ -122,5 +123,13 @@ export class RunnerV1 implements RunnerLike {
 	start(): void {
 		// this._timeKeeper.start();
 		this._driver.startGame();
+	}
+
+	setScale(scale: number): void {
+		this._platform.setScale(scale, scale);
+	}
+
+	getBoundingRectData(eid: number): BoundingRectData {
+		return calculateEntityBoundingRect((eid < 0) ? this._game._localDb[eid] : this._game.db[eid]);
 	}
 }
