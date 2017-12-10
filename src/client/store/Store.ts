@@ -4,9 +4,6 @@ import { GameStore } from "./GameStore";
 import { DevtoolUiStore } from "./DevtoolUiStore";
 
 export class Store {
-	@observable activePane: string = "E";
-	@observable message: string = "FOO";
-
 	gameStore: GameStore;
 	devtoolUiStore: DevtoolUiStore;
 

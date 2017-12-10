@@ -20,7 +20,7 @@ export interface RootProps {
 export class Root extends React.Component<RootProps, {}> {
 	render() {
 		const { store, handlers } = this.props;
-		return <div className={styles["root"]} onClick={this.onClick}>
+		return <div className={styles["root"]}>
 			<CommandBar />
 			<Game gameStore={store.gameStore} />
 			<StickyPane className={styles["devtool"]} innerClassName={styles["devtool-inner"]} pos="right" >
@@ -37,11 +37,5 @@ export class Root extends React.Component<RootProps, {}> {
 				<EntityTree className={styles["content"]} store={store} handlers={handlers} />
 			</StickyPane>
 		</div>;
-	}
-
-	@action
-	onClick = () => {
-		console.log("click");
-		this.props.store.message += "!";
 	}
 }
