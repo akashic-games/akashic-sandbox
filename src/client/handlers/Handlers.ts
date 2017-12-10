@@ -1,25 +1,27 @@
+import { action } from 'mobx';
+import { RunnerLike } from "../../runtime/types";
 import { Store } from "../store/Store";
 import { DevtoolUiStore } from "../store/DevtoolUiStore";
 
-export class DevtoolHandlers {
-	private _store: DevtoolUiStore;
-
-	constructor(store: DevtoolUiStore) {
-		this._store = store;
-	}
-
-	toggleExpandEntity(eid: number): void {
-		this._store.setExpandEntity(eid, !this._store.entityExpandTable.get("" + eid));
-	}
-}
-
-// TODO 機能分割検討: Storeに対する全権を持ちすぎているかもしれない。
 export class Handlers {
-	devtoolHanlders: DevtoolHandlers;
 	private _store: Store;
+	private _runner: RunnerLike;
 
-	constructor(store: Store) {
+	constructor(store: Store, runner: RunnerLike) {
 		this._store = store;
-		this.devtoolHanlders = new DevtoolHandlers(this._store.devtoolUiStore);
+		this._runner = runner;
+	}
+
+	@action
+	toggleExpandEntity(eid: number): void {
+		const devUiStore = this._store.devtoolUiStore;
+		const current = devUiStore.entityExpandTable.get("" + eid);
+		devUiStore.entityExpandTable.set("" + eid, !current);
+	}
+
+	@action
+	setActiveEntity(eid: number | null): void {
+		const gameStore = this._store.gameStore;
+		gameStore.activeBoundingRectData = (typeof eid == "number") ? this._runner.getBoundingRectData(eid) : null;
 	}
 }

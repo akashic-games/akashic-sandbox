@@ -22,7 +22,7 @@ export class Root extends React.Component<RootProps, {}> {
 		const { store, handlers } = this.props;
 		return <div className={styles["root"]} onClick={this.onClick}>
 			<CommandBar />
-			<Game store={store} />
+			<Game gameStore={store.gameStore} />
 			<StickyPane className={styles["devtool"]} innerClassName={styles["devtool-inner"]} pos="right" >
 				<ToggleMenuBar className={styles["menubar"]}>
 					<span className="icon fa fa-times-circle"></span>

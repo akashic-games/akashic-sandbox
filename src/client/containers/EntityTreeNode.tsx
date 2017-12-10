@@ -65,7 +65,9 @@ export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 		const hasChild = ei.childIds.length > 0;
 		const open = devtoolUiStore.entityExpandTable.get("" + eid);
 		return <div>
-			<div className={styles["entity"]}>
+			<div className={styles["entity"]}
+			     onMouseEnter={this._onMouseEnter}
+			     onMouseLeave={this._onMouseLeave} >
 				<span className={"fa fa-fw " + (hasChild ? (open ? "fa-angle-down" : "fa-angle-right") : "")}
 				      onClick={this._onClick} />
 				{ ei.constructorName }
@@ -77,7 +79,15 @@ export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 		</div>;
 	}
 
+	private _onMouseEnter = (ev: React.MouseEvent<HTMLDivElement>) => {
+		this.props.handlers.setActiveEntity(this.props.eid);
+	}
+
+	private _onMouseLeave = (ev: React.MouseEvent<HTMLDivElement>) => {
+		this.props.handlers.setActiveEntity(null);
+	}
+
 	private _onClick = () => {
-		this.props.handlers.devtoolHanlders.toggleExpandEntity(this.props.eid);
+		this.props.handlers.toggleExpandEntity(this.props.eid);
 	}
 }
