@@ -64,8 +64,9 @@ export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 			return null;
 		const hasChild = ei.childIds.length > 0;
 		const open = devtoolUiStore.entityExpandTable.get("" + eid);
+		const selected = (eid === devtoolUiStore.selectedEntityId) ? " selected" : "";
 		return <div>
-			<div className={styles["entity"]}
+			<div className={styles["entity"] + selected}
 			     onMouseEnter={this._onMouseEnter}
 			     onMouseLeave={this._onMouseLeave}
 					 onClick={this._onClick} >

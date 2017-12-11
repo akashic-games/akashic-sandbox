@@ -9,7 +9,6 @@
 
   background: var(--tool-bg-color);
   color: var(--tool-text-color);
-  border-left: 1px solid var(--tool-border-color);
   font-family: var(--tool-font);
   font-size: 0.85rem;
 

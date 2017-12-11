@@ -7,6 +7,18 @@
 .devtool {
 	height: 100%;
 }
+.right {
+	position: fixed;
+	right: 0;
+	top: 0;
+	height: 100%;
+}
+.bottom {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+}
 
 .devtool-inner {
   display: flex;

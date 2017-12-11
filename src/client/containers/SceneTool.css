@@ -1,15 +1,25 @@
-.scene-tool {
+.scene-tool-vertical {
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
-	.scene-tool .main {
-		overflow-y: scroll;
-		flex-grow: 1;
-		flex-shrink: 2;
-	}
-	.scene-tool .sub {
-		overflow-y: scroll;
-		flex-grow: 0;
-		flex-shrink: 1;
-	}
+.scene-tool-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.main {
+	overflow-y: scroll;
+	flex-grow: 1;
+	flex-shrink: 2;
+}
+.sub {
+	flex-grow: 0;
+	flex-shrink: 1;
+}
+.sub-inner {
+	overflow-y: scroll;
+	flex-grow: 0;
+	flex-shrink: 1;
+}

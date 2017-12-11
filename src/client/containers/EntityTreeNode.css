@@ -16,5 +16,8 @@
 }
 	.entity:hover {
 		border-radius: 2px;
+		background: var(--tool-bg-color-white-hover);
+	}
+	.entity[class~=selected] {
 		background: var(--tool-bg-color-white-active);
 	}

@@ -1,6 +1,6 @@
 import { action } from 'mobx';
 import { RunnerLike } from "../../runtime/types";
-import { Store } from "../store/Store";
+import { Store, DevtoolPosition } from "../store/Store";
 import { DevtoolUiStore } from "../store/DevtoolUiStore";
 
 export class Handlers {
@@ -28,5 +28,15 @@ export class Handlers {
 	@action
 	selectEntity(eid: number | null): void {
 		this._store.devtoolUiStore.selectedEntityId = eid;
+	}
+
+	@action
+	setDevtoolPosition(pos: DevtoolPosition): void {
+		this._store.devtoolPosition = pos;
+	}
+
+	@action
+	setDevtoolWidth(w: number): void {
+		this._store.devtoolWidth = w;
 	}
 }
