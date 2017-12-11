@@ -1,6 +1,6 @@
 import { action } from 'mobx';
 import { RunnerLike } from "../../runtime/types";
-import { Store, DevtoolPosition } from "../store/Store";
+import { Store, DevtoolPosition, DevtoolType } from "../store/Store";
 import { SceneToolStore } from "../store/SceneToolStore";
 
 export class Handlers {
@@ -10,6 +10,21 @@ export class Handlers {
 	constructor(store: Store, runner: RunnerLike) {
 		this._store = store;
 		this._runner = runner;
+	}
+
+	@action
+	openDevtool(): void {
+		this._store.showDevtool = true;
+	}
+
+	@action
+	closeDevtool(): void {
+		this._store.showDevtool = false;
+	}
+
+	@action
+	setActiveDevtool(type: DevtoolType): void {
+		this._store.activeDevtool = type;
 	}
 
 	@action

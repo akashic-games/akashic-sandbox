@@ -7,9 +7,9 @@ import { VerticalSplitPane } from "../components/VerticalSplitPane";
 import { HorizontalSplitPane } from "../components/HorizontalSplitPane";
 import { EntityTree } from "./EntityTree";
 import { EntityDetail } from "./EntityDetail";
-import * as styles from "./SceneTool.css";
+import * as styles from "./EventsTool.css";
 
-export interface SceneToolProps {
+export interface EventsToolProps {
 	className?: string;
 	store: Store;
 	handlers: Handlers;
@@ -17,7 +17,7 @@ export interface SceneToolProps {
 }
 
 @observer
-export class SceneTool extends React.Component<SceneToolProps, {}> {
+export class EventsTool extends React.Component<EventsToolProps, {}> {
 	render() {
 		const { className, store, handlers, vertical } = this.props;
 		if (vertical) {
