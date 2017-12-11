@@ -1,0 +1,20 @@
+.self {
+	width: 100%;
+}
+	.self > .first {
+		float: left;
+		height: 100%;
+	}
+	.self > .resizer {
+		float: left;
+		height: 100%;
+		width: 2px;
+		margin-left: -2px;
+		border-right: 1px solid var(--tool-border-color);
+		background: rgba(0, 0, 0, 0.01);
+		cursor: col-resize;
+	}
+	.self > .second {
+		float: left;
+		height: 100%;
+	}

@@ -1,0 +1,43 @@
+.self {
+	box-sizing: border-box;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	font-family: var(--tool-font-monospace);
+	font-size: 0.85rem;
+	background: var(--tool-bg-color-white-alt);
+}
+	.self > .menubar {
+		box-sizing: border-box;
+		position: absolute;
+		width: 100%;
+		height: var(--tool-menubar-height);
+		background: var(--tool-bg-color-white);
+	}
+	.self > .content {
+		box-sizing: border-box;
+		overflow-y: scroll;
+		width: 100%;
+		height: calc(100% - var(--tool-menubar-height));
+		margin-top: var(--tool-menubar-height);
+	}
+		.self * {
+			box-sizing: border-box;
+		}
+		.self > .content > table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+			.self > .content > table > tbody > tr {
+				background: var(--tool-bg-color-white-alt);
+			}
+			.self > .content > table > tbody > tr:nth-child(2n) {
+				background: var(--tool-bg-color-white);
+			}
+				.self > .content > table > tbody > tr > td {
+					padding: 2px 5px;
+				}
+				.self > .content > table > tbody > tr > td:nth-child(1) {
+					color: var(--akashic-red);
+					width: 40%;
+				}

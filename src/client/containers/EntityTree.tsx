@@ -21,7 +21,7 @@ export class EntityTree extends React.Component<EntityTreeProps, {}> {
 		return <div className={styles["entity-tree"] + (className ? " " + className : "")}>
 			<div className={styles["entity"]}>
 				{ sceneInfo.constructorName }
-				{ sceneInfo.name ? <span className={styles["inline-info"]}>{sceneInfo.name}</span> : null }
+				{ sceneInfo.name ? <span className={styles["inline-info"]}> "{sceneInfo.name}"</span> : null }
 			</div>
 			{ sceneInfo.childIds.map(eid => <EntityTreeNode key={eid} devtoolUiStore={devtoolUiStore} eid={eid} handlers={handlers} />) }
 		</div>;

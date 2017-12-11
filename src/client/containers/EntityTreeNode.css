@@ -1,3 +1,4 @@
+/* TODO: EntityTree.css と重複を削除する？ */
 .inline-info {
 	color: var(--tool-text-color-light);
 	xfont-family: var(--tool-font);
@@ -9,12 +10,14 @@
 	padding: 0;
 }
 
-/* TODO: EntityTree.css と重複 */
 .entity {
 	margin: 0;
 	padding: 1px 3px 0 0;
 }
 	.entity:hover {
 		border-radius: 2px;
+		background: var(--tool-bg-color-white-hover);
+	}
+	.entity[class~=selected] {
 		background: var(--tool-bg-color-white-active);
 	}

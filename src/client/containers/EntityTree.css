@@ -5,8 +5,14 @@
   font-size: 0.85rem;
 	font-family: var(--tool-font-monospace);
 	user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
 	cursor: default;
 }
+	.entity-tree .inline-info {
+		color: var(--tool-text-color-light);
+		font-size: 85%;
+	}
 	.entity-tree .entity {
 		margin: 0;
 		padding: 1px 3px 0 0;

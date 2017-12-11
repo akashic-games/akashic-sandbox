@@ -1,6 +1,24 @@
 .game {
-	xborder: 1px solid darkgray;
+	border: 1px solid darkgray;
+	position: relative;
 	display: inline-block;
 	background: url("./pseudo-transparent-bg.png") silver;
 }
+
+	.game .brect-self {
+		position: absolute;
+		background: rgba(255, 128, 0, 0.5);
+		border: 0px solid red;
+	}
+
+	.game .brect-descendants {
+		position: absolute;
+		background: rgba(0, 128, 255, 0.3);
+		border: 0px solid blue;
+	}
+
+	/* pdi-browser の指定が邪魔なので上書きしている。本体を変えるべき */
+	.game :global(.input-handler) {
+		display: block !important;
+	}
 

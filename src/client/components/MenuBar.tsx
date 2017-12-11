@@ -1,12 +1,12 @@
 import * as React from "react";
-import * as style from "./ToggleMenuBar.css";
+import * as style from "./MenuBar.css";
 
-export interface ToggleMenuBarProps {
+export interface MenuBarProps {
 	className?: string;
 }
 
-export class ToggleMenuBar extends React.Component<ToggleMenuBarProps, {}> {
-	constructor(props: ToggleMenuBarProps) {
+export class MenuBar extends React.Component<MenuBarProps, {}> {
+	constructor(props: MenuBarProps) {
 		super(props);
 	}
 

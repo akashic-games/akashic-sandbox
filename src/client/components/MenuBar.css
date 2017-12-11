@@ -1,15 +1,17 @@
 .bar {
 	box-sizing: border-box;
 	user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
 	cursor: default;
 	width: 100%;
+	height: var(--tool-menubar-height);
 	padding: 0 0 0 5px;
 	border-bottom: 1px solid var(--tool-inner-border-color);
 	white-space: nowrap;
 
   background: var(--tool-bg-color);
   color: var(--tool-text-color);
-  border-left: 1px solid var(--tool-border-color);
   font-family: var(--tool-font);
   font-size: 0.85rem;
 
@@ -40,6 +42,7 @@
 			color: var(--tool-color-disabled);
 		}
 
+	.bar :global(.label),
 	.bar :global(.item) {
 		display: inline-block;
 		padding: 5px 8px 4px 8px;

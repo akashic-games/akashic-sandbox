@@ -64,10 +64,14 @@ export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 			return null;
 		const hasChild = ei.childIds.length > 0;
 		const open = devtoolUiStore.entityExpandTable.get("" + eid);
+		const selected = (eid === devtoolUiStore.selectedEntityId) ? " selected" : "";
 		return <div>
-			<div className={styles["entity"]}>
+			<div className={styles["entity"] + selected}
+			     onMouseEnter={this._onMouseEnter}
+			     onMouseLeave={this._onMouseLeave}
+					 onClick={this._onClick} >
 				<span className={"fa fa-fw " + (hasChild ? (open ? "fa-angle-down" : "fa-angle-right") : "")}
-				      onClick={this._onClick} />
+				      onClick={this._onClickAngle} />
 				{ ei.constructorName }
 				<EntityInlineInfo entityInfo={ei} />
 			</div>
@@ -77,7 +81,19 @@ export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 		</div>;
 	}
 
+	private _onMouseEnter = () => {
+		this.props.handlers.showGuideOnEntity(this.props.eid);
+	}
+
+	private _onMouseLeave = () => {
+		this.props.handlers.showGuideOnEntity(null);
+	}
+
 	private _onClick = () => {
-		this.props.handlers.devtoolHanlders.toggleExpandEntity(this.props.eid);
+		this.props.handlers.selectEntity(this.props.eid);
+	}
+
+	private _onClickAngle = () => {
+		this.props.handlers.toggleExpandEntity(this.props.eid);
 	}
 }

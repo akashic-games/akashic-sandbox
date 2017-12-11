@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {action} from "mobx";
-import {observer} from 'mobx-react';
+import { action } from "mobx";
+import { observer } from 'mobx-react';
 import { Store } from "../store/Store";
 import { Handlers } from "../handlers/Handlers";
 import { Game } from "./Game";
 import { Devtool } from "./Devtool";
 import { CommandBar } from "./CommandBar";
-import { EntityTree } from "./EntityTree";
-import { StickyPane } from "../components/StickyPane";
-import { ToggleMenuBar } from "../components/ToggleMenuBar";
+import { Resizable } from "../components/Resizable";
+import { MenuBar } from "../components/MenuBar";
+import { SceneTool } from "./SceneTool";
 import * as styles from "./Root.css";
 
 export interface RootProps {
@@ -20,28 +20,38 @@ export interface RootProps {
 export class Root extends React.Component<RootProps, {}> {
 	render() {
 		const { store, handlers } = this.props;
-		return <div className={styles["root"]} onClick={this.onClick}>
+		const pos = store.devtoolPosition;
+		const realClassName = styles["devtool"] + " " + styles[(pos === "right") ? "right" : "bottom"];
+		return <div className={styles["root"]}>
 			<CommandBar />
-			<Game store={store} />
-			<StickyPane className={styles["devtool"]} innerClassName={styles["devtool-inner"]} pos="right" >
-				<ToggleMenuBar className={styles["menubar"]}>
-					<span className="icon fa fa-times-circle"></span>
-					<span className="icon fa fa-toggle-down"></span>
+			<Game gameStore={store.gameStore} />
+			<Resizable className={realClassName} innerClassName={styles["devtool-inner"]}
+			           initialWidth={store.devtoolWidth} initialHeight={store.devtoolHeight}
+			           pos={pos} onWidthChanged={this._onChangeResizableWidth}>
+				<MenuBar className={styles["menubar"]}>
+					<span className={"icon fa fa-times-circle"} title={"Close"} />
+					<span className={"icon fa " + (pos === "right" ? "fa-toggle-down" : "fa-toggle-right")}
+					      onClick={this._onClickToggleTool} title={"Toggle devtool position"} />
 					<div className="splitter" />
 					<span className="item">Scene</span>
 					<span className="item active">Game</span>
 					<span className="item">Events</span>
 					<span className="item">Storage</span>
 					<span className="item">Settings</span>
-				</ToggleMenuBar>
-				<EntityTree className={styles["content"]} store={store} handlers={handlers} />
-			</StickyPane>
+				</MenuBar>
+				<SceneTool className={styles["content"]} store={store} handlers={handlers}
+				           vertical={pos === "right" && store.devtoolWidth < 500} />
+			</Resizable>
 		</div>;
 	}
 
-	@action
-	onClick = () => {
-		console.log("click");
-		this.props.store.message += "!";
+	private _onClickToggleTool = () => {
+		const current = this.props.store.devtoolPosition;
+		const next = (current === "right") ? "bottom" : "right";
+		this.props.handlers.setDevtoolPosition(next);
+	}
+
+	private _onChangeResizableWidth = (w: number) => {
+		this.props.handlers.setDevtoolWidth(w);
 	}
 }

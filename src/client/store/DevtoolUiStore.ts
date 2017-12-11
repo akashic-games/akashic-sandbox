@@ -24,30 +24,33 @@ export interface SceneInfo {
 }
 
 export class DevtoolUiStore {
+	static entityInfoKeys = [
+		"id", "local",
+		"x", "y", "width", "height",
+		"angle", "scaleX", "scaleY",
+		"visible", "touchable"
+	];
+
 	@observable sceneInfo: SceneInfo;
+	@observable selectedEntityId: number;
 	entityTable: ObservableMap<EntityInfo>;
 	entityExpandTable: ObservableMap<boolean>;
 	rawEntityTable: { [key: number]: any };
 	rawScene: any;
-	private _runner: rt.RunnerLike;
 	private _watcher: rt.EngineWatcherLike;
 
-	constructor(runner: rt.RunnerLike, watcher: rt.EngineWatcherLike) {
+	constructor(runner: rt.RunnerLike /* TODO unused */, watcher: rt.EngineWatcherLike) {
+		this.sceneInfo = { constructorName: null, name: null, childIds: [] };
+		this.selectedEntityId = null;
 		this.entityTable = observable.map<EntityInfo>();
 		this.entityExpandTable = observable.map<boolean>();
-		this.sceneInfo = { constructorName: null, name: null, childIds: [] };
 		this.rawEntityTable = {};
 		this.rawScene = null;
-		this._runner = runner;
 		this._watcher = watcher;
 		watcher.onNotifyContentChange.add(this._onNotifyContentChange);
 	}
 
-	@action
-	setExpandEntity(eid: number, expand: boolean): void {
-		this.entityExpandTable.set("" + eid, expand);
-	}
-
+	// TODO handler 側に移すべき？(storeはrunnerを直接監視すべきではない？)
 	@action
 	private _onNotifyContentChange = (cci: rt.ContentChangeInfo) => {
 		for (let i = 0; i < cci.entity.length; ++i) {

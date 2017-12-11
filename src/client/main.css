@@ -14,8 +14,10 @@
 	--tool-bg-color-active: #e0e0e0;
 	--tool-bg-color-accent: #fe3c3c;
 	--tool-bg-color-white: #fbfbfb;
-	--tool-bg-color-white-active: #e8f0ff;
-	--tool-border-color: #c0c0c8;
+	--tool-bg-color-white-alt: #f0f0f4;
+	--tool-bg-color-white-hover: #e8f0ff;
+	--tool-bg-color-white-active: #e0e0e0;
+	--tool-border-color: #b0b0b8;
 	--tool-inner-border-color: #c0c0c8;
 	--tool-color-disabled: silver;
 	--tool-color: #777;
@@ -24,6 +26,7 @@
 	--tool-text-color-light: #999;
 	--tool-font: Roboto, sans-serif;
 	--tool-font-monospace: Ricty, monospace;
+	--tool-menubar-height: 27px;
 }
 
 :global(*) {

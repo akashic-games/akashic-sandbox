@@ -13,6 +13,8 @@
   background: var(--tool-bg-color);
   border-bottom: 1px solid var(--tool-border-color);
   user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
   cursor: default;
   font-family: var(--tool-font);
   padding: 5px;

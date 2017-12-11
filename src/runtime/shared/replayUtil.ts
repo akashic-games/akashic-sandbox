@@ -1,4 +1,4 @@
-export function calcReplayLastTime(tickList: any, fps: number): number {
+export function calculateReplayLastTime(tickList: any, fps: number): number {
 	const lastAge = tickList[1];
 	const ticksWithEvents = tickList[2] || [];
 	for (let i = ticksWithEvents.length - 1; i >= 0; --i) {
