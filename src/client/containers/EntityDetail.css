@@ -1,22 +1,37 @@
-.entity-detail {
+.self {
+	display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
 	font-family: var(--tool-font-monospace);
 	font-size: 0.85rem;
 	background: var(--tool-bg-color-white-alt);
 }
-	.entity-detail table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-	.entity-detail tr {
-		background: var(--tool-bg-color-white-alt);
-	}
-	.entity-detail tr:nth-child(2n) {
+	.self > .menubar {
+		flex-grow: 0;
+		flex-shrink: 0;
 		background: var(--tool-bg-color-white);
 	}
-	.entity-detail td {
-		padding: 2px 5px;
+	.self > .content {
+		overflow-y: scroll;
+		width: 100%;
+		flex-grow: 1;
+		flex-shrink: 1;
 	}
-	.entity-detail td:nth-child(1) {
-		color: var(--akashic-red);
-		width: 40%;
-	}
+		.self > .content > table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+			.self > .content > table > tbody > tr {
+				background: var(--tool-bg-color-white-alt);
+			}
+			.self > .content > table > tbody > tr:nth-child(2n) {
+				background: var(--tool-bg-color-white);
+			}
+				.self > .content > table > tbody > tr > td {
+					padding: 2px 5px;
+				}
+				.self > .content > table > tbody > tr > td:nth-child(1) {
+					color: var(--akashic-red);
+					width: 40%;
+				}

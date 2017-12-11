@@ -1,0 +1,20 @@
+.self {
+	height: 100%;
+}
+	.self > .first {
+		/* TODO: 外部で決めるべき */
+		overflow-y: scroll;
+	}
+	.self > .resizer {
+		z-index: 1;  /* TODO: z-indexはグローバルで管理しないと破綻するかも */
+		width: 100%;
+		height: 2px;
+		margin-top: -2px;
+		border-bottom: 1px solid var(--tool-border-color);
+		background: rgba(0, 0, 0, 0.01);
+		cursor: row-resize;
+	}
+	.self > .second {
+		/* TODO: 外部で決めるべき */
+		overflow-y: scroll;
+	}

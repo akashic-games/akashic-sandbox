@@ -39,4 +39,12 @@ export class Handlers {
 	setDevtoolWidth(w: number): void {
 		this._store.devtoolWidth = w;
 	}
+
+	dumpEntity(eid: number): void {
+		console.log(this._store.devtoolUiStore.rawEntityTable[eid]);
+	}
+
+	assignToGlobalVariable(eid: number): void {
+		(window as any).$e = this._store.devtoolUiStore.rawEntityTable[eid];
+	}
 }

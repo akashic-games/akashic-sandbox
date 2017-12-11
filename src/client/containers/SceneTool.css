@@ -12,14 +12,9 @@
 .main {
 	overflow-y: scroll;
 	flex-grow: 1;
-	flex-shrink: 2;
-}
-.sub {
-	flex-grow: 0;
 	flex-shrink: 1;
 }
-.sub-inner {
-	overflow-y: scroll;
-	flex-grow: 0;
+.sub {
+	flex-grow: 1;
 	flex-shrink: 1;
 }
