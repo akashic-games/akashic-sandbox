@@ -7,7 +7,7 @@ import { Game } from "./Game";
 import { Devtool } from "./Devtool";
 import { CommandBar } from "./CommandBar";
 import { Resizable } from "../components/Resizable";
-import { ToggleMenuBar } from "../components/ToggleMenuBar";
+import { MenuBar } from "../components/MenuBar";
 import { SceneTool } from "./SceneTool";
 import * as styles from "./Root.css";
 
@@ -28,7 +28,7 @@ export class Root extends React.Component<RootProps, {}> {
 			<Resizable className={realClassName} innerClassName={styles["devtool-inner"]}
 			           initialWidth={store.devtoolWidth} initialHeight={store.devtoolHeight}
 			           pos={pos} onWidthChanged={this._onChangeResizableWidth}>
-				<ToggleMenuBar className={styles["menubar"]}>
+				<MenuBar className={styles["menubar"]}>
 					<span className={"icon fa fa-times-circle"} title={"Close"} />
 					<span className={"icon fa " + (pos === "right" ? "fa-toggle-down" : "fa-toggle-right")}
 					      onClick={this._onClickToggleTool} title={"Toggle devtool position"} />
@@ -38,7 +38,7 @@ export class Root extends React.Component<RootProps, {}> {
 					<span className="item">Events</span>
 					<span className="item">Storage</span>
 					<span className="item">Settings</span>
-				</ToggleMenuBar>
+				</MenuBar>
 				<SceneTool className={styles["content"]} store={store} handlers={handlers}
 				           vertical={pos === "right" && store.devtoolWidth < 500} />
 			</Resizable>
