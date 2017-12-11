@@ -1,7 +1,7 @@
 import { action } from 'mobx';
 import { RunnerLike } from "../../runtime/types";
 import { Store, DevtoolPosition } from "../store/Store";
-import { DevtoolUiStore } from "../store/DevtoolUiStore";
+import { SceneToolStore } from "../store/SceneToolStore";
 
 export class Handlers {
 	private _store: Store;
@@ -14,9 +14,9 @@ export class Handlers {
 
 	@action
 	toggleExpandEntity(eid: number): void {
-		const devUiStore = this._store.devtoolUiStore;
-		const current = devUiStore.entityExpandTable.get("" + eid);
-		devUiStore.entityExpandTable.set("" + eid, !current);
+		const sceneToolStore = this._store.sceneToolStore;
+		const current = sceneToolStore.entityExpandTable.get("" + eid);
+		sceneToolStore.entityExpandTable.set("" + eid, !current);
 	}
 
 	@action
@@ -27,7 +27,7 @@ export class Handlers {
 
 	@action
 	selectEntity(eid: number | null): void {
-		this._store.devtoolUiStore.selectedEntityId = eid;
+		this._store.sceneToolStore.selectedEntityId = eid;
 	}
 
 	@action
@@ -41,10 +41,10 @@ export class Handlers {
 	}
 
 	dumpEntity(eid: number): void {
-		console.log(this._store.devtoolUiStore.rawEntityTable[eid]);
+		console.log(this._store.sceneToolStore.rawEntityTable[eid]);
 	}
 
 	assignToGlobalVariable(eid: number): void {
-		(window as any).$e = this._store.devtoolUiStore.rawEntityTable[eid];
+		(window as any).$e = this._store.sceneToolStore.rawEntityTable[eid];
 	}
 }

@@ -2,11 +2,11 @@ import * as React from 'react';
 import {observer} from 'mobx-react';
 import { Store } from "../store/Store";
 import { Handlers } from "../handlers/Handlers";
-import { DevtoolUiStore, EntityInfo } from "../store/DevtoolUiStore";
+import { SceneToolStore, EntityInfo } from "../store/SceneToolStore";
 import * as styles from "./EntityTreeNode.css";
 
 interface EntityTreeChildrenProps {
-	devtoolUiStore: DevtoolUiStore;
+	sceneToolStore: SceneToolStore;
 	handlers: Handlers;
 	eids: number[];
 }
@@ -14,9 +14,9 @@ interface EntityTreeChildrenProps {
 @observer
 class EntityChildren extends React.Component<EntityTreeChildrenProps, {}> {
 	render() {
-		const { devtoolUiStore, handlers, eids } = this.props;
+		const { sceneToolStore, handlers, eids } = this.props;
 		return <div className={styles["nest"]}>
-			{ eids.map(eid => <EntityTreeNode key={eid} devtoolUiStore={devtoolUiStore} handlers={handlers} eid={eid} />) }
+			{ eids.map(eid => <EntityTreeNode key={eid} sceneToolStore={sceneToolStore} handlers={handlers} eid={eid} />) }
 		</div>;
 	}
 }
@@ -50,7 +50,7 @@ class EntityInlineInfo extends React.Component<{ entityInfo: EntityInfo }, {}> {
 }
 
 export interface EntityTreeNodeProps {
-	devtoolUiStore: DevtoolUiStore;
+	sceneToolStore: SceneToolStore;
 	handlers: Handlers;
 	eid: number;
 }
@@ -58,13 +58,13 @@ export interface EntityTreeNodeProps {
 @observer
 export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 	render() {
-		const { devtoolUiStore, handlers, eid } = this.props;
-		const ei = devtoolUiStore.entityTable.get("" + eid);
+		const { sceneToolStore, handlers, eid } = this.props;
+		const ei = sceneToolStore.entityTable.get("" + eid);
 		if (!ei)
 			return null;
 		const hasChild = ei.childIds.length > 0;
-		const open = devtoolUiStore.entityExpandTable.get("" + eid);
-		const selected = (eid === devtoolUiStore.selectedEntityId) ? " selected" : "";
+		const open = sceneToolStore.entityExpandTable.get("" + eid);
+		const selected = (eid === sceneToolStore.selectedEntityId) ? " selected" : "";
 		return <div>
 			<div className={styles["entity"] + selected}
 			     onMouseEnter={this._onMouseEnter}
@@ -76,7 +76,7 @@ export class EntityTreeNode extends React.Component<EntityTreeNodeProps, {}> {
 				<EntityInlineInfo entityInfo={ei} />
 			</div>
 			{ (open && ei.childIds.length > 0)
-				? <EntityChildren devtoolUiStore={devtoolUiStore} handlers={handlers} eids={ei.childIds} />
+				? <EntityChildren sceneToolStore={sceneToolStore} handlers={handlers} eids={ei.childIds} />
 				: null }
 		</div>;
 	}

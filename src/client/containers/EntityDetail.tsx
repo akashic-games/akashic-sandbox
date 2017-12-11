@@ -2,7 +2,7 @@ import * as React from 'react';
 import { action } from "mobx";
 import { observer } from 'mobx-react';
 import { Store } from "../store/Store";
-import { DevtoolUiStore } from "../store/DevtoolUiStore";
+import { SceneToolStore } from "../store/SceneToolStore";
 import { Handlers } from "../handlers/Handlers";
 import { MenuBar } from "../components/MenuBar";
 import { EntityTree } from "./EntityTree";
@@ -18,8 +18,8 @@ export interface EntityDetailProps {
 export class EntityDetail extends React.Component<EntityDetailProps, {}> {
 	render() {
 		const { className, store, handlers } = this.props;
-		const devtoolUiStore = store.devtoolUiStore;
-		const ei = devtoolUiStore.entityTable.get("" + devtoolUiStore.selectedEntityId);
+		const sceneToolStore = store.sceneToolStore;
+		const ei = sceneToolStore.entityTable.get("" + sceneToolStore.selectedEntityId);
 		return <div className={styles["self"] + (className ? (" " + className) : "")}>
 			<MenuBar className={styles["menubar"]}>
 				<span className={"icon fa fa-fw fa-terminal"} title={"Dump to console"} onClick={this._onClickDump} />
@@ -32,7 +32,7 @@ export class EntityDetail extends React.Component<EntityDetailProps, {}> {
 					ei ?
 						<table>
 							<tbody>
-								{ DevtoolUiStore.entityInfoKeys.map(key => <tr key={key}><td>{key}</td><td>{JSON.stringify(ei[key])}</td></tr>) }
+								{ SceneToolStore.entityInfoKeys.map(key => <tr key={key}><td>{key}</td><td>{JSON.stringify(ei[key])}</td></tr>) }
 							</tbody>
 						</table> :
 						null
@@ -43,12 +43,12 @@ export class EntityDetail extends React.Component<EntityDetailProps, {}> {
 
 	private _onClickDump = () => {
 		const { handlers, store } = this.props;
-		handlers.dumpEntity(store.devtoolUiStore.selectedEntityId);
+		handlers.dumpEntity(store.sceneToolStore.selectedEntityId);
 	}
 
 	private _onClickAssign = () => {
 		const { handlers, store } = this.props;
-		handlers.assignToGlobalVariable(store.devtoolUiStore.selectedEntityId);
+		handlers.assignToGlobalVariable(store.sceneToolStore.selectedEntityId);
 	}
 }
 

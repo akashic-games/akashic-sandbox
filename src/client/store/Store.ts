@@ -1,13 +1,13 @@
 import { observable } from 'mobx';
 import * as rt from "../../runtime/types";
 import { GameStore } from "./GameStore";
-import { DevtoolUiStore } from "./DevtoolUiStore";
+import { SceneToolStore } from "./SceneToolStore";
 
 export type DevtoolPosition = "right" | "bottom";
 
 export class Store {
 	gameStore: GameStore;
-	devtoolUiStore: DevtoolUiStore;
+	sceneToolStore: SceneToolStore;
 
 	@observable devtoolPosition: DevtoolPosition;
 	@observable devtoolWidth: number;
@@ -15,7 +15,7 @@ export class Store {
 
 	constructor(runner: rt.RunnerLike, watcher: rt.EngineWatcherLike) {
 		this.gameStore = new GameStore(runner);
-		this.devtoolUiStore = new DevtoolUiStore(runner, watcher);
+		this.sceneToolStore = new SceneToolStore(runner, watcher);
 
 		// TODO read from storage
 		this.devtoolPosition = "right";
