@@ -21,16 +21,17 @@
 }
 
 .devtool-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+	box-sizing: border-box;
+	width: 100%;
+	height: 100%;
 }
 	.devtool .menubar {
-		flex-grow: 0;
-		flex-shrink: 0;
+		box-sizing: border-box;
+		width: 100%;
+		height: var(--tool-menubar-height);
 	}
 	.devtool .content {
-		overflow-y: scroll;
-		flex-grow: 1;
-		flex-shrink: 1;
+		box-sizing: border-box;
+		width: 100%;
+		height: calc(100% - var(--tool-menubar-height));
 	}

@@ -5,6 +5,7 @@
 	-ms-user-select: none;
 	cursor: default;
 	width: 100%;
+	height: var(--tool-menubar-height);
 	padding: 0 0 0 5px;
 	border-bottom: 1px solid var(--tool-inner-border-color);
 	white-space: nowrap;

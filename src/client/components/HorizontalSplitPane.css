@@ -1,0 +1,19 @@
+.self {
+	width: 100%;
+}
+	.self > .first {
+		float: left;
+	}
+	.self > .resizer {
+		float: left;
+		xz-index: 1;  /* TODO: z-indexはグローバルで管理しないと破綻するかも */
+		height: 100%;
+		width: 2px;
+		margin-left: -2px;
+		border-right: 1px solid var(--tool-border-color);
+		background: rgba(0, 0, 0, 0.01);
+		cursor: col-resize;
+	}
+	.self > .second {
+		float: left;
+	}

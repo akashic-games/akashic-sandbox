@@ -11,7 +11,6 @@
 }
 	.entity-tree .inline-info {
 		color: var(--tool-text-color-light);
-		xfont-family: var(--tool-font);
 		font-size: 85%;
 	}
 	.entity-tree .entity {

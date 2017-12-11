@@ -1,20 +1,10 @@
-.scene-tool-vertical {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.scene-tool-horizontal {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-}
-
 .main {
 	overflow-y: scroll;
-	flex-grow: 1;
-	flex-shrink: 1;
+	width: 100%;
+	height: 100%;
 }
 .sub {
-	flex-grow: 1;
-	flex-shrink: 1;
+	overflow-y: scroll;
+	width: 100%;
+	height: 100%;
 }
