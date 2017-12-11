@@ -3,10 +3,10 @@
 }
 	.self > .first {
 		float: left;
+		height: 100%;
 	}
 	.self > .resizer {
 		float: left;
-		xz-index: 1;  /* TODO: z-indexはグローバルで管理しないと破綻するかも */
 		height: 100%;
 		width: 2px;
 		margin-left: -2px;
@@ -16,4 +16,5 @@
 	}
 	.self > .second {
 		float: left;
+		height: 100%;
 	}
