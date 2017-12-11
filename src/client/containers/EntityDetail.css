@@ -1,0 +1,18 @@
+.entity-detail {
+	font-family: var(--tool-font-monospace);
+	font-size: 0.85rem;
+}
+	.entity-detail table {
+	}
+	.entity-detail tr {
+		background: var(--tool-bg-color-white-alt);
+	}
+	.entity-detail tr:nth-child(2n) {
+		background: var(--tool-bg-color-white);
+	}
+	.entity-detail td {
+		padding: 1px 4px;
+	}
+	.entity-detail td:nth-child(1) {
+		color: var(--akashic-red);
+	}

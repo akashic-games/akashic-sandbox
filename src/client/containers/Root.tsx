@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {action} from "mobx";
-import {observer} from 'mobx-react';
+import { action } from "mobx";
+import { observer } from 'mobx-react';
 import { Store } from "../store/Store";
 import { Handlers } from "../handlers/Handlers";
 import { Game } from "./Game";
 import { Devtool } from "./Devtool";
 import { CommandBar } from "./CommandBar";
-import { EntityTree } from "./EntityTree";
 import { StickyPane } from "../components/StickyPane";
 import { ToggleMenuBar } from "../components/ToggleMenuBar";
+import { SceneTool } from "./SceneTool";
 import * as styles from "./Root.css";
 
 export interface RootProps {
@@ -34,7 +34,7 @@ export class Root extends React.Component<RootProps, {}> {
 					<span className="item">Storage</span>
 					<span className="item">Settings</span>
 				</ToggleMenuBar>
-				<EntityTree className={styles["content"]} store={store} handlers={handlers} />
+				<SceneTool className={styles["content"]} store={store} handlers={handlers} />
 			</StickyPane>
 		</div>;
 	}

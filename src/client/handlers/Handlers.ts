@@ -20,8 +20,13 @@ export class Handlers {
 	}
 
 	@action
-	setActiveEntity(eid: number | null): void {
+	showGuideOnEntity(eid: number | null): void {
 		const gameStore = this._store.gameStore;
 		gameStore.activeBoundingRectData = (typeof eid == "number") ? this._runner.getBoundingRectData(eid) : null;
+	}
+
+	@action
+	selectEntity(eid: number | null): void {
+		this._store.devtoolUiStore.selectedEntityId = eid;
 	}
 }

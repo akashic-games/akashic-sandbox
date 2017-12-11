@@ -24,7 +24,15 @@ export interface SceneInfo {
 }
 
 export class DevtoolUiStore {
+	static entityInfoKeys = [
+		"id", "local",
+		"x", "y", "width", "height",
+		"angle", "scaleX", "scaleY",
+		"visible", "touchable"
+	];
+
 	@observable sceneInfo: SceneInfo;
+	@observable selectedEntityId: number;
 	entityTable: ObservableMap<EntityInfo>;
 	entityExpandTable: ObservableMap<boolean>;
 	rawEntityTable: { [key: number]: any };
@@ -32,9 +40,10 @@ export class DevtoolUiStore {
 	private _watcher: rt.EngineWatcherLike;
 
 	constructor(runner: rt.RunnerLike /* TODO unused */, watcher: rt.EngineWatcherLike) {
+		this.sceneInfo = { constructorName: null, name: null, childIds: [] };
+		this.selectedEntityId = null;
 		this.entityTable = observable.map<EntityInfo>();
 		this.entityExpandTable = observable.map<boolean>();
-		this.sceneInfo = { constructorName: null, name: null, childIds: [] };
 		this.rawEntityTable = {};
 		this.rawScene = null;
 		this._watcher = watcher;
