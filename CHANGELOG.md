@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.13.12
+
+* v2のエンジンモジュールを以下に更新
+  * akashic-engine@2.0.3
+  * game-driver@1.0.1
+  * pdi-browser@1.0.3
+
 ## 0.13.11
 
 * デベロッパーツールのデザインを調整
