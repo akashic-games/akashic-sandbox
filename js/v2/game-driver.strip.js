@@ -21,40 +21,6 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
-    "@akashic/game-driver": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var EventIndex = require("./EventIndex");
-        exports.EventIndex = EventIndex;
-        var LoopMode_1 = require("./LoopMode");
-        exports.LoopMode = LoopMode_1.default;
-        var LoopRenderMode_1 = require("./LoopRenderMode");
-        exports.LoopRenderMode = LoopRenderMode_1.default;
-        var ExecutionMode_1 = require("./ExecutionMode");
-        exports.ExecutionMode = ExecutionMode_1.default;
-        var GameDriver_1 = require("./GameDriver");
-        exports.GameDriver = GameDriver_1.GameDriver;
-        var Game_1 = require("./Game");
-        exports.Game = Game_1.Game;
-        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
-        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
-        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
-        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
-        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
-        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
-    }, {
-        "./EventIndex": 4,
-        "./ExecutionMode": 5,
-        "./Game": 6,
-        "./GameDriver": 7,
-        "./LoopMode": 10,
-        "./LoopRenderMode": 11,
-        "./auxiliary/MemoryAmflowClient": 19,
-        "./auxiliary/ReplayAmflowProxy": 20,
-        "./auxiliary/SimpleProfiler": 21
-    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -186,12 +152,15 @@ require = function e(t, n, r) {
             }, EventBuffer.prototype.readLocalEvents = function() {
                 var ret = this._localBuffer;
                 return this._localBuffer = null, ret;
-            }, EventBuffer.prototype.addFilter = function(filter) {
-                this._filters || (this._filters = []), this._filters.push(filter);
+            }, EventBuffer.prototype.addFilter = function(filter, handleEmpty) {
+                this._filters || (this._filters = []), this._filters.push({
+                    func: filter,
+                    handleEmpty: !!handleEmpty
+                });
             }, EventBuffer.prototype.removeFilter = function(filter) {
                 if (this._filters) {
                     if (!filter) return void (this._filters = null);
-                    for (var i = this._filters.length - 1; i >= 0; --i) this._filters[i] === filter && this._filters.splice(i, 1);
+                    for (var i = this._filters.length - 1; i >= 0; --i) this._filters[i].func === filter && this._filters.splice(i, 1);
                 }
             }, EventBuffer.prototype.processEvents = function() {
                 var lpevs = this._unfilteredLocalEvents, pevs = this._unfilteredEvents, joins = this._unfilteredJoinLeaves;
@@ -199,19 +168,28 @@ require = function e(t, n, r) {
                 this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs), 
                 pevs.length > 0 && (this._unfilteredEvents = [], this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs), 
                 void (joins.length > 0 && (this._unfilteredJoinLeaves = [], this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins));
+                if (0 === lpevs.length && 0 === pevs.length && 0 === joins.length) for (var i = 0; i < this._filters.length; ++i) if (this._filters[i].handleEmpty) {
+                    var gpevs = this._filters[i].func([]);
+                    if (gpevs) for (var j = 0; j < gpevs.length; ++j) {
+                        var pev = gpevs[j];
+                        EventBuffer.isEventLocal(pev) ? lpevs.push(pev) : 0 === pev[0] || 1 === pev[0] ? joins.push(pev) : pevs.push(pev);
+                    }
+                }
                 if (lpevs.length > 0) {
                     this._unfilteredLocalEvents = [];
-                    for (var i = 0; i < this._filters.length && (lpevs = this._filters[i](lpevs), lpevs); ++i) ;
+                    for (var i = 0; i < this._filters.length && (lpevs = this._filters[i].func(lpevs), 
+                    lpevs); ++i) ;
                     lpevs && lpevs.length > 0 && (this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs);
                 }
                 if (pevs.length > 0) {
                     this._unfilteredEvents = [];
-                    for (var i = 0; i < this._filters.length && (pevs = this._filters[i](pevs), pevs); ++i) ;
+                    for (var i = 0; i < this._filters.length && (pevs = this._filters[i].func(pevs), 
+                    pevs); ++i) ;
                     pevs && pevs.length > 0 && (this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs);
                 }
                 if (joins.length > 0) {
                     this._unfilteredJoinLeaves = [];
-                    for (var i = 0; i < this._filters.length && joins && joins.length > 0 && (joins = this._filters[i](joins), 
+                    for (var i = 0; i < this._filters.length && joins && joins.length > 0 && (joins = this._filters[i].func(joins), 
                     joins); ++i) ;
                     joins && joins.length > 0 && (this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins);
                 }
@@ -419,8 +397,8 @@ require = function e(t, n, r) {
             }, Game.prototype.raiseTick = function(events) {
                 if (!this.scene() || this.scene().tickGenerationMode !== g.TickGenerationMode.Manual) throw g.ExceptionFactory.createAssertionError("Game#raiseTick(): tickGenerationMode for the current scene is not Manual.");
                 this.raiseTickTrigger.fire(events);
-            }, Game.prototype.addEventFilter = function(filter) {
-                this._eventFilterFuncs.addFilter(filter);
+            }, Game.prototype.addEventFilter = function(filter, handleEmpty) {
+                this._eventFilterFuncs.addFilter(filter, handleEmpty);
             }, Game.prototype.removeEventFilter = function(filter) {
                 this._eventFilterFuncs.removeFilter(filter);
             }, Game.prototype.shouldSaveSnapshot = function() {
@@ -1903,10 +1881,11 @@ require = function e(t, n, r) {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     22: [ function(require, module, exports) {
-        arguments[4][4][0].apply(exports, arguments);
-    }, {
-        dup: 4
-    } ],
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+    }, {} ],
     23: [ function(require, module, exports) {}, {} ],
     24: [ function(require, module, exports) {
         arguments[4][23][0].apply(exports, arguments);
@@ -2306,5 +2285,39 @@ require = function e(t, n, r) {
         }, process.umask = function() {
             return 0;
         };
-    }, {} ]
+    }, {} ],
+    "@akashic/game-driver": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var EventIndex = require("./EventIndex");
+        exports.EventIndex = EventIndex;
+        var LoopMode_1 = require("./LoopMode");
+        exports.LoopMode = LoopMode_1.default;
+        var LoopRenderMode_1 = require("./LoopRenderMode");
+        exports.LoopRenderMode = LoopRenderMode_1.default;
+        var ExecutionMode_1 = require("./ExecutionMode");
+        exports.ExecutionMode = ExecutionMode_1.default;
+        var GameDriver_1 = require("./GameDriver");
+        exports.GameDriver = GameDriver_1.GameDriver;
+        var Game_1 = require("./Game");
+        exports.Game = Game_1.Game;
+        var ReplayAmflowProxy_1 = require("./auxiliary/ReplayAmflowProxy");
+        exports.ReplayAmflowProxy = ReplayAmflowProxy_1.ReplayAmflowProxy;
+        var MemoryAmflowClient_1 = require("./auxiliary/MemoryAmflowClient");
+        exports.MemoryAmflowClient = MemoryAmflowClient_1.MemoryAmflowClient;
+        var SimpleProfiler_1 = require("./auxiliary/SimpleProfiler");
+        exports.SimpleProfiler = SimpleProfiler_1.SimpleProfiler;
+    }, {
+        "./EventIndex": 4,
+        "./ExecutionMode": 5,
+        "./Game": 6,
+        "./GameDriver": 7,
+        "./LoopMode": 10,
+        "./LoopRenderMode": 11,
+        "./auxiliary/MemoryAmflowClient": 19,
+        "./auxiliary/ReplayAmflowProxy": 20,
+        "./auxiliary/SimpleProfiler": 21
+    } ]
 }, {}, []);

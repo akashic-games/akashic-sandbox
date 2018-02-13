@@ -977,7 +977,7 @@ function setupDeveloperMenu(param) {
 					age: snapshot.age,
 					randGen: g.XorshiftRandomGenerator.deserialize(snapshot.randGenSer)
 				});
-				props.game._loadAndStart(snapshot.gameSnapshot);
+				props.game._loadAndStart({ snapshot: snapshot.gameSnapshot });
 			},
 			previewSnapshot: function(index, name) {
 				data.snapshotPreview = {
