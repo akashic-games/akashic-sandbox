@@ -23,7 +23,7 @@ export interface SceneInfo {
 	childIds: number[];
 }
 
-export class DevtoolUiStore {
+export class SceneToolStore {
 	static entityInfoKeys = [
 		"id", "local",
 		"x", "y", "width", "height",

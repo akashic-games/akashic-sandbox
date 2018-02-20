@@ -1,0 +1,87 @@
+.self {
+	box-sizing: border-box;
+	width: 100%;
+	height: 100%;
+	font-family: var(--tool-font);
+	font-size: 0.8rem;
+	background: "silver";
+}
+
+	.self .bar {
+		box-sizing: border-box;
+		width: 100%;
+		padding: 4px;
+		background: var(--tool-bg-color-white);
+	}
+		.self .bar button {
+			margin: 4px;
+			padding: 4px 10px;
+			border: 1px solid var(--tool-border-color);
+			border-radius: 2px;
+			color: var(--tool-color);
+			background: var(--tool-bg-color);
+		}
+		.self .bar button:active {
+			background: var(--tool-bg-color-active);
+		}
+		.self .bar button:hover {
+			color: var(--tool-color-hover);
+		}
+
+	.self .right-aligned {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.self > textarea {
+		display: block;
+		width: calc(100% - 2px);
+		min-height: 200px;
+		box-sizing: border-box;
+		padding: 3px;
+		border: 1px solid var(--tool-inner-border-color);
+		border-width: 1px 0;
+		font-family: var(--tool-font-monospace);
+		font-size: 0.8rem;
+		resize: vertical;
+		outline: none;
+	}
+
+	.self table.event-list {
+		width: 100%;
+		border-collapse: collapse;
+	}
+		.self table.event-list > tbody > tr {
+			background: var(--tool-bg-color-white-alt);
+		}
+		.self table.event-list > tbody > tr:nth-child(2n) {
+			background: var(--tool-bg-color-white);
+		}
+			.self table.event-list > tbody > tr > td {
+				font-family: var(--tool-font-monospace);
+				padding: 2px 5px;
+			}
+			.self table.event-list > tbody > tr > td:nth-child(1) {
+				color: var(--akashic-red);
+				width: 40%;
+			}
+
+			.self table.event-list > tbody > tr .hover-only {
+				visibility: hidden;
+			}
+			.self table.event-list > tbody > tr:hover .hover-only {
+				visibility: visible;
+			}
+
+.icon-button {
+	font-family: var(--tool-font-monospace);
+	padding: 3px 7px;
+	margin: 0 1px;
+}
+.icon-button:active {
+	background: var(--tool-bg-color-active);
+}
+.icon-button:hover {
+	color: var(--tool-color-hover);
+}
+

@@ -12,7 +12,6 @@
 		position: absolute;
 		width: 100%;
 		height: var(--tool-menubar-height);
-		background: var(--tool-bg-color-white);
 	}
 	.self > .content {
 		box-sizing: border-box;
