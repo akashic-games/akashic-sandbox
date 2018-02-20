@@ -1,7 +1,7 @@
 {
   "name": "@akashic/akashic-sandbox",
   "private": true,
-  "version": "0.13.4-refine.0",
+  "version": "1.0.0-refine.0",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
