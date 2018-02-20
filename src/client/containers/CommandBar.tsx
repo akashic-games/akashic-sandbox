@@ -21,10 +21,10 @@ export class CommandBar extends React.Component<CommandBarProps, CommandBarState
 			<span className={styles["icon"] + " fa fa-fw fa-camera"}></span>
 			<div className={styles["splitter"]}></div>
 			<span className={styles["icon"] + " fa xfa-fw fa-fast-backward"}></span>
-			<span className={styles["icon"] + " fa xfa-fw fa-play"}></span>
-			<span className={styles["icon"] + " " + styles["disabled"] + " fa xfa-fw fa-step-forward"}></span>
+			<span className={styles["icon"] + " fa xfa-fw fa-pause"}></span>
+			<span className={styles["icon"] + " disabled" + " fa xfa-fw fa-step-forward"}></span>
 			<div className={styles["splitter"]}></div>
-			<div className={styles["texticon"]}>REPLAY</div>
+			<div className={styles["texticon"]}>REALTIME</div>
 		</div>
 	}
 }

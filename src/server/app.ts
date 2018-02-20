@@ -5,6 +5,7 @@ import { readReuestedRuntimeVersion } from "./util";
 import { createGameRouter } from "./middleware/game";
 import { createConfigurationRouter } from "./middleware/configuration";
 import { createEngineConfRouter } from "./middleware/engine";
+import { createSandboxConfigRouter } from "./middleware/sandboxconfig";
 
 export interface CreateAppParameterObject {
 	gameBase?: string;
@@ -30,15 +31,8 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 		next();
 	});
 
-	// app.use("^\/$", (req, res, next) => {
-	// 	res.redirect("/game/");
-	// });
-	// app.use("^\/game$", (req, res, next) => {
-	// 	res.redirect("/game/");
-	// });
-	// app.use("/css/", express.static(cssBase));
-	// app.use("/thirdparty/", express.static(thridpartyBase));
-	//
+	app.use("^\/?$", (req, res, next) => res.redirect("/game/"));
+	app.use("^\/game?$", (req, res, next) => res.redirect("/game/"));
 	// app.use("/basepath/", (req, res, next) => {
 	// 	res.send(app.gameBase);
 	// });
@@ -54,6 +48,7 @@ export function createApp(param: CreateAppParameterObject): express.Express {
 		app.use("/raw_cascade/" + i, express.static(base));
 	});
 	app.use("/configuration/", createConfigurationRouter({ cascadeLength: cascadeBases.length }));
+	app.use("/sandboxconfig/", createSandboxConfigRouter({ gameBase }));
 	app.use("/engine", createEngineConfRouter({ runtimeVersion }));
 	app.use((req, res, next) => res.sendStatus(404));
 	app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

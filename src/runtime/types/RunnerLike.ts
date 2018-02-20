@@ -11,6 +11,7 @@ export interface RunnerLike {
 	start(): void;
 	setScale(scale: number): void;
 	getBoundingRectData(eid: number): BoundingRectData;
+	sendEvents(pevs: any): void;
 }
 
 export interface RunnerParameterObject {

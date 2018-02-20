@@ -55,6 +55,15 @@ export class Handlers {
 		this._store.devtoolWidth = w;
 	}
 
+	@action
+	setEventEditorContent(content: string): void {
+		this._store.eventsToolStore.eventEditorContent = content;
+	}
+
+	sendEvents(pevs: any): void {
+		this._runner.sendEvents(pevs);
+	}
+
 	dumpEntity(eid: number): void {
 		console.log(this._store.sceneToolStore.rawEntityTable[eid]);
 	}

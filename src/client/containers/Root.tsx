@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { action } from "mobx";
 import { observer } from 'mobx-react';
 import { Store, DevtoolType } from "../store/Store";
 import { Handlers } from "../handlers/Handlers";

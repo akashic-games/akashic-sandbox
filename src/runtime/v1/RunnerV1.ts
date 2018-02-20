@@ -132,4 +132,8 @@ export class RunnerV1 implements RunnerLike {
 	getBoundingRectData(eid: number): BoundingRectData {
 		return calculateEntityBoundingRect((eid < 0) ? this._game._localDb[eid] : this._game.db[eid]);
 	}
+
+	sendEvents(pevs: any[]): void {
+		pevs.forEach(pev => this._amflow.sendEvent(pev));
+	}
 }
