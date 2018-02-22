@@ -21,6 +21,34 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 21,
+        "./plugin/AudioPluginRegistry": 22,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 25,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 29,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -52,8 +80,8 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./canvas/RenderingHelper"), InputHandlerLayer_1 = require("./InputHandlerLayer"), ContainerController = function() {
             function ContainerController() {
                 this.container = null, this.surface = null, this.inputHandlerLayer = null, this.rootView = null, 
-                this.defaultSize = null, this.useResizeForScaling = !1, this.pointEventTrigger = new g.Trigger(), 
-                this._rendererReq = null, this._disablePreventDefault = !1;
+                this.useResizeForScaling = !1, this.pointEventTrigger = new g.Trigger(), this._rendererReq = null, 
+                this._disablePreventDefault = !1;
             }
             return ContainerController.prototype.initialize = function(param) {
                 this._rendererReq = param.rendererRequirement, this._disablePreventDefault = !!param.disablePreventDefault, 
@@ -66,43 +94,26 @@ require = function e(t, n, r) {
             }, ContainerController.prototype.getRenderer = function() {
                 if (!this.surface) throw new Error("this container has no surface");
                 return this.surface.renderer();
-            }, ContainerController.prototype.fitToSize = function(viewportSize, noCenter) {
-                var gameScale = Math.min(viewportSize.width / this._rendererReq.primarySurfaceWidth, viewportSize.height / this._rendererReq.primarySurfaceHeight), gameSize = {
-                    width: Math.floor(this._rendererReq.primarySurfaceWidth * gameScale),
-                    height: Math.floor(this._rendererReq.primarySurfaceHeight * gameScale)
-                }, gameOffset = {
-                    x: Math.floor((viewportSize.width - gameSize.width) / 2),
-                    y: Math.floor((viewportSize.height - gameSize.height) / 2)
-                };
-                this.changeScale(gameScale, gameScale), noCenter && this.inputHandlerLayer.setOffset(gameOffset);
-            }, ContainerController.prototype.revertSize = function() {
-                this.fitToSize(this.defaultSize);
             }, ContainerController.prototype.changeScale = function(xScale, yScale) {
-                this.useResizeForScaling ? this.surface.changeCanvasSize(this.defaultSize.width * xScale, this.defaultSize.height * yScale) : this.surface.changeCanvasScale(xScale, yScale, this.defaultSize), 
+                this.useResizeForScaling ? this.surface.changePhysicalScale(xScale, yScale) : this.surface.changeVisualScale(xScale, yScale), 
                 this.inputHandlerLayer._inputHandler.setScale(xScale, yScale);
             }, ContainerController.prototype.unloadView = function() {
                 if (this.inputHandlerLayer.disablePointerEvent(), this.rootView) for (;this.rootView.firstChild; ) this.rootView.removeChild(this.rootView.firstChild);
             }, ContainerController.prototype._loadView = function() {
+                var _a = this._rendererReq, width = _a.primarySurfaceWidth, height = _a.primarySurfaceHeight, rc = _a.rendererCandidates, disablePreventDefault = this._disablePreventDefault;
                 this.container = document.createDocumentFragment(), this.inputHandlerLayer ? (this.inputHandlerLayer.setViewSize({
-                    width: this._rendererReq.primarySurfaceWidth,
-                    height: this._rendererReq.primarySurfaceHeight
+                    width: width,
+                    height: height
                 }), this.inputHandlerLayer.pointEventTrigger.removeAll(), this.inputHandlerLayer.view.removeChild(this.surface.canvas), 
                 this.surface.destroy()) : this.inputHandlerLayer = new InputHandlerLayer_1.InputHandlerLayer({
-                    width: this._rendererReq.primarySurfaceWidth,
-                    height: this._rendererReq.primarySurfaceHeight,
-                    disablePreventDefault: this._disablePreventDefault
-                }), this.surface = RenderingHelper_1.RenderingHelper.createPrimarySurface(this._rendererReq.primarySurfaceWidth, this._rendererReq.primarySurfaceHeight, this._rendererReq.rendererCandidates), 
-                this.surface.setParentElement(this.inputHandlerLayer.view), this.container.appendChild(this.inputHandlerLayer.view), 
-                this.defaultSize = {
-                    width: this.surface.width,
-                    height: this.surface.height
-                };
+                    width: width,
+                    height: height,
+                    disablePreventDefault: disablePreventDefault
+                }), this.surface = RenderingHelper_1.RenderingHelper.createPrimarySurface(width, height, rc), 
+                this.inputHandlerLayer.view.appendChild(this.surface.getHTMLElement()), this.container.appendChild(this.inputHandlerLayer.view);
             }, ContainerController.prototype._appendToRootView = function(rootView) {
-                var _this = this;
                 rootView.appendChild(this.container), this.inputHandlerLayer.enablePointerEvent(), 
-                this.inputHandlerLayer.pointEventTrigger.add(function(ev) {
-                    _this.pointEventTrigger.fire(ev);
-                });
+                this.inputHandlerLayer.pointEventTrigger.add(this.pointEventTrigger.fire, this.pointEventTrigger);
             }, ContainerController;
         }();
         exports.ContainerController = ContainerController;
@@ -191,9 +202,6 @@ require = function e(t, n, r) {
                     var surface = this.getPrimarySurface();
                     surface && !surface.destroyed() && surface.destroy(), this.containerController.resetView(requirement);
                 }
-                var parentView = this.containerView.parentElement;
-                this.defaultViewMargin = parentView.style.margin, this.defaultViewPadding = parentView.style.padding, 
-                this.defaultViewOverflow = parentView.style.overflow;
             }, Platform.prototype.getPrimarySurface = function() {
                 return this.containerController.surface;
             }, Platform.prototype.getOperationPluginViewInfo = function() {
@@ -211,20 +219,6 @@ require = function e(t, n, r) {
                 return this.audioPluginManager.tryInstallPlugin(plugins);
             }, Platform.prototype.setScale = function(xScale, yScale) {
                 this.containerController.changeScale(xScale, yScale);
-            }, Platform.prototype.fitToWindow = function(noCenter) {
-                if (this.containerController) {
-                    var parentView = this.containerView.parentElement;
-                    parentView.style.margin = "0px", parentView.style.padding = "0px", parentView.style.overflow = "hidden";
-                    var viewportSize = {
-                        width: window.innerWidth || document.documentElement.clientWidth,
-                        height: window.innerHeight || document.documentElement.clientHeight
-                    };
-                    this.containerController.fitToSize(viewportSize, noCenter);
-                }
-            }, Platform.prototype.revertViewSize = function() {
-                var parentView = this.containerView.parentElement;
-                parentView.style.margin = this.defaultViewMargin, parentView.style.padding = this.defaultViewPadding, 
-                parentView.style.overflow = this.defaultViewOverflow, this.containerController.revertSize();
             }, Platform.prototype.notifyViewMoved = function() {}, Platform.prototype.setMasterVolume = function(volume) {
                 this._audioManager && this._audioManager.setMasterVolume(volume);
             }, Platform.prototype.getMasterVolume = function() {
@@ -597,31 +591,25 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), Context2DRenderer_1 = require("./Context2DRenderer"), CanvasSurface = function(_super) {
-            function CanvasSurface(width, height, rendererCandidates) {
+            function CanvasSurface(width, height) {
                 var _this = this, canvas = document.createElement("canvas");
                 return _this = _super.call(this, width, height, canvas) || this, canvas.width = width, 
-                canvas.height = height, _this._originalWidth = width, _this._originalHeight = height, 
-                _this.canvas = canvas, _this._rendererCandidates = rendererCandidates, _this._renderer = void 0, 
-                _this._imageDataCache = void 0, _this;
+                canvas.height = height, _this.canvas = canvas, _this._context = canvas.getContext("2d"), 
+                _this._renderer = void 0, _this;
             }
-            return __extends(CanvasSurface, _super), CanvasSurface.prototype.context = function() {
-                return this.canvas.getContext("2d");
-            }, CanvasSurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this)), 
+            return __extends(CanvasSurface, _super), CanvasSurface.prototype.renderer = function() {
+                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this, this._context)), 
                 this._renderer;
-            }, CanvasSurface.prototype.destroy = function() {
-                this._drawable = void 0, this._imageDataCache = void 0, _super.prototype.destroy.call(this);
-            }, CanvasSurface.prototype.setParentElement = function(parent) {
-                parent.appendChild(this.canvas);
-            }, CanvasSurface.prototype.changeCanvasSize = function(width, height) {
-                var context = this.context();
-                this.canvas.width = width, this.canvas.height = height, context.scale(width / this._originalWidth, height / this._originalHeight), 
-                this.width = width, this.height = height;
-            }, CanvasSurface.prototype.changeCanvasScale = function(xScale, yScale, defaultSize) {
+            }, CanvasSurface.prototype.getHTMLElement = function() {
+                return this.canvas;
+            }, CanvasSurface.prototype.changePhysicalScale = function(xScale, yScale) {
+                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
+                this._context.scale(xScale, yScale);
+            }, CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
                 var canvasStyle = this.canvas.style;
                 "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
-                canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(defaultSize.width * xScale) + "px", 
-                canvasStyle.height = Math.floor(defaultSize.height * yScale) + "px");
+                canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(xScale * this.width) + "px", 
+                canvasStyle.height = Math.floor(yScale * this.width) + "px");
             }, CanvasSurface.prototype.isPlaying = function() {
                 throw g.ExceptionFactory.createAssertionError("CanvasSurface#isPlaying() is not implemented");
             }, CanvasSurface;
@@ -653,9 +641,9 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), Context2DRenderer = function(_super) {
-            function Context2DRenderer(surface) {
+            function Context2DRenderer(surface, context) {
                 var _this = _super.call(this) || this;
-                return _this.surface = surface, _this.context = _this.surface.context(), _this;
+                return _this.surface = surface, _this.context = context, _this;
             }
             return __extends(Context2DRenderer, _super), Context2DRenderer.prototype.clear = function() {
                 this.context.clearRect(0, 0, this.surface.width, this.surface.height);
@@ -684,6 +672,11 @@ require = function e(t, n, r) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
             }, Context2DRenderer.prototype.setTransform = function(matrix) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
+            }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
+                return this.context.getImageData(sx, sy, sw, sh);
+            }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+                void 0 === dirtyX && (dirtyX = 0), void 0 === dirtyY && (dirtyY = 0), void 0 === dirtyWidth && (dirtyWidth = imageData.width), 
+                void 0 === dirtyHeight && (dirtyHeight = imageData.height), this.context.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
             }, Context2DRenderer;
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;
@@ -809,16 +802,6 @@ require = function e(t, n, r) {
         });
         var RenderingHelper, g = require("@akashic/akashic-engine"), SurfaceFactory_1 = require("./SurfaceFactory");
         !function(RenderingHelper) {
-            function toPowerOfTwo(x) {
-                if (0 !== (x & x - 1)) {
-                    for (var y = 1; y < x; ) y *= 2;
-                    return y;
-                }
-                return x;
-            }
-            function clamp(x) {
-                return Math.min(Math.max(x, 0), 1);
-            }
             function toTextFromCompositeOperation(operation) {
                 var operationText;
                 switch (operation) {
@@ -920,9 +903,8 @@ require = function e(t, n, r) {
             function createBackSurface(width, height, platform, rendererCandidates) {
                 return SurfaceFactory_1.SurfaceFactory.createBackSurface(width, height, platform, rendererCandidates);
             }
-            RenderingHelper.toPowerOfTwo = toPowerOfTwo, RenderingHelper.clamp = clamp, RenderingHelper.toTextFromCompositeOperation = toTextFromCompositeOperation, 
-            RenderingHelper.drawSystemTextByContext2D = drawSystemTextByContext2D, RenderingHelper.createPrimarySurface = createPrimarySurface, 
-            RenderingHelper.createBackSurface = createBackSurface;
+            RenderingHelper.toTextFromCompositeOperation = toTextFromCompositeOperation, RenderingHelper.drawSystemTextByContext2D = drawSystemTextByContext2D, 
+            RenderingHelper.createPrimarySurface = createPrimarySurface, RenderingHelper.createBackSurface = createBackSurface;
         }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
     }, {
         "./SurfaceFactory": 17,
@@ -936,10 +918,10 @@ require = function e(t, n, r) {
         var SurfaceFactory, CanvasSurface_1 = require("./CanvasSurface");
         !function(SurfaceFactory) {
             function createPrimarySurface(width, height, rendererCandidates) {
-                return new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
+                return new CanvasSurface_1.CanvasSurface(width, height);
             }
             function createBackSurface(width, height, platform, rendererCandidates) {
-                return new CanvasSurface_1.CanvasSurface(width, height, this._rendererCandidates);
+                return new CanvasSurface_1.CanvasSurface(width, height);
             }
             SurfaceFactory.createPrimarySurface = createPrimarySurface, SurfaceFactory.createBackSurface = createBackSurface;
         }(SurfaceFactory = exports.SurfaceFactory || (exports.SurfaceFactory = {}));
@@ -1393,25 +1375,23 @@ require = function e(t, n, r) {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     27: [ function(require, module, exports) {
-        (function(global) {
-            "use strict";
-            var WebAudioHelper, AudioContext = global.AudioContext || global.webkitAudioContext, singleContext = null;
-            !function(WebAudioHelper) {
-                function getAudioContext() {
-                    return singleContext || (singleContext = new AudioContext()), singleContext;
-                }
-                function createGainNode(context) {
-                    return context.createGain ? context.createGain() : context.createGainNode();
-                }
-                function createBufferNode(context) {
-                    var sourceNode = context.createBufferSource();
-                    return sourceNode.start ? sourceNode : (sourceNode.start = sourceNode.noteOn, sourceNode.stop = sourceNode.noteOff, 
-                    sourceNode);
-                }
-                WebAudioHelper.getAudioContext = getAudioContext, WebAudioHelper.createGainNode = createGainNode, 
-                WebAudioHelper.createBufferNode = createBufferNode;
-            }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
-        }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
+        "use strict";
+        var WebAudioHelper, AudioContext = window.AudioContext || window.webkitAudioContext, singleContext = null;
+        !function(WebAudioHelper) {
+            function getAudioContext() {
+                return singleContext || (singleContext = new AudioContext()), singleContext;
+            }
+            function createGainNode(context) {
+                return context.createGain ? context.createGain() : context.createGainNode();
+            }
+            function createBufferNode(context) {
+                var sourceNode = context.createBufferSource();
+                return sourceNode.start ? sourceNode : (sourceNode.start = sourceNode.noteOn, sourceNode.stop = sourceNode.noteOff, 
+                sourceNode);
+            }
+            WebAudioHelper.getAudioContext = getAudioContext, WebAudioHelper.createGainNode = createGainNode, 
+            WebAudioHelper.createBufferNode = createBufferNode;
+        }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
     }, {} ],
     28: [ function(require, module, exports) {
         "use strict";
@@ -1555,33 +1535,5 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-    }, {} ],
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 21,
-        "./plugin/AudioPluginRegistry": 22,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 25,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 29,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ]
+    }, {} ]
 }, {}, []);
