@@ -27,7 +27,6 @@ window.addEventListener("load", function() {
 	function fitToWindow(center) {
 		var pf = window.sandboxDeveloperProps.driver._platform;
 		if (!pf.containerController) return;
-		// var parentView = pf.containerView.parentElement;
 		var parentView = document.getElementById("container").parentElement;
 		parentView.style.margin = "0px";
 		parentView.style.padding = "0px";
@@ -94,6 +93,15 @@ window.addEventListener("load", function() {
 			utils: {
 				fitToWindow: fitToWindow,
 				revertViewSize: revertViewSize,
+				defaultSize: {
+					width: null,
+					height: null
+				},
+				defaultStyle: {
+					margin: null,
+					padding: null,
+					overflow: null
+				}
 			}
 		};
 
@@ -179,20 +187,13 @@ window.addEventListener("load", function() {
 			window.sandboxDeveloperProps.game = game;
 			window.sandboxDeveloperProps.driver = driver;
 			window.sandboxDeveloperProps.amflow = amflowClient;
-			window.sandboxDeveloperProps.utils.defaultSize = {
-				width: pf.containerController.surface.width,
-				height: pf.containerController.surface.height,
-				defaultSize: {
-					width: null,
-					height: null
-				}
-			};
+			window.sandboxDeveloperProps.utils.defaultSize.width = pf.containerController.surface.width;
+			window.sandboxDeveloperProps.utils.defaultSize.height = pf.containerController.surface.height;
+
 			parentElement = document.getElementById("container").parentElement;
-			window.sandboxDeveloperProps.utils.defaultStyle = {
-				margin: parentElement.style.margin,
-				padding: parentElement.style.padding,
-				overflow: parentElement.style.overflow
-			};
+			window.sandboxDeveloperProps.utils.defaultStyle.margin = parentElement.style.margin;
+			window.sandboxDeveloperProps.utils.defaultStyle.padding = parentElement.style.padding;
+			window.sandboxDeveloperProps.utils.defaultStyle.overflow = parentElement.style.overflow;
 
 			if (getParameterByName("bg")) {
 				document.body.style.backgroundColor = "black";
