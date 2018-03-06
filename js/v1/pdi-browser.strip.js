@@ -21,34 +21,6 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 35,
-        "./plugin/AudioPluginRegistry": 36,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -279,8 +251,8 @@ require = function e(t, n, r) {
             }
             return RafLooper.prototype.start = function() {
                 var _this = this, onAnimationFrame = function(deltaTime) {
-                    _this._timerId = requestAnimationFrame(onAnimationFrame), _this._fun(deltaTime - _this._prev), 
-                    _this._prev = deltaTime;
+                    null != _this._timerId && (_this._timerId = requestAnimationFrame(onAnimationFrame), 
+                    _this._fun(deltaTime - _this._prev), _this._prev = deltaTime);
                 }, onFirstFrame = function(deltaTime) {
                     _this._timerId = requestAnimationFrame(onAnimationFrame), _this._fun(0), _this._prev = deltaTime;
                 };
@@ -2005,13 +1977,13 @@ require = function e(t, n, r) {
                     offset: this.getOffsetFromEvent(pagePosition)
                 }), this.pointerEventLock[identifier] = !0;
             }, InputAbstractHandler.prototype.pointMove = function(identifier, pagePosition) {
-                identifier in this.pointerEventLock && this.pointTrigger.fire({
+                this.pointerEventLock.hasOwnProperty(identifier + "") && this.pointTrigger.fire({
                     type: 1,
                     identifier: identifier,
                     offset: this.getOffsetFromEvent(pagePosition)
                 });
             }, InputAbstractHandler.prototype.pointUp = function(identifier, pagePosition) {
-                identifier in this.pointerEventLock && (this.pointTrigger.fire({
+                this.pointerEventLock.hasOwnProperty(identifier + "") && (this.pointTrigger.fire({
                     type: 2,
                     identifier: identifier,
                     offset: this.getOffsetFromEvent(pagePosition)
@@ -2058,25 +2030,25 @@ require = function e(t, n, r) {
         var InputAbstractHandler_1 = require("./InputAbstractHandler"), MouseHandler = function(_super) {
             function MouseHandler(inputView, disablePreventDefault) {
                 var _this = _super.call(this, inputView, disablePreventDefault) || this, identifier = 1;
-                return _this.onPointDown = function(e) {
-                    0 === e.button && (_this.pointDown(identifier, e), window.addEventListener("mousemove", _this.onPointMove, !1), 
-                    window.addEventListener("mouseup", _this.onPointUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
+                return _this.onMouseDown = function(e) {
+                    0 === e.button && (_this.pointDown(identifier, e), window.addEventListener("mousemove", _this.onMouseMove, !1), 
+                    window.addEventListener("mouseup", _this.onMouseUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
                     e.preventDefault()));
-                }, _this.onPointMove = function(e) {
+                }, _this.onMouseMove = function(e) {
                     _this.pointMove(identifier, e), _this._disablePreventDefault || (e.stopPropagation(), 
                     e.preventDefault());
-                }, _this.onPointUp = function(e) {
-                    _this.pointUp(identifier, e), window.removeEventListener("mousemove", _this.onPointMove, !1), 
-                    window.removeEventListener("mouseup", _this.onPointUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
+                }, _this.onMouseUp = function(e) {
+                    _this.pointUp(identifier, e), window.removeEventListener("mousemove", _this.onMouseMove, !1), 
+                    window.removeEventListener("mouseup", _this.onMouseUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
                     e.preventDefault());
                 }, _this;
             }
             return __extends(MouseHandler, _super), MouseHandler.isSupported = function() {
                 return !0;
             }, MouseHandler.prototype.start = function() {
-                this.inputView.addEventListener("mousedown", this.onPointDown, !1);
+                this.inputView.addEventListener("mousedown", this.onMouseDown, !1);
             }, MouseHandler.prototype.stop = function() {
-                this.inputView.removeEventListener("mousedown", this.onPointDown, !1);
+                this.inputView.removeEventListener("mousedown", this.onMouseDown, !1);
             }, MouseHandler;
         }(InputAbstractHandler_1.InputAbstractHandler);
         exports.MouseHandler = MouseHandler;
@@ -2104,22 +2076,22 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var InputAbstractHandler_1 = require("./InputAbstractHandler"), RuntimeInfo_1 = require("../RuntimeInfo"), TouchHandler = function(_super) {
+        var MouseHandler_1 = require("./MouseHandler"), RuntimeInfo_1 = require("../RuntimeInfo"), TouchHandler = function(_super) {
             function TouchHandler(inputView, disablePreventDefault) {
                 var _this = _super.call(this, inputView, disablePreventDefault) || this;
-                return _this.onPointDown = function(e) {
+                return _this.onTouchDown = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
                         _this.pointDown(touch.identifier, touch);
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
-                }, _this.onPointMove = function(e) {
+                }, _this.onTouchMove = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
                         _this.pointMove(touch.identifier, touch);
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
-                }, _this.onPointUp = function(e) {
+                }, _this.onTouchUp = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
                         _this.pointUp(touch.identifier, touch);
@@ -2130,17 +2102,17 @@ require = function e(t, n, r) {
             return __extends(TouchHandler, _super), TouchHandler.isSupported = function() {
                 return RuntimeInfo_1.RuntimeInfo.touchEnabled();
             }, TouchHandler.prototype.start = function() {
-                this.inputView.addEventListener("touchstart", this.onPointDown), this.inputView.addEventListener("touchmove", this.onPointMove), 
-                this.inputView.addEventListener("touchend", this.onPointUp);
+                _super.prototype.start.call(this), this.inputView.addEventListener("touchstart", this.onTouchDown), 
+                this.inputView.addEventListener("touchmove", this.onTouchMove), this.inputView.addEventListener("touchend", this.onTouchUp);
             }, TouchHandler.prototype.stop = function() {
-                this.inputView.removeEventListener("touchstart", this.onPointDown), this.inputView.removeEventListener("touchmove", this.onPointMove), 
-                this.inputView.removeEventListener("touchend", this.onPointUp);
+                _super.prototype.stop.call(this), this.inputView.removeEventListener("touchstart", this.onTouchDown), 
+                this.inputView.removeEventListener("touchmove", this.onTouchMove), this.inputView.removeEventListener("touchend", this.onTouchUp);
             }, TouchHandler;
-        }(InputAbstractHandler_1.InputAbstractHandler);
+        }(MouseHandler_1.MouseHandler);
         exports.TouchHandler = TouchHandler;
     }, {
         "../RuntimeInfo": 7,
-        "./InputAbstractHandler": 32
+        "./MouseHandler": 33
     } ],
     35: [ function(require, module, exports) {
         "use strict";
@@ -2209,7 +2181,11 @@ require = function e(t, n, r) {
                 return null !== _super && _super.apply(this, arguments) || this;
             }
             return __extends(HTMLAudioAsset, _super), HTMLAudioAsset.prototype._load = function(loader) {
-                var _this = this, audio = new Audio(), startLoadingAudio = function(path, handlers) {
+                var _this = this;
+                if (null == this.path) return this.data = null, void setTimeout(function() {
+                    return loader._onAssetLoad(_this);
+                }, 0);
+                var audio = new Audio(), startLoadingAudio = function(path, handlers) {
                     audio.autoplay = !1, audio.preload = "none", audio.src = path, _this._attachAll(audio, handlers), 
                     audio.preload = "auto", setAudioLoadInterval(audio, handlers), audio.load();
                 }, handlers = {
@@ -2238,11 +2214,10 @@ require = function e(t, n, r) {
                     return void startLoadingAudio(this.path, altHandlers);
                 }
                 startLoadingAudio(this.path, handlers);
-            }, HTMLAudioAsset.prototype.createInstance = function() {
-                var audio = new Audio(this.data.src), ret = new HTMLAudioAsset(this.id, this.path, this.duration, this._system, this.loop, this.hint);
-                return ret.data = audio, ret;
+            }, HTMLAudioAsset.prototype.cloneElement = function() {
+                return this.data ? new Audio(this.data.src) : null;
             }, HTMLAudioAsset.prototype._assetPathFilter = function(path) {
-                return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : void 0;
+                return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : null;
             }, HTMLAudioAsset.prototype._attachAll = function(audio, handlers) {
                 handlers.success && audio.addEventListener("canplaythrough", handlers.success, !1), 
                 handlers.error && (audio.addEventListener("stalled", handlers.error, !1), audio.addEventListener("error", handlers.error, !1), 
@@ -2285,27 +2260,30 @@ require = function e(t, n, r) {
                     _this._onAudioEnded();
                 }, _this._onPlayEventHandler = function() {
                     _this._onPlayEvent();
-                }, _this;
+                }, _this._dummyDurationWaitTimer = null, _this;
             }
             return __extends(HTMLAudioPlayer, _super), HTMLAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
-                var instance = asset.createInstance(), audio = instance.data;
-                audio.volume = this.volume * this._system.volume * this._manager.getMasterVolume(), 
+                var audio = asset.cloneElement();
+                audio ? (audio.volume = this.volume * this._system.volume * this._manager.getMasterVolume(), 
                 audio.play(), audio.loop = asset.loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
                 audio.addEventListener("play", this._onPlayEventHandler, !1), this._isWaitingPlayEvent = !0, 
-                this._audioInstance = audio, _super.prototype.play.call(this, asset);
+                this._audioInstance = audio) : this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration), 
+                _super.prototype.play.call(this, asset);
             }, HTMLAudioPlayer.prototype.stop = function() {
-                this.currentAudio && (this._clearEndedEventHandler(), this._isWaitingPlayEvent ? this._isStopRequested = !0 : (this._audioInstance.pause(), 
-                this._audioInstance = null), _super.prototype.stop.call(this));
+                this.currentAudio && (this._clearEndedEventHandler(), this._audioInstance && (this._isWaitingPlayEvent ? this._isStopRequested = !0 : (this._audioInstance.pause(), 
+                this._audioInstance = null)), _super.prototype.stop.call(this));
             }, HTMLAudioPlayer.prototype.changeVolume = function(volume) {
-                this._audioInstance.volume = volume * this._system.volume * this._manager.getMasterVolume(), 
+                this._audioInstance && (this._audioInstance.volume = volume * this._system.volume * this._manager.getMasterVolume()), 
                 _super.prototype.changeVolume.call(this, volume);
             }, HTMLAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
                 this._audioInstance && (this._audioInstance.volume = this.volume * this._system.volume * this._manager.getMasterVolume());
             }, HTMLAudioPlayer.prototype._onAudioEnded = function() {
                 this._clearEndedEventHandler(), _super.prototype.stop.call(this);
             }, HTMLAudioPlayer.prototype._clearEndedEventHandler = function() {
-                this._audioInstance.removeEventListener("ended", this._endedEventHandler, !1);
+                this._audioInstance && this._audioInstance.removeEventListener("ended", this._endedEventHandler, !1), 
+                null != this._dummyDurationWaitTimer && (clearTimeout(this._dummyDurationWaitTimer), 
+                this._dummyDurationWaitTimer = null);
             }, HTMLAudioPlayer.prototype._onPlayEvent = function() {
                 this._isWaitingPlayEvent && (this._isWaitingPlayEvent = !1, this._isStopRequested && (this._isStopRequested = !1, 
                 this._audioInstance.pause(), this._audioInstance = null));
@@ -2386,7 +2364,11 @@ require = function e(t, n, r) {
                 return null !== _super && _super.apply(this, arguments) || this;
             }
             return __extends(WebAudioAsset, _super), WebAudioAsset.prototype._load = function(loader) {
-                var _this = this, successHandler = function(decodedAudio) {
+                var _this = this;
+                if (null == this.path) return this.data = null, void setTimeout(function() {
+                    return loader._onAssetLoad(_this);
+                }, 0);
+                var successHandler = function(decodedAudio) {
                     _this.data = decodedAudio, loader._onAssetLoad(_this);
                 }, errorHandler = function() {
                     loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("WebAudioAsset unknown loading error"));
@@ -2405,9 +2387,7 @@ require = function e(t, n, r) {
                     }, errorHandler);
                 }) : void loadArrayBuffer(this.path, onLoadArrayBufferHandler, errorHandler);
             }, WebAudioAsset.prototype._assetPathFilter = function(path) {
-                if (WebAudioAsset.supportedFormats.indexOf("ogg") !== -1) return g.PathUtil.addExtname(path, "ogg");
-                if (WebAudioAsset.supportedFormats.indexOf("aac") !== -1) return g.PathUtil.addExtname(path, "aac");
-                throw new Error("not available ogg or aac, The UA supported formats are " + WebAudioAsset.supportedFormats);
+                return WebAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : WebAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : null;
             }, WebAudioAsset.supportedFormats = [], WebAudioAsset;
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
@@ -2463,7 +2443,7 @@ require = function e(t, n, r) {
                 var _this = _super.call(this, system) || this;
                 return _this._audioContext = helper.getAudioContext(), _this._manager = manager, 
                 _this._gainNode = helper.createGainNode(_this._audioContext), _this._gainNode.connect(_this._audioContext.destination), 
-                _this._sourceNode = void 0, _this._endedEventHandler = function() {
+                _this._sourceNode = void 0, _this._dummyDurationWaitTimer = null, _this._endedEventHandler = function() {
                     _this._onAudioEnded();
                 }, _this;
             }
@@ -2471,20 +2451,23 @@ require = function e(t, n, r) {
                 this._gainNode.gain.value = volume * this._system.volume * this._manager.getMasterVolume(), 
                 _super.prototype.changeVolume.call(this, volume);
             }, WebAudioPlayer.prototype.play = function(asset) {
-                this.currentAudio && this.stop();
-                var bufferNode = helper.createBufferNode(this._audioContext);
-                bufferNode.loop = asset.loop, bufferNode.buffer = asset.data, this._gainNode.gain.value = this.volume * this._system.volume * this._manager.getMasterVolume(), 
-                bufferNode.connect(this._gainNode), this._sourceNode = bufferNode, this._sourceNode.onended = this._endedEventHandler, 
-                this._sourceNode.start(0), _super.prototype.play.call(this, asset);
+                if (this.currentAudio && this.stop(), asset.data) {
+                    var bufferNode = helper.createBufferNode(this._audioContext);
+                    bufferNode.loop = asset.loop, bufferNode.buffer = asset.data, this._gainNode.gain.value = this.volume * this._system.volume * this._manager.getMasterVolume(), 
+                    bufferNode.connect(this._gainNode), this._sourceNode = bufferNode, this._sourceNode.onended = this._endedEventHandler, 
+                    this._sourceNode.start(0);
+                } else this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration);
+                _super.prototype.play.call(this, asset);
             }, WebAudioPlayer.prototype.stop = function() {
-                this.currentAudio && (this._clearEndedEventHandler(), this._sourceNode.stop(0), 
+                this.currentAudio && (this._clearEndedEventHandler(), this._sourceNode && this._sourceNode.stop(0), 
                 _super.prototype.stop.call(this));
             }, WebAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
                 this._gainNode.gain.value = this.volume * this._system.volume * this._manager.getMasterVolume();
             }, WebAudioPlayer.prototype._onAudioEnded = function() {
                 this._clearEndedEventHandler(), _super.prototype.stop.call(this);
             }, WebAudioPlayer.prototype._clearEndedEventHandler = function() {
-                this._sourceNode.onended = null;
+                this._sourceNode && (this._sourceNode.onended = null), null != this._dummyDurationWaitTimer && (clearTimeout(this._dummyDurationWaitTimer), 
+                this._dummyDurationWaitTimer = null);
             }, WebAudioPlayer;
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
@@ -2576,5 +2559,33 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-    }, {} ]
+    }, {} ],
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 35,
+        "./plugin/AudioPluginRegistry": 36,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ]
 }, {}, []);
