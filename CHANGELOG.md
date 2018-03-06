@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## 0.13.14
+* fit to window ボタンの実装を pdi-browser@1.1.0 に追従
 
 * v2のエンジンモジュールを以下に更新
   * akashic-engine@2.1.1

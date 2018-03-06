@@ -943,12 +943,12 @@ function setupDeveloperMenu(param) {
 			},
 			toggleProfiler: toggleProfiler,
 			fitToWindow: function() {
-				// noCenterをtrueにしておかないとメニューにゲーム画面が被って、メニューサイズを変更しようとするとバグるのでとりあえず
-				props.driver._platform.fitToWindow(true);
+				// setOffsetしないとメニューにゲーム画面が被って、メニューサイズを変更しようとするとバグるのでとりあえず true
+				window.sandboxDeveloperProps.utils.fitToWindow(true);
 				resizeGrid();
 			},
 			revertSize: function(){
-				props.driver._platform.revertViewSize();
+				window.sandboxDeveloperProps.utils.revertViewSize();
 				resizeGrid();
 			},
 			captureScreen: 	function(e) {

@@ -24,6 +24,51 @@ window.addEventListener("load", function() {
 
 	getGamePath(start);
 
+	function fitToWindow(center) {
+		var pf = window.sandboxDeveloperProps.driver._platform;
+		if (!pf.containerController) return;
+		// var parentView = pf.containerView.parentElement;
+		var parentView = document.getElementById("container").parentElement;
+		parentView.style.margin = "0px";
+		parentView.style.padding = "0px";
+		parentView.style.overflow = "hidden";
+		var viewportSize = {
+			width: window.innerWidth || document.documentElement.clientWidth,
+			height: window.innerHeight || document.documentElement.clientHeight
+		};
+		fitToSize(viewportSize, center);
+	}
+
+	function revertViewSize() {
+		var pf = window.sandboxDeveloperProps.driver._platform;
+		var parentView = document.getElementById("container").parentElement;
+		parentView.style.margin = window.sandboxDeveloperProps.utils.defaultStyle.margin;
+		parentView.style.padding = window.sandboxDeveloperProps.utils.defaultStyle.padding;
+		parentView.style.overflow = window.sandboxDeveloperProps.utils.defaultStyle.overflow;
+		fitToSize(window.sandboxDeveloperProps.utils.defaultSize);
+	}
+
+	function fitToSize(viewportSize, center) {
+		var pf = window.sandboxDeveloperProps.driver._platform;
+		var game = window.sandboxDeveloperProps.game;
+		var gameScale = Math.min(
+			viewportSize.width / game.width,
+			viewportSize.height / game.height
+		);
+		var gameSize = {
+			width: Math.floor(game.width * gameScale),
+			height: Math.floor(game.height * gameScale)
+		};
+		pf.containerController.changeScale(gameScale, gameScale);
+		if (!!center) {
+			var gameOffset = {
+				x: Math.floor((viewportSize.width - gameSize.width) / 2),
+				y: Math.floor((viewportSize.height - gameSize.height) / 2)
+			};
+			pf.containerController.inputHandlerLayer.setOffset(gameOffset);
+		}
+	}
+
 	function start(gamePath) {
 		// TODO WebGL有効化
 		// // webgl=1でRendererを問答無用でWebGLのみにする
@@ -45,7 +90,20 @@ window.addEventListener("load", function() {
 			gameId: sandboxGameId,
 			path: gamePath,
 			sandboxPlayer: sandboxPlayer,
-			sandboxConfig: window.sandboxDeveloperProps.sandboxConfig
+			sandboxConfig: window.sandboxDeveloperProps.sandboxConfig,
+			utils: {
+				fitToWindow: fitToWindow,
+				revertViewSize: revertViewSize,
+				defaultSize: {
+					width: null,
+					height: null
+				},
+				defaultStyle: {
+					margin: null,
+					padding: null,
+					overflow: null
+				}
+			}
 		};
 
 		// preventDefaultを抑制するかを確認するためだけにLocalStorageの設定を読み込む
@@ -130,12 +188,20 @@ window.addEventListener("load", function() {
 			window.sandboxDeveloperProps.game = game;
 			window.sandboxDeveloperProps.driver = driver;
 			window.sandboxDeveloperProps.amflow = amflowClient;
+			window.sandboxDeveloperProps.utils.defaultSize.width = pf.containerController.surface.width;
+			window.sandboxDeveloperProps.utils.defaultSize.height = pf.containerController.surface.height;
+
+			parentElement = document.getElementById("container").parentElement;
+			window.sandboxDeveloperProps.utils.defaultStyle.margin = parentElement.style.margin;
+			window.sandboxDeveloperProps.utils.defaultStyle.padding = parentElement.style.padding;
+			window.sandboxDeveloperProps.utils.defaultStyle.overflow = parentElement.style.overflow;
+
 			if (getParameterByName("bg")) {
 				document.body.style.backgroundColor = "black";
 				pf.getPrimarySurface()._drawable.style.backgroundColor = "white";
 			}
 			if (getParameterByName("fit")) {
-				pf.fitToWindow();
+				window.sandboxDeveloperProps.utils.fitToWindow();
 			}
 			if (devMode) {
 				setupDeveloperMenu({
