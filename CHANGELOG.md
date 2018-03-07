@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.13.15
+* 0.13.14 のモジュール更新が不十分だった問題を修正
+
 ## 0.13.14
 * fit to window ボタンの実装を pdi-browser@1.1.0 に追従
 
@@ -11,7 +14,7 @@
     * 更新なし
 
 * v1のエンジンモジュールを以下に更新
-  * akashic-engine@1.1.8
+  * akashic-engine@1.12.8
   * game-driver@0.11.10
   * pdi-browser@0.10.6
 
