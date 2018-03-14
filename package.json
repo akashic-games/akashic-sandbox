@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prepublish": "npm run build",
+    "postinstall": "cd ./engine-src/v1 && npm install && cd ../../engine-src/v2 && npm install && cd ../..",
     "start": "npm run build && node bin/run",
     "build": "cd ./engine-src/v1 && npm run build:v1 && cd ../../engine-src/v2 && npm run build && cd ../.. && npm run build:client && npm run build:server",
     "lint": "tslint -p src/client/ -c tslint.json src/client/**/*.ts && tslint -p src/server/ -c tslint.json src/client/**/*.js",
@@ -51,7 +52,6 @@
     "@types/serve-static": "~1.13.1",
     "@types/superagent": "~3.5.6",
     "@types/supertest": "~2.0.4",
-    "browserify": "^13.0.0",
     "jasmine": "^2.1.1",
     "supertest": "^1.2.0",
     "tslint": "^5.4.3",

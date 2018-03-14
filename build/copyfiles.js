@@ -1,4 +1,3 @@
-// コマンドラインからバージョンの指定ができるようにした
 var version = "v2";
 if (typeof process.argv[2] !== "undefined") {
 	switch (process.argv[2]) {

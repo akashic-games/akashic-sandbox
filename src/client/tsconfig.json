@@ -6,10 +6,6 @@
     "module": "commonjs",
     "outDir": "../../js"
   },
-  "filesGlob": [
-    "../../engine-src/v2/node_modules/@akashic/akashic-engine/lib/main.d.ts",
-    "./**/*.ts"
-  ],
   "files": [
     "../../engine-src/v2/node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",

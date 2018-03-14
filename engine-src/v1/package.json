@@ -1,21 +1,22 @@
 {
   "name": "@akashic/akashic-sandbox-v1",
-  "description": "akashic-engineのv1系のコンテンツを動かすためのsandboxをビルドするもの",
+  "description": "To build akashic-sandbox to run the contents of akashic-engine v1",
   "scripts": {
     "build": "npm run build:v1 && npm run copy:common",
-    "build:v1": "npm install && npm run build:browserify && npm run copy:v1",
+    "build:v1": "npm run build:browserify && npm run copy:v1",
     "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ../../js/v1/akashic-engine.js",
-    "copy:v1": "cp js/* ../../js/v1/ && cp external/* ../../js/v1/",
-    "copy:common": "cp ../common/js/* ../../js/ && cp ../common/external/* ../../js/",
+    "copy:v1": "cpx js/**/*.js ../../js/v1 && cpx external/**/*.js ../../js/v1",
+    "copy:common": "cpx ../common/js/**/*.js ../../js && cpx ../common/external/**/*.js ../../js",
     "update-external": "node ../../build/copyfiles.js v1"
   },
   "devDependencies": {
-    "@akashic/akashic-engine": "^1.12.8",
-    "browserify": "^13.0.0"
+    "@akashic/akashic-engine": "~1.12.8",
+    "browserify": "^13.0.0",
+    "cpx": "^1.5.0"
   },
   "optionalDependencies": {
-    "@akashic/game-driver": "^0.11.10",
+    "@akashic/game-driver": "~0.11.10",
     "@akashic/game-storage": "0.0.6",
-    "@akashic/pdi-browser": "^0.10.7"
+    "@akashic/pdi-browser": "~0.10.7"
   }
 }
