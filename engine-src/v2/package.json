@@ -3,7 +3,7 @@
   "description": "akashic-engineのv2系のコンテンツを動かすためのsandboxをビルドするもの",
   "scripts": {
     "build": "npm run build:v2 && npm run copy:common",
-    "build:v2": "npm run build:browserify && npm run copy:v2",
+    "build:v2": "npm install && npm run build:browserify && npm run copy:v2",
     "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ../../js/v2/akashic-engine.js",
     "copy:v2": "cp js/* ../../js/v2/ && cp external/* ../../js/v2/",
     "copy:common": "cp ../common/js/* ../../js/ && cp ../common/external/* ../../js/",
