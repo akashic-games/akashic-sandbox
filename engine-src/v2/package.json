@@ -1,0 +1,21 @@
+{
+  "name": "@akashic/akashic-sandbox-v2",
+  "description": "akashic-engineのv2系のコンテンツを動かすためのsandboxをビルドするもの",
+  "scripts": {
+    "build": "npm run build:v2 && npm run copy:common",
+    "build:v2": "npm run build:browserify && npm run copy:v2",
+    "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ../../js/v2/akashic-engine.js",
+    "copy:v2": "cp js/* ../../js/v2/ && cp external/* ../../js/v2/",
+    "copy:common": "cp ../common/js/* ../../js/ && cp ../common/external/* ../../js/",
+    "update-external": "node ../../build/copyfiles.js"
+  },
+  "devDependencies": {
+    "@akashic/akashic-engine": "^2.1.1",
+    "browserify": "^13.0.0"
+  },
+  "optionalDependencies": {
+    "@akashic/game-driver": "^1.0.1",
+    "@akashic/game-storage": "0.0.6",
+    "@akashic/pdi-browser": "^1.1.0"
+  }
+}

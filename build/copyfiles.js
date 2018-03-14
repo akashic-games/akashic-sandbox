@@ -1,3 +1,18 @@
+// コマンドラインからバージョンの指定ができるようにした
+var version = "v2";
+if (typeof process.argv[2] !== "undefined") {
+	switch (process.argv[2]) {
+		case "v1":
+		case "v2":
+			version = process.argv[2];
+			break;
+		default:
+			console.log("please designate version(v1 or v2)");
+			console.log("ex: node copyfiles.js v2");
+			return;
+	}
+}
+
 var saveLicense = require('uglify-save-license');
 var UglifyJS = require('uglify-js');
 var path = require("path");
@@ -19,7 +34,7 @@ var files = [
 ];
 
 files.forEach(filepath => {
-	const outputPath = path.resolve("./js/v2", path.basename(filepath, ".js") + ".strip.js");
+	const outputPath = path.resolve(__dirname + "/../js/" + version, path.basename(filepath, ".js") + ".strip.js");
 	fs.writeFileSync(outputPath, minify(filepath).code);
 });
 
@@ -28,6 +43,6 @@ var files_common = [
 ];
 
 files_common.forEach(filepath => {
-	const outputPath = path.resolve("./js", path.basename(filepath, ".js") + ".strip.js");
+	const outputPath = path.resolve(__dirname + "/../js/", path.basename(filepath, ".js") + ".strip.js");
 	fs.writeFileSync(outputPath, minify(filepath).code);
 });
