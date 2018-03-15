@@ -53,15 +53,6 @@ akashic-sandbox [-p <port>] [--cascade<cascade-path>] [<path>]
 * ゲーム画面右上の歯車マークをクリックするとデベロッパーメニューが開きます。
 * http://localhost:3000/game/?devmode=disable にアクセスするとデベロッパーメニューを無効化できます。
 
-## Akashic Engine 2.0 より前の内部モジュールの更新
-
-Akashic Engine 2.0 より前の内部モジュールを更新する場合、更新対象のモジュールを `js/v1` に手動でコピーする必要があります。
-対象のモジュールは以下になります。
-
-* @akashic/akashic-engine@<2.0.0
-* @akashic/game-driver@<1.0.0
-* @akashic/pdi-browser@<1.0.0
-
 ## 設定ファイルの利用
 
 コンテンツの `game.json` と同じディレクトリに `sandbox.config.js` を置いた場合、実行時の挙動をカスタマイズできます。
@@ -90,6 +81,21 @@ module.exports = config;
 ```sh
 npm install
 npm run build # src/以下をビルド
+```
+
+### 内部モジュールの更新方法
+
+更新対象の内部モジュールは以下の通りです。
+* @akashic/game-driver
+* @akashic/pdi-browser
+* @akashic/game-storage
+
+Akashic Engine v2(もしくはv1)向けの上記内部モジュールを更新する方法は以下の通りです。
+
+```sh
+cd engine-src/v2 # v1向けの内部モジュールを更新する場合は cd engine-src/v1
+npm run update-external # 内部モジュールの更新
+npm run build # js/以下への反映
 ```
 
 ## テスト方法

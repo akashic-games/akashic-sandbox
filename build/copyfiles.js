@@ -33,15 +33,15 @@ var files = [
 ];
 
 files.forEach(filepath => {
-	const outputPath = path.resolve(__dirname + "/../js/" + version, path.basename(filepath, ".js") + ".strip.js");
+	const outputPath = path.resolve(__dirname + "/../engine-src/" + version + "/external/", path.basename(filepath, ".js") + ".strip.js");
 	fs.writeFileSync(outputPath, minify(filepath).code);
 });
 
 var files_common = [
-	"node_modules/@akashic/game-storage/build/game-storage.js",
+	"node_modules/@akashic/game-storage/build/game-storage.js"
 ];
 
 files_common.forEach(filepath => {
-	const outputPath = path.resolve(__dirname + "/../js/", path.basename(filepath, ".js") + ".strip.js");
+	const outputPath = path.resolve(__dirname + "/../engine-src/common/external/", path.basename(filepath, ".js") + ".strip.js");
 	fs.writeFileSync(outputPath, minify(filepath).code);
 });
