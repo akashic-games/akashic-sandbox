@@ -6,12 +6,8 @@
     "module": "commonjs",
     "outDir": "../../js"
   },
-  "filesGlob": [
-    "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
-    "./**/*.ts"
-  ],
   "files": [
-    "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
+    "../../engine-src/v2/node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",
     "./SandboxScriptAsset.ts"
   ]

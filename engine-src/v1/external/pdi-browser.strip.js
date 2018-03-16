@@ -21,6 +21,34 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 35,
+        "./plugin/AudioPluginRegistry": 36,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -1989,10 +2017,9 @@ require = function e(t, n, r) {
                     offset: this.getOffsetFromEvent(pagePosition)
                 }), delete this.pointerEventLock[identifier]);
             }, InputAbstractHandler.prototype.getOffsetFromEvent = function(e) {
-                var bounding = this.inputView.getBoundingClientRect();
                 return {
-                    x: (e.pageX - Math.round(window.pageXOffset + bounding.left)) / this._xScale,
-                    y: (e.pageY - Math.round(window.pageYOffset + bounding.top)) / this._yScale
+                    x: e.offsetX,
+                    y: e.offsetY
                 };
             }, InputAbstractHandler.prototype.getScale = function() {
                 return {
@@ -2082,19 +2109,19 @@ require = function e(t, n, r) {
                 return _this.onTouchDown = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
-                        _this.pointDown(touch.identifier, touch);
+                        _this.pointDown(touch.identifier, _this.convertToPagePosition(touch));
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
                 }, _this.onTouchMove = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
-                        _this.pointMove(touch.identifier, touch);
+                        _this.pointMove(touch.identifier, _this.convertToPagePosition(touch));
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
                 }, _this.onTouchUp = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
-                        _this.pointUp(touch.identifier, touch);
+                        _this.pointUp(touch.identifier, _this.convertToPagePosition(touch));
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
                 }, _this;
@@ -2107,6 +2134,12 @@ require = function e(t, n, r) {
             }, TouchHandler.prototype.stop = function() {
                 _super.prototype.stop.call(this), this.inputView.removeEventListener("touchstart", this.onTouchDown), 
                 this.inputView.removeEventListener("touchmove", this.onTouchMove), this.inputView.removeEventListener("touchend", this.onTouchUp);
+            }, TouchHandler.prototype.convertToPagePosition = function(e) {
+                var bounding = this.inputView.getBoundingClientRect(), scale = this.getScale();
+                return {
+                    offsetX: (e.pageX - Math.round(window.pageXOffset + bounding.left)) / scale.x,
+                    offsetY: (e.pageY - Math.round(window.pageYOffset + bounding.top)) / scale.y
+                };
             }, TouchHandler;
         }(MouseHandler_1.MouseHandler);
         exports.TouchHandler = TouchHandler;
@@ -2559,33 +2592,5 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-    }, {} ],
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 35,
-        "./plugin/AudioPluginRegistry": 36,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ]
+    }, {} ]
 }, {}, []);

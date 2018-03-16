@@ -2,7 +2,6 @@
 node_modules
 npm-debug.log
 lib/*
-js/Game.js
-js/v2/akashic-engine.js
-js/SandboxScriptAsset.js
-js/TimeKeeper.js
+js/**/*.js
+engine-src/v1/node_modules
+engine-src/v2/node_modules
