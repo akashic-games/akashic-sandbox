@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## 0.13.16
-* ```npm run build```実行時にv2とv1それぞれのakashic-engineを最新版に更新できるようにした
+* 内部モジュールの更新方法の変更
 
 * v2のエンジンモジュールを以下に更新
   * game-driver@1.1.1
