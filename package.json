@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.13.16",
+  "version": "0.13.17-beta.0",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,8 @@
     "js",
     "css",
     "views",
-    "thirdparty"
+    "thirdparty",
+    "engine-src"
   ],
   "repository": {
     "type": "git",
