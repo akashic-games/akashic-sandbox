@@ -43,10 +43,10 @@ require = function e(t, n, r) {
     }, {
         "./Platform": 4,
         "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 21,
-        "./plugin/AudioPluginRegistry": 22,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 25,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 29,
+        "./plugin/AudioPluginManager": 34,
+        "./plugin/AudioPluginRegistry": 35,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 38,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 42,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     1: [ function(require, module, exports) {
@@ -119,7 +119,7 @@ require = function e(t, n, r) {
         exports.ContainerController = ContainerController;
     }, {
         "./InputHandlerLayer": 3,
-        "./canvas/RenderingHelper": 16,
+        "./canvas/RenderingHelper": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     3: [ function(require, module, exports) {
@@ -154,8 +154,8 @@ require = function e(t, n, r) {
         }();
         exports.InputHandlerLayer = InputHandlerLayer;
     }, {
-        "./handler/MouseHandler": 19,
-        "./handler/TouchHandler": 20,
+        "./handler/MouseHandler": 32,
+        "./handler/TouchHandler": 33,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     4: [ function(require, module, exports) {
@@ -232,8 +232,8 @@ require = function e(t, n, r) {
         "./RafLooper": 5,
         "./ResourceFactory": 6,
         "./asset/XHRTextAsset": 12,
-        "./plugin/AudioPluginManager": 21,
-        "./plugin/AudioPluginRegistry": 22
+        "./plugin/AudioPluginManager": 34,
+        "./plugin/AudioPluginRegistry": 35
     } ],
     5: [ function(require, module, exports) {
         "use strict";
@@ -314,8 +314,8 @@ require = function e(t, n, r) {
         "./asset/HTMLVideoAsset": 9,
         "./asset/XHRScriptAsset": 11,
         "./asset/XHRTextAsset": 12,
-        "./canvas/GlyphFactory": 15,
-        "./canvas/RenderingHelper": 16,
+        "./canvas/GlyphFactory": 16,
+        "./canvas/RenderingHelper": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     7: [ function(require, module, exports) {
@@ -527,7 +527,7 @@ require = function e(t, n, r) {
         }(g.ScriptAsset);
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
-        "../utils/XHRLoader": 30,
+        "../utils/XHRLoader": 43,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     12: [ function(require, module, exports) {
@@ -566,59 +566,33 @@ require = function e(t, n, r) {
         }(g.TextAsset);
         exports.XHRTextAsset = XHRTextAsset;
     }, {
-        "../utils/XHRLoader": 30,
+        "../utils/XHRLoader": 43,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     13: [ function(require, module, exports) {
         "use strict";
-        var __extends = this && this.__extends || function() {
-            var extendStatics = Object.setPrototypeOf || {
-                __proto__: []
-            } instanceof Array && function(d, b) {
-                d.__proto__ = b;
-            } || function(d, b) {
-                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
-            };
-            return function(d, b) {
-                function __() {
-                    this.constructor = d;
-                }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
-            };
-        }();
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), Context2DRenderer_1 = require("./Context2DRenderer"), CanvasSurface = function(_super) {
-            function CanvasSurface(width, height) {
-                var _this = this, canvas = document.createElement("canvas");
-                return _this = _super.call(this, width, height, canvas) || this, canvas.width = width, 
-                canvas.height = height, _this.canvas = canvas, _this._context = canvas.getContext("2d"), 
-                _this._renderer = void 0, _this;
+        var AffineTransformer = function() {
+            function AffineTransformer(rhs) {
+                rhs ? this.matrix = new Float32Array(rhs.matrix) : this.matrix = new Float32Array([ 1, 0, 0, 1, 0, 0 ]);
             }
-            return __extends(CanvasSurface, _super), CanvasSurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this, this._context)), 
-                this._renderer;
-            }, CanvasSurface.prototype.getHTMLElement = function() {
-                return this.canvas;
-            }, CanvasSurface.prototype.changePhysicalScale = function(xScale, yScale) {
-                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
-                this._context.scale(xScale, yScale);
-            }, CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
-                var canvasStyle = this.canvas.style;
-                "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
-                canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(xScale * this.width) + "px", 
-                canvasStyle.height = Math.floor(yScale * this.width) + "px");
-            }, CanvasSurface.prototype.isPlaying = function() {
-                throw g.ExceptionFactory.createAssertionError("CanvasSurface#isPlaying() is not implemented");
-            }, CanvasSurface;
-        }(g.Surface);
-        exports.CanvasSurface = CanvasSurface;
-    }, {
-        "./Context2DRenderer": 14,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ],
+            return AffineTransformer.prototype.scale = function(x, y) {
+                var m = this.matrix;
+                return m[0] *= x, m[1] *= x, m[2] *= y, m[3] *= y, this;
+            }, AffineTransformer.prototype.translate = function(x, y) {
+                var m = this.matrix;
+                return m[4] += m[0] * x + m[2] * y, m[5] += m[1] * x + m[3] * y, this;
+            }, AffineTransformer.prototype.transform = function(matrix) {
+                var m = this.matrix, a = matrix[0] * m[0] + matrix[1] * m[2], b = matrix[0] * m[1] + matrix[1] * m[3], c = matrix[2] * m[0] + matrix[3] * m[2], d = matrix[2] * m[1] + matrix[3] * m[3], e = matrix[4] * m[0] + matrix[5] * m[2] + m[4], f = matrix[4] * m[1] + matrix[5] * m[3] + m[5];
+                return m[0] = a, m[1] = b, m[2] = c, m[3] = d, m[4] = e, m[5] = f, this;
+            }, AffineTransformer.prototype.copyFrom = function(rhs) {
+                return this.matrix.set(rhs.matrix), this;
+            }, AffineTransformer;
+        }();
+        exports.AffineTransformer = AffineTransformer;
+    }, {} ],
     14: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
@@ -640,10 +614,62 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
+        var g = require("@akashic/akashic-engine"), Context2DRenderer_1 = require("./Context2DRenderer"), CanvasSurface = function(_super) {
+            function CanvasSurface(width, height, rendererCandidates) {
+                var _this = this, canvas = document.createElement("canvas");
+                return _this = _super.call(this, width, height, canvas) || this, canvas.width = width, 
+                canvas.height = height, _this.canvas = canvas, _this._rendererCandidates = rendererCandidates, 
+                _this._renderer = void 0, _this;
+            }
+            return __extends(CanvasSurface, _super), CanvasSurface.prototype.context = function() {
+                return this.canvas.getContext("2d");
+            }, CanvasSurface.prototype.renderer = function() {
+                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this)), 
+                this._renderer;
+            }, CanvasSurface.prototype.getHTMLElement = function() {
+                return this.canvas;
+            }, CanvasSurface.prototype.changePhysicalScale = function(xScale, yScale) {
+                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
+                this._context.scale(xScale, yScale);
+            }, CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
+                var canvasStyle = this.canvas.style;
+                "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
+                canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(xScale * this.width) + "px", 
+                canvasStyle.height = Math.floor(yScale * this.width) + "px");
+            }, CanvasSurface.prototype.isPlaying = function() {
+                throw g.ExceptionFactory.createAssertionError("CanvasSurface#isPlaying() is not implemented");
+            }, CanvasSurface;
+        }(g.Surface);
+        exports.CanvasSurface = CanvasSurface;
+    }, {
+        "./Context2DRenderer": 15,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    15: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), Context2DRenderer = function(_super) {
-            function Context2DRenderer(surface, context) {
+            function Context2DRenderer(surface) {
                 var _this = _super.call(this) || this;
-                return _this.surface = surface, _this.context = context, _this;
+                return _this.surface = surface, _this.context = surface.context(), _this;
             }
             return __extends(Context2DRenderer, _super), Context2DRenderer.prototype.clear = function() {
                 this.context.clearRect(0, 0, this.surface.width, this.surface.height);
@@ -672,6 +698,8 @@ require = function e(t, n, r) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
             }, Context2DRenderer.prototype.setTransform = function(matrix) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
+            }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
             }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
                 return this.context.getImageData(sx, sy, sw, sh);
             }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
@@ -681,10 +709,10 @@ require = function e(t, n, r) {
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;
     }, {
-        "./RenderingHelper": 16,
+        "./RenderingHelper": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    15: [ function(require, module, exports) {
+    16: [ function(require, module, exports) {
         "use strict";
         function createGlyphRenderedSurface(code, fontSize, cssFontFamily, baselineHeight, marginW, marginH, needImageData, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
             var scale = fontSize < GlyphFactory._environmentMinimumFontSize ? fontSize / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scale), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scale), surface = new CanvasSurface_1.CanvasSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d"), str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
@@ -792,16 +820,26 @@ require = function e(t, n, r) {
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;
     }, {
-        "./CanvasSurface": 13,
+        "./CanvasSurface": 14,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    16: [ function(require, module, exports) {
+    17: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var RenderingHelper, g = require("@akashic/akashic-engine"), SurfaceFactory_1 = require("./SurfaceFactory");
+        var RenderingHelper, g = require("@akashic/akashic-engine"), SurfaceFactory_1 = require("./shims/SurfaceFactory");
         !function(RenderingHelper) {
+            function toPowerOfTwo(x) {
+                if (0 !== (x & x - 1)) {
+                    for (var y = 1; y < x; ) y *= 2;
+                    return y;
+                }
+                return x;
+            }
+            function clamp(x) {
+                return Math.min(Math.max(x, 0), 1);
+            }
             function toTextFromCompositeOperation(operation) {
                 var operationText;
                 switch (operation) {
@@ -849,6 +887,26 @@ require = function e(t, n, r) {
                     operationText = "source-over";
                 }
                 return operationText;
+            }
+            function toCompositeOperationFromText(operationText) {
+                var operation;
+                switch (operationText) {
+                  case "source-atop":
+                    operation = g.CompositeOperation.SourceAtop;
+                    break;
+
+                  case "lighter":
+                    operation = g.CompositeOperation.Lighter;
+                    break;
+
+                  case "copy":
+                    operation = g.CompositeOperation.Copy;
+                    break;
+
+                  default:
+                    operation = g.CompositeOperation.SourceOver;
+                }
+                return operation;
             }
             function drawSystemTextByContext2D(context, text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
                 var fontFamilyValue, textAlignValue, textBaselineValue;
@@ -903,32 +961,1031 @@ require = function e(t, n, r) {
             function createBackSurface(width, height, platform, rendererCandidates) {
                 return SurfaceFactory_1.SurfaceFactory.createBackSurface(width, height, platform, rendererCandidates);
             }
-            RenderingHelper.toTextFromCompositeOperation = toTextFromCompositeOperation, RenderingHelper.drawSystemTextByContext2D = drawSystemTextByContext2D, 
-            RenderingHelper.createPrimarySurface = createPrimarySurface, RenderingHelper.createBackSurface = createBackSurface;
+            function usedWebGL(rendererCandidates) {
+                var used = !1;
+                return rendererCandidates && 0 < rendererCandidates.length && (used = "webgl" === rendererCandidates[0]), 
+                used;
+            }
+            function transformCoordinateSystem(matrix, height) {
+                matrix[1] *= -1, matrix[3] *= -1, matrix[5] = -matrix[5] + height;
+            }
+            RenderingHelper.toPowerOfTwo = toPowerOfTwo, RenderingHelper.clamp = clamp, RenderingHelper.toTextFromCompositeOperation = toTextFromCompositeOperation, 
+            RenderingHelper.toCompositeOperationFromText = toCompositeOperationFromText, RenderingHelper.drawSystemTextByContext2D = drawSystemTextByContext2D, 
+            RenderingHelper.createPrimarySurface = createPrimarySurface, RenderingHelper.createBackSurface = createBackSurface, 
+            RenderingHelper.usedWebGL = usedWebGL, RenderingHelper.transformCoordinateSystem = transformCoordinateSystem;
         }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
     }, {
-        "./SurfaceFactory": 17,
+        "./shims/SurfaceFactory": 30,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    17: [ function(require, module, exports) {
+    18: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var SurfaceFactory, CanvasSurface_1 = require("./CanvasSurface");
+        var AffineTransformer_1 = require("./AffineTransformer"), RenderingState = function() {
+            function RenderingState(rhs) {
+                rhs ? (this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
+                this.transformer = new AffineTransformer_1.AffineTransformer(rhs.transformer)) : (this.globalAlpha = 1, 
+                this.globalCompositeOperation = "source-over", this.transformer = new AffineTransformer_1.AffineTransformer());
+            }
+            return RenderingState.prototype.copyFrom = function(rhs) {
+                return this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
+                this.transformer.copyFrom(rhs.transformer), this;
+            }, RenderingState.prototype.updateFrom = function(rhs) {
+                return this.globalAlpha *= rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
+                this.transformer.transform(Array.prototype.slice.call(rhs.transformer.matrix)), 
+                this;
+            }, RenderingState;
+        }();
+        exports.RenderingState = RenderingState;
+    }, {
+        "./AffineTransformer": 13
+    } ],
+    19: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), RenderingState_1 = require("./RenderingState"), StateHoldingRenderer = function(_super) {
+            function StateHoldingRenderer(capacity) {
+                var _this = _super.call(this) || this;
+                return _this._stateStack = [], _this._stateStackPointer = 0, _this._capacity = 0, 
+                _this._reallocation(0 < capacity ? capacity : StateHoldingRenderer.DEFAULT_CAPACITY), 
+                _this;
+            }
+            return __extends(StateHoldingRenderer, _super), StateHoldingRenderer.prototype.save = function() {
+                this._pushState();
+            }, StateHoldingRenderer.prototype.restore = function() {
+                this._popState();
+            }, StateHoldingRenderer.prototype.translate = function(x, y) {
+                this.currentState().transformer.translate(x, y);
+            }, StateHoldingRenderer.prototype.transform = function(matrix) {
+                this.currentState().transformer.transform(matrix);
+            }, StateHoldingRenderer.prototype.opacity = function(opacity) {
+                this.currentState().globalAlpha *= opacity;
+            }, StateHoldingRenderer.prototype.setCompositeOperation = function(operation) {
+                this.currentState().globalCompositeOperation = RenderingHelper_1.RenderingHelper.toTextFromCompositeOperation(operation);
+            }, StateHoldingRenderer.prototype.currentState = function() {
+                return this._stateStack[this._stateStackPointer];
+            }, StateHoldingRenderer.prototype.capacity = function() {
+                return this._capacity;
+            }, StateHoldingRenderer.prototype.clear = function() {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#clear() is not implemented");
+            }, StateHoldingRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, destOffsetX, destOffsetY) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawImage() is not implemented");
+            }, StateHoldingRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSprites() is not implemented");
+            }, StateHoldingRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSystemText() is not implemented");
+            }, StateHoldingRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#fillRect() is not implemented");
+            }, StateHoldingRenderer.prototype.setTransform = function(matrix) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setTransform() is not implemented");
+            }, StateHoldingRenderer.prototype.setOpacity = function(opacity) {
+                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setOpacity() is not implemented");
+            }, StateHoldingRenderer.prototype._pushState = function() {
+                var old = this.currentState();
+                ++this._stateStackPointer, this._isOverCapacity && this._reallocation(this._stateStackPointer + 1), 
+                this.currentState().copyFrom(old);
+            }, StateHoldingRenderer.prototype._popState = function() {
+                if (!(this._stateStackPointer > 0)) throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#restore: state stack under-flow.");
+                --this._stateStackPointer;
+            }, StateHoldingRenderer.prototype._isOverCapacity = function() {
+                return this._capacity <= this._stateStackPointer;
+            }, StateHoldingRenderer.prototype._reallocation = function(newCapacity) {
+                var oldCapacity = this._capacity;
+                if (oldCapacity < newCapacity) {
+                    newCapacity < 2 * oldCapacity ? this._capacity *= 2 : this._capacity = newCapacity;
+                    for (var i = oldCapacity; i < this._capacity; ++i) this._stateStack.push(new RenderingState_1.RenderingState());
+                }
+            }, StateHoldingRenderer.DEFAULT_CAPACITY = 16, StateHoldingRenderer;
+        }(g.Renderer);
+        exports.StateHoldingRenderer = StateHoldingRenderer;
+    }, {
+        "./RenderingHelper": 17,
+        "./RenderingState": 18,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    20: [ function(require, module, exports) {
+        "use strict";
+        function getSystemTextOperations(surface) {
+            return surface._systemTextOps;
+        }
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), exports.getSystemTextOperations = getSystemTextOperations;
+    }, {} ],
+    21: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), WebGLBackSurfaceRenderer_1 = require("./WebGLBackSurfaceRenderer"), WebGLBackSurface = function(_super) {
+            function WebGLBackSurface(width, height, webGLRenderer) {
+                var _this = _super.call(this, width, height) || this;
+                _this._systemTextOps = [], _this._webGLRenderer = webGLRenderer;
+                var texWidth = Math.ceil(width), texHeight = Math.ceil(height), renderTarget = webGLRenderer.createTextureFrameBuffer(texWidth, texHeight);
+                return _this._frameBuffer = renderTarget.frameBuffer, _this._drawable = {}, _this._drawable._texture = renderTarget.texture, 
+                _this._drawable._textureOffsetX = 0, _this._drawable._textureOffsetY = 0, _this._drawable._textureWidth = texWidth, 
+                _this._drawable._textureHeight = texHeight, _this;
+            }
+            return __extends(WebGLBackSurface, _super), WebGLBackSurface.prototype.renderer = function() {
+                return this._renderer || (this._renderer = new WebGLBackSurfaceRenderer_1.WebGLBackSurfaceRenderer(this)), 
+                this._renderer;
+            }, WebGLBackSurface.prototype.destroy = function() {
+                this._webGLRenderer.context.deleteFramebuffer(this._frameBuffer), this._frameBuffer = void 0, 
+                this._webGLRenderer._disposeTexture(this._drawable._texture), this._webGLRenderer.context.deleteTexture(this._drawable._texture), 
+                this._drawable._texture = void 0, _super.prototype.destroy.call(this);
+            }, WebGLBackSurface.prototype.isPlaying = function() {
+                throw g.ExceptionFactory.createAssertionError("WebGLBackSurface#isPlaying() is not implemented");
+            }, WebGLBackSurface;
+        }(g.Surface);
+        exports.WebGLBackSurface = WebGLBackSurface;
+    }, {
+        "./WebGLBackSurfaceRenderer": 22,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    22: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), RenderingState_1 = require("./RenderingState"), SystemText_1 = require("./SystemText"), WebGLShaderProgram_1 = require("./WebGLShaderProgram"), WebGLBackSurfaceRenderer = function(_super) {
+            function WebGLBackSurfaceRenderer(surface) {
+                var _this = _super.call(this) || this;
+                return _this._surface = surface, _this._renderer = surface._webGLRenderer, _this._program = _this._renderer.getDefaultShaderProgram(), 
+                _this._shaderProgramStack = new WebGLShaderProgram_1.ShaderProgramStack(_this._program), 
+                _this;
+            }
+            return __extends(WebGLBackSurfaceRenderer, _super), WebGLBackSurfaceRenderer.prototype.translate = function(x, y) {
+                this._renderer.translate(x, y);
+            }, WebGLBackSurfaceRenderer.prototype.transform = function(matrix) {
+                this._renderer.transform(matrix);
+            }, WebGLBackSurfaceRenderer.prototype.opacity = function(opacity) {
+                this._renderer.opacity(opacity);
+            }, WebGLBackSurfaceRenderer.prototype.save = function() {
+                this._renderer.save(), this._shaderProgramStack.push(this._program);
+            }, WebGLBackSurfaceRenderer.prototype.restore = function() {
+                this._renderer.restore(), this._program = this._shaderProgramStack.pop();
+            }, WebGLBackSurfaceRenderer.prototype.setCompositeOperation = function(operation) {
+                this._renderer.setCompositeOperation(operation);
+            }, WebGLBackSurfaceRenderer.prototype.setTransform = function(matrix) {
+                this._renderer.setTransform(matrix);
+            }, WebGLBackSurfaceRenderer.prototype.setOpacity = function(opacity) {
+                this._renderer.setOpacity(opacity);
+            }, WebGLBackSurfaceRenderer.prototype.clear = function() {
+                this._renderer.clear(), this._surface._systemTextOps = [];
+            }, WebGLBackSurfaceRenderer.prototype.begin = function() {
+                _super.prototype.begin.call(this), this._renderer.pushRenderTarget(this._surface);
+            }, WebGLBackSurfaceRenderer.prototype.end = function() {
+                this._renderer.popRenderTarget(), _super.prototype.end.call(this);
+            }, WebGLBackSurfaceRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+                this._renderer.drawSprites(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count);
+            }, WebGLBackSurfaceRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+                var op = {
+                    state: new RenderingState_1.RenderingState(this._renderer.currentState()),
+                    parameter: arguments
+                };
+                RenderingHelper_1.RenderingHelper.transformCoordinateSystem(op.state.transformer.matrix, this._surface.height), 
+                this._surface._systemTextOps.push(op);
+            }, WebGLBackSurfaceRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                this._renderer._drawImageExcludingSystemText(surface, this._program, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
+                var srcOps = SystemText_1.getSystemTextOperations(surface);
+                if (srcOps) for (var i = 0; i < srcOps.length; i = i + 1 | 0) {
+                    var op = {
+                        state: new RenderingState_1.RenderingState(this._renderer.currentState()).updateFrom(srcOps[i].state),
+                        parameter: srcOps[i].parameter
+                    };
+                    RenderingHelper_1.RenderingHelper.transformCoordinateSystem(op.state.transformer.matrix, this._surface.height), 
+                    this._surface._systemTextOps.push(op);
+                }
+            }, WebGLBackSurfaceRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                this._renderer.fillRect(x, y, width, height, cssColor);
+            }, WebGLBackSurfaceRenderer.prototype.setShaderProgram = function(shaderProgram) {
+                this._program = this._renderer.initializeShaderProgram(shaderProgram);
+            }, WebGLBackSurfaceRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
+                return null;
+            }, WebGLBackSurfaceRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {}, 
+            WebGLBackSurfaceRenderer.prototype._subImage = function(imageData, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                for (var src = imageData.data, dst = new Uint8Array(width * height * 4), j = 0, d = 0; j < height; j++) for (var s = 4 * (imageData.width * (offsetY + j) + offsetX), i = 0, len = 4 * width; i < len; i++) dst[d++] = src[s++];
+                var gl = this._renderer.context;
+                gl.bindTexture(gl.TEXTURE_2D, this._surface._drawable._texture), gl.texSubImage2D(gl.TEXTURE_2D, 0, canvasOffsetX, canvasOffsetY, width, height, gl.RGBA, gl.UNSIGNED_BYTE, dst), 
+                this._renderer.context.bindTexture(this._renderer.context.TEXTURE_2D, this._renderer._currentTexture);
+            }, WebGLBackSurfaceRenderer;
+        }(g.Renderer);
+        exports.WebGLBackSurfaceRenderer = WebGLBackSurfaceRenderer;
+    }, {
+        "./RenderingHelper": 17,
+        "./RenderingState": 18,
+        "./SystemText": 20,
+        "./WebGLShaderProgram": 27,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    23: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var WebGLColor, RenderingHelper_1 = require("./RenderingHelper");
+        !function(WebGLColor) {
+            function get(color) {
+                var rgba = "string" == typeof color ? WebGLColor._toColor(color) : [ color[0], color[1], color[2], color[3] ];
+                return rgba[3] = RenderingHelper_1.RenderingHelper.clamp(rgba[3]), rgba[0] = RenderingHelper_1.RenderingHelper.clamp(rgba[0]) * rgba[3], 
+                rgba[1] = RenderingHelper_1.RenderingHelper.clamp(rgba[1]) * rgba[3], rgba[2] = RenderingHelper_1.RenderingHelper.clamp(rgba[2]) * rgba[3], 
+                rgba;
+            }
+            function _hsl2rgb(hsl) {
+                var h = hsl[0] % 360, s = hsl[1], l = hsl[2] > 50 ? 100 - hsl[2] : hsl[2], a = hsl[3], max = l + l * s, min = l - l * s;
+                return h < 60 ? [ max, h / 60 * (max - min) + min, min, a ] : h < 120 ? [ (120 - h) / 60 * (max - min) + min, max, min, a ] : h < 180 ? [ min, max, (h - 120) / 60 * (max - min) + min, a ] : h < 240 ? [ min, (240 - h) / 60 * (max - min) + min, max, a ] : h < 300 ? [ (h - 240) / 60 * (max - min) + min, min, max, a ] : [ max, min, (360 - h) / 60 * (max - min) + min, a ];
+            }
+            function _toColor(cssColor) {
+                var ncc = cssColor.toUpperCase().replace(/\s+/g, ""), rgba = WebGLColor.colorMap[ncc];
+                if (rgba) return rgba;
+                if (ncc.match(/^#([\dA-F])([\dA-F])([\dA-F])$/)) return [ parseInt(RegExp.$1, 16) / 15, parseInt(RegExp.$2, 16) / 15, parseInt(RegExp.$3, 16) / 15, 1 ];
+                if (ncc.match(/^#([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})$/)) return [ parseInt(RegExp.$1, 16) / 255, parseInt(RegExp.$2, 16) / 255, parseInt(RegExp.$3, 16) / 255, 1 ];
+                if (ncc.match(/^RGB\((\d{1,3}),(\d{1,3}),(\d{1,3})\)$/)) return [ parseInt(RegExp.$1, 10) / 255, parseInt(RegExp.$2, 10) / 255, parseInt(RegExp.$3, 10) / 255, 1 ];
+                if (ncc.match(/^RGBA\((\d{1,3}),(\d{1,3}),(\d{1,3}),(\d(\.\d*)?)\)$/)) return [ parseInt(RegExp.$1, 10) / 255, parseInt(RegExp.$2, 10) / 255, parseInt(RegExp.$3, 10) / 255, parseFloat(RegExp.$4) ];
+                if (ncc.match(/^HSL\((\d{1,3}),(\d{1,3})%,(\d{1,3})%\)$/)) return WebGLColor._hsl2rgb([ parseInt(RegExp.$1, 10), RenderingHelper_1.RenderingHelper.clamp(parseInt(RegExp.$2, 10) / 100), RenderingHelper_1.RenderingHelper.clamp(parseInt(RegExp.$3, 10) / 100), 1 ]);
+                if (ncc.match(/^HSLA\((\d{1,3}),(\d{1,3})%,(\d{1,3})%,(\d(\.\d*)?)\)$/)) return WebGLColor._hsl2rgb([ parseInt(RegExp.$1, 10), RenderingHelper_1.RenderingHelper.clamp(parseInt(RegExp.$2, 10) / 100), RenderingHelper_1.RenderingHelper.clamp(parseInt(RegExp.$3, 10) / 100), parseFloat(RegExp.$4) ]);
+                throw Error("illigal cssColor format: " + ncc);
+            }
+            WebGLColor.colorMap = {
+                ALICEBLUE: [ 240 / 255, 248 / 255, 1, 1 ],
+                ANTIQUEWHITE: [ 250 / 255, 235 / 255, 215 / 255, 1 ],
+                AQUA: [ 0, 1, 1, 1 ],
+                AQUAMARINE: [ 127 / 255, 1, 212 / 255, 1 ],
+                AZURE: [ 240 / 255, 1, 1, 1 ],
+                BEIGE: [ 245 / 255, 245 / 255, 220 / 255, 1 ],
+                BISQUE: [ 1, 228 / 255, 196 / 255, 1 ],
+                BLACK: [ 0, 0, 0, 1 ],
+                BLANCHEDALMOND: [ 1, 235 / 255, 205 / 255, 1 ],
+                BLUE: [ 0, 0, 1, 1 ],
+                BLUEVIOLET: [ 138 / 255, 43 / 255, 226 / 255, 1 ],
+                BROWN: [ 165 / 255, 42 / 255, 42 / 255, 1 ],
+                BURLYWOOD: [ 222 / 255, 184 / 255, 135 / 255, 1 ],
+                CADETBLUE: [ 95 / 255, 158 / 255, 160 / 255, 1 ],
+                CHARTREUSE: [ 127 / 255, 1, 0, 1 ],
+                CHOCOLATE: [ 210 / 255, 105 / 255, 30 / 255, 1 ],
+                CORAL: [ 1, 127 / 255, 80 / 255, 1 ],
+                CORNFLOWERBLUE: [ 100 / 255, 149 / 255, 237 / 255, 1 ],
+                CORNSILK: [ 1, 248 / 255, 220 / 255, 1 ],
+                CRIMSON: [ 220 / 255, 20 / 255, 60 / 255, 1 ],
+                CYAN: [ 0, 1, 1, 1 ],
+                DARKBLUE: [ 0, 0, 139 / 255, 1 ],
+                DARKCYAN: [ 0, 139 / 255, 139 / 255, 1 ],
+                DARKGOLDENROD: [ 184 / 255, 134 / 255, 11 / 255, 1 ],
+                DARKGRAY: [ 169 / 255, 169 / 255, 169 / 255, 1 ],
+                DARKGREEN: [ 0, 100 / 255, 0, 1 ],
+                DARKGREY: [ 169 / 255, 169 / 255, 169 / 255, 1 ],
+                DARKKHAKI: [ 189 / 255, 183 / 255, 107 / 255, 1 ],
+                DARKMAGENTA: [ 139 / 255, 0, 139 / 255, 1 ],
+                DARKOLIVEGREEN: [ 85 / 255, 107 / 255, 47 / 255, 1 ],
+                DARKORANGE: [ 1, 140 / 255, 0, 1 ],
+                DARKORCHID: [ .6, 50 / 255, .8, 1 ],
+                DARKRED: [ 139 / 255, 0, 0, 1 ],
+                DARKSALMON: [ 233 / 255, 150 / 255, 122 / 255, 1 ],
+                DARKSEAGREEN: [ 143 / 255, 188 / 255, 143 / 255, 1 ],
+                DARKSLATEBLUE: [ 72 / 255, 61 / 255, 139 / 255, 1 ],
+                DARKSLATEGRAY: [ 47 / 255, 79 / 255, 79 / 255, 1 ],
+                DARKSLATEGREY: [ 47 / 255, 79 / 255, 79 / 255, 1 ],
+                DARKTURQUOISE: [ 0, 206 / 255, 209 / 255, 1 ],
+                DARKVIOLET: [ 148 / 255, 0, 211 / 255, 1 ],
+                DEEPPINK: [ 1, 20 / 255, 147 / 255, 1 ],
+                DEEPSKYBLUE: [ 0, 191 / 255, 1, 1 ],
+                DIMGRAY: [ 105 / 255, 105 / 255, 105 / 255, 1 ],
+                DIMGREY: [ 105 / 255, 105 / 255, 105 / 255, 1 ],
+                DODGERBLUE: [ 30 / 255, 144 / 255, 1, 1 ],
+                FIREBRICK: [ 178 / 255, 34 / 255, 34 / 255, 1 ],
+                FLORALWHITE: [ 1, 250 / 255, 240 / 255, 1 ],
+                FORESTGREEN: [ 34 / 255, 139 / 255, 34 / 255, 1 ],
+                FUCHSIA: [ 1, 0, 1, 1 ],
+                GAINSBORO: [ 220 / 255, 220 / 255, 220 / 255, 1 ],
+                GHOSTWHITE: [ 248 / 255, 248 / 255, 1, 1 ],
+                GOLD: [ 1, 215 / 255, 0, 1 ],
+                GOLDENROD: [ 218 / 255, 165 / 255, 32 / 255, 1 ],
+                GRAY: [ 128 / 255, 128 / 255, 128 / 255, 1 ],
+                GREEN: [ 0, 128 / 255, 0, 1 ],
+                GREENYELLOW: [ 173 / 255, 1, 47 / 255, 1 ],
+                GREY: [ 128 / 255, 128 / 255, 128 / 255, 1 ],
+                HONEYDEW: [ 240 / 255, 1, 240 / 255, 1 ],
+                HOTPINK: [ 1, 105 / 255, 180 / 255, 1 ],
+                INDIANRED: [ 205 / 255, 92 / 255, 92 / 255, 1 ],
+                INDIGO: [ 75 / 255, 0, 130 / 255, 1 ],
+                IVORY: [ 1, 1, 240 / 255, 1 ],
+                KHAKI: [ 240 / 255, 230 / 255, 140 / 255, 1 ],
+                LAVENDER: [ 230 / 255, 230 / 255, 250 / 255, 1 ],
+                LAVENDERBLUSH: [ 1, 240 / 255, 245 / 255, 1 ],
+                LAWNGREEN: [ 124 / 255, 252 / 255, 0, 1 ],
+                LEMONCHIFFON: [ 1, 250 / 255, 205 / 255, 1 ],
+                LIGHTBLUE: [ 173 / 255, 216 / 255, 230 / 255, 1 ],
+                LIGHTCORAL: [ 240 / 255, 128 / 255, 128 / 255, 1 ],
+                LIGHTCYAN: [ 224 / 255, 1, 1, 1 ],
+                LIGHTGOLDENRODYELLOW: [ 250 / 255, 250 / 255, 210 / 255, 1 ],
+                LIGHTGRAY: [ 211 / 255, 211 / 255, 211 / 255, 1 ],
+                LIGHTGREEN: [ 144 / 255, 238 / 255, 144 / 255, 1 ],
+                LIGHTGREY: [ 211 / 255, 211 / 255, 211 / 255, 1 ],
+                LIGHTPINK: [ 1, 182 / 255, 193 / 255, 1 ],
+                LIGHTSALMON: [ 1, 160 / 255, 122 / 255, 1 ],
+                LIGHTSEAGREEN: [ 32 / 255, 178 / 255, 170 / 255, 1 ],
+                LIGHTSKYBLUE: [ 135 / 255, 206 / 255, 250 / 255, 1 ],
+                LIGHTSLATEGRAY: [ 119 / 255, 136 / 255, .6, 1 ],
+                LIGHTSLATEGREY: [ 119 / 255, 136 / 255, .6, 1 ],
+                LIGHTSTEELBLUE: [ 176 / 255, 196 / 255, 222 / 255, 1 ],
+                LIGHTYELLOW: [ 1, 1, 224 / 255, 1 ],
+                LIME: [ 0, 1, 0, 1 ],
+                LIMEGREEN: [ 50 / 255, 205 / 255, 50 / 255, 1 ],
+                LINEN: [ 250 / 255, 240 / 255, 230 / 255, 1 ],
+                MAGENTA: [ 1, 0, 1, 1 ],
+                MAROON: [ 128 / 255, 0, 0, 1 ],
+                MEDIUMAQUAMARINE: [ .4, 205 / 255, 170 / 255, 1 ],
+                MEDIUMBLUE: [ 0, 0, 205 / 255, 1 ],
+                MEDIUMORCHID: [ 186 / 255, 85 / 255, 211 / 255, 1 ],
+                MEDIUMPURPLE: [ 147 / 255, 112 / 255, 219 / 255, 1 ],
+                MEDIUMSEAGREEN: [ 60 / 255, 179 / 255, 113 / 255, 1 ],
+                MEDIUMSLATEBLUE: [ 123 / 255, 104 / 255, 238 / 255, 1 ],
+                MEDIUMSPRINGGREEN: [ 0, 250 / 255, 154 / 255, 1 ],
+                MEDIUMTURQUOISE: [ 72 / 255, 209 / 255, .8, 1 ],
+                MEDIUMVIOLETRED: [ 199 / 255, 21 / 255, 133 / 255, 1 ],
+                MIDNIGHTBLUE: [ 25 / 255, 25 / 255, 112 / 255, 1 ],
+                MINTCREAM: [ 245 / 255, 1, 250 / 255, 1 ],
+                MISTYROSE: [ 1, 228 / 255, 225 / 255, 1 ],
+                MOCCASIN: [ 1, 228 / 255, 181 / 255, 1 ],
+                NAVAJOWHITE: [ 1, 222 / 255, 173 / 255, 1 ],
+                NAVY: [ 0, 0, 128 / 255, 1 ],
+                OLDLACE: [ 253 / 255, 245 / 255, 230 / 255, 1 ],
+                OLIVE: [ 128 / 255, 128 / 255, 0, 1 ],
+                OLIVEDRAB: [ 107 / 255, 142 / 255, 35 / 255, 1 ],
+                ORANGE: [ 1, 165 / 255, 0, 1 ],
+                ORANGERED: [ 1, 69 / 255, 0, 1 ],
+                ORCHID: [ 218 / 255, 112 / 255, 214 / 255, 1 ],
+                PALEGOLDENROD: [ 238 / 255, 232 / 255, 170 / 255, 1 ],
+                PALEGREEN: [ 152 / 255, 251 / 255, 152 / 255, 1 ],
+                PALETURQUOISE: [ 175 / 255, 238 / 255, 238 / 255, 1 ],
+                PALEVIOLETRED: [ 219 / 255, 112 / 255, 147 / 255, 1 ],
+                PAPAYAWHIP: [ 1, 239 / 255, 213 / 255, 1 ],
+                PEACHPUFF: [ 1, 218 / 255, 185 / 255, 1 ],
+                PERU: [ 205 / 255, 133 / 255, 63 / 255, 1 ],
+                PINK: [ 1, 192 / 255, 203 / 255, 1 ],
+                PLUM: [ 221 / 255, 160 / 255, 221 / 255, 1 ],
+                POWDERBLUE: [ 176 / 255, 224 / 255, 230 / 255, 1 ],
+                PURPLE: [ 128 / 255, 0, 128 / 255, 1 ],
+                RED: [ 1, 0, 0, 1 ],
+                ROSYBROWN: [ 188 / 255, 143 / 255, 143 / 255, 1 ],
+                ROYALBLUE: [ 65 / 255, 105 / 255, 225 / 255, 1 ],
+                SADDLEBROWN: [ 139 / 255, 69 / 255, 19 / 255, 1 ],
+                SALMON: [ 250 / 255, 128 / 255, 114 / 255, 1 ],
+                SANDYBROWN: [ 244 / 255, 164 / 255, 96 / 255, 1 ],
+                SEAGREEN: [ 46 / 255, 139 / 255, 87 / 255, 1 ],
+                SEASHELL: [ 1, 245 / 255, 238 / 255, 1 ],
+                SIENNA: [ 160 / 255, 82 / 255, 45 / 255, 1 ],
+                SILVER: [ 192 / 255, 192 / 255, 192 / 255, 1 ],
+                SKYBLUE: [ 135 / 255, 206 / 255, 235 / 255, 1 ],
+                SLATEBLUE: [ 106 / 255, 90 / 255, 205 / 255, 1 ],
+                SLATEGRAY: [ 112 / 255, 128 / 255, 144 / 255, 1 ],
+                SLATEGREY: [ 112 / 255, 128 / 255, 144 / 255, 1 ],
+                SNOW: [ 1, 250 / 255, 250 / 255, 1 ],
+                SPRINGGREEN: [ 0, 1, 127 / 255, 1 ],
+                STEELBLUE: [ 70 / 255, 130 / 255, 180 / 255, 1 ],
+                TAN: [ 210 / 255, 180 / 255, 140 / 255, 1 ],
+                TEAL: [ 0, 128 / 255, 128 / 255, 1 ],
+                THISTLE: [ 216 / 255, 191 / 255, 216 / 255, 1 ],
+                TOMATO: [ 1, 99 / 255, 71 / 255, 1 ],
+                TURQUOISE: [ 64 / 255, 224 / 255, 208 / 255, 1 ],
+                VIOLET: [ 238 / 255, 130 / 255, 238 / 255, 1 ],
+                WHEAT: [ 245 / 255, 222 / 255, 179 / 255, 1 ],
+                WHITE: [ 1, 1, 1, 1 ],
+                WHITESMOKE: [ 245 / 255, 245 / 255, 245 / 255, 1 ],
+                YELLOW: [ 1, 1, 0, 1 ],
+                YELLOWGREEN: [ 154 / 255, 205 / 255, 50 / 255, 1 ]
+            }, WebGLColor.get = get, WebGLColor._hsl2rgb = _hsl2rgb, WebGLColor._toColor = _toColor;
+        }(WebGLColor = exports.WebGLColor || (exports.WebGLColor = {}));
+    }, {
+        "./RenderingHelper": 17
+    } ],
+    24: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var CanvasSurface_1 = require("./CanvasSurface"), WebGLPrimarySurfaceRenderer_1 = require("./WebGLPrimarySurfaceRenderer"), WebGLPrimarySurface = function(_super) {
+            function WebGLPrimarySurface(width, height, zIndexes) {
+                var _this = _super.call(this, width, height, [ "webgl" ]) || this;
+                return _this._upperSurface = new CanvasSurface_1.CanvasSurface(width, height), _this.setCanvasStyle(zIndexes), 
+                _this;
+            }
+            return __extends(WebGLPrimarySurface, _super), WebGLPrimarySurface.prototype.renderer = function() {
+                return this._renderer || (this._renderer = new WebGLPrimarySurfaceRenderer_1.WebGLPrimarySurfaceRenderer(this)), 
+                this._renderer;
+            }, WebGLPrimarySurface.prototype.changeCanvasSize = function(width, height) {
+                var xScale = width / this.width, yScale = height / this.height;
+                _super.prototype.changeVisualScale.call(this, xScale, yScale), this._upperSurface.changeVisualScale(xScale, yScale);
+            }, WebGLPrimarySurface.prototype.setCanvasStyle = function(zIndexes) {
+                this._upperSurface.canvas.style.position = "absolute", this.canvas.style.position = "absolute", 
+                zIndexes ? (this.canvas.style.zIndex = zIndexes.base || "0", this._upperSurface.canvas.style.zIndex = zIndexes.upper || "1") : (this.canvas.style.zIndex = "0", 
+                this._upperSurface.canvas.style.zIndex = "1");
+            }, WebGLPrimarySurface;
+        }(CanvasSurface_1.CanvasSurface);
+        exports.WebGLPrimarySurface = WebGLPrimarySurface;
+    }, {
+        "./CanvasSurface": 14,
+        "./WebGLPrimarySurfaceRenderer": 25
+    } ],
+    25: [ function(require, module, exports) {
+        "use strict";
+        function applyRenderingState(renderer, state) {
+            renderer.transform(Array.prototype.slice.call(state.transformer.matrix)), renderer.opacity(state.globalAlpha), 
+            renderer.setCompositeOperation(RenderingHelper_1.RenderingHelper.toCompositeOperationFromText(state.globalCompositeOperation));
+        }
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var WebGLRenderer_1 = require("./WebGLRenderer"), RenderingHelper_1 = require("./RenderingHelper"), SystemText_1 = require("./SystemText"), WebGLPrimarySurfaceRenderer = function(_super) {
+            function WebGLPrimarySurfaceRenderer(surface) {
+                var _this = _super.call(this, surface) || this;
+                return _this._upperRenderer = surface._upperSurface.renderer(), _this;
+            }
+            return __extends(WebGLPrimarySurfaceRenderer, _super), WebGLPrimarySurfaceRenderer.prototype.clear = function() {
+                _super.prototype.clear.call(this), this._upperRenderer.clear();
+            }, WebGLPrimarySurfaceRenderer.prototype._drawImageExcludingSystemText = function(surface, shaderProgram, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                _super.prototype.drawImageWithShaderProgram.call(this, surface, shaderProgram, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
+            }, WebGLPrimarySurfaceRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                _super.prototype.drawImage.call(this, surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
+                var srcOps = SystemText_1.getSystemTextOperations(surface);
+                if (srcOps) for (var i = 0; i < srcOps.length; i = i + 1 | 0) {
+                    this._upperRenderer.save(), applyRenderingState(this._upperRenderer, this.currentState()), 
+                    applyRenderingState(this._upperRenderer, srcOps[i].state);
+                    var parameter = srcOps[i].parameter;
+                    this._upperRenderer.drawSystemText.apply(this._upperRenderer, parameter), this._upperRenderer.restore();
+                }
+            }, WebGLPrimarySurfaceRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+                this._upperRenderer.save(), applyRenderingState(this._upperRenderer, this.currentState()), 
+                this._upperRenderer.drawSystemText(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly), 
+                this._upperRenderer.restore();
+            }, WebGLPrimarySurfaceRenderer;
+        }(WebGLRenderer_1.WebGLRenderer);
+        exports.WebGLPrimarySurfaceRenderer = WebGLPrimarySurfaceRenderer;
+    }, {
+        "./RenderingHelper": 17,
+        "./SystemText": 20,
+        "./WebGLRenderer": 26
+    } ],
+    26: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), StateHoldingRenderer_1 = require("./StateHoldingRenderer"), RenderingHelper_1 = require("./RenderingHelper"), WebGLColor_1 = require("./WebGLColor"), WebGLShaderProgram_1 = require("./WebGLShaderProgram"), WebGLTextureAtlas_1 = require("./WebGLTextureAtlas"), RenderingState_1 = require("./RenderingState"), RenderTargetStack = function() {
+            function RenderTargetStack(width, height) {
+                this._renderTargets = [], this._renderTargets.push({
+                    width: width,
+                    height: height,
+                    _frameBuffer: null
+                });
+            }
+            return RenderTargetStack.prototype.push = function(renderTarget) {
+                this._renderTargets.push(renderTarget);
+            }, RenderTargetStack.prototype.pop = function() {
+                return this._renderTargets.pop();
+            }, RenderTargetStack.prototype.top = function() {
+                return this._renderTargets[this._renderTargets.length - 1];
+            }, RenderTargetStack;
+        }(), WebGLRenderer = function(_super) {
+            function WebGLRenderer(surface) {
+                var _this = _super.call(this) || this;
+                if (_this.surface = surface, _this.context = surface.canvas.getContext("webgl", {
+                    depth: !1,
+                    preserveDrawingBuffer: !0
+                }), !_this.context) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#constructor: could not initialize WebGLRenderingContext");
+                return _this._init(), _this;
+            }
+            return __extends(WebGLRenderer, _super), WebGLRenderer.prototype.pushRenderTarget = function(surface) {
+                this._commit(), this._renderTargetStack.push(surface), this.save();
+                var rs = new RenderingState_1.RenderingState();
+                RenderingHelper_1.RenderingHelper.transformCoordinateSystem(rs.transformer.matrix, surface.height), 
+                this.currentState().copyFrom(rs), this.context.viewport(0, 0, surface.width, surface.height), 
+                this._width = surface.width, this._height = surface.height, this.context.bindFramebuffer(this.context.FRAMEBUFFER, surface._frameBuffer);
+            }, WebGLRenderer.prototype.popRenderTarget = function() {
+                this._commit(), this._renderTargetStack.pop();
+                var renderTarget = this._renderTargetStack.top();
+                this.context.bindFramebuffer(this.context.FRAMEBUFFER, renderTarget._frameBuffer), 
+                this._width = renderTarget.width, this._height = renderTarget.height, this.context.viewport(0, 0, this._width, this._height), 
+                this.restore();
+            }, WebGLRenderer.prototype.clear = function() {
+                this.context.clear(this.context.COLOR_BUFFER_BIT);
+            }, WebGLRenderer.prototype.begin = function() {
+                ++this._beginCount, 1 === this._beginCount && (this.clear(), this._currentShaderProgram.use());
+            }, WebGLRenderer.prototype.end = function() {
+                --this._beginCount, 0 === this._beginCount && (this._commit(), this._currentShaderProgram.unuse());
+            }, WebGLRenderer.prototype.save = function() {
+                _super.prototype.save.call(this), this._shaderProgramStack.push(this._program);
+            }, WebGLRenderer.prototype.restore = function() {
+                _super.prototype.restore.call(this), this._program = this._shaderProgramStack.pop();
+            }, WebGLRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+                for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
+            }, WebGLRenderer.prototype.drawImageWithShaderProgram = function(surface, shaderProgram, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                if (!surface._drawable) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: no drawable surface.");
+                if (surface._drawable._texture instanceof WebGLTexture || this._textureAtlas._makeTextureForSurface(this, surface), 
+                !surface._drawable._texture) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: could not create a texture.");
+                var image = surface._drawable, tw = 1 / image._textureWidth, th = 1 / image._textureHeight, ox = image._textureOffsetX, oy = image._textureOffsetY, s = tw * (ox + offsetX + width), t = th * (oy + offsetY + height), u = tw * (ox + offsetX), v = th * (oy + offsetY);
+                this._drawImage(image._texture, shaderProgram, canvasOffsetX, canvasOffsetY, width, height, [ u, v, s, v, s, t, u, v, s, t, u, t ], this._drawImageColor);
+            }, WebGLRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                this.drawImageWithShaderProgram(surface, this._program, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
+            }, WebGLRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                this._drawImage(this._fillRectTexture, this._defaultProgram, x, y, width, height, [ 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 ], WebGLColor_1.WebGLColor.get(cssColor));
+            }, WebGLRenderer.prototype.createTextureFrameBuffer = function(width, height) {
+                var context = this.context, frameBuffer = context.createFramebuffer();
+                context.bindFramebuffer(context.FRAMEBUFFER, frameBuffer);
+                var texture = context.createTexture();
+                context.bindTexture(context.TEXTURE_2D, texture), context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR), 
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR), 
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE), 
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE), 
+                context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, width, height, 0, context.RGBA, context.UNSIGNED_BYTE, null), 
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, texture, 0), 
+                context.bindTexture(context.TEXTURE_2D, this._currentTexture);
+                var renderTarget = this._renderTargetStack.top();
+                return context.bindFramebuffer(context.FRAMEBUFFER, renderTarget._frameBuffer), 
+                {
+                    frameBuffer: frameBuffer,
+                    texture: texture
+                };
+            }, WebGLRenderer.prototype.initializeShaderProgram = function(shaderProgram) {
+                if (shaderProgram) {
+                    if (!shaderProgram.program) {
+                        var program = new WebGLShaderProgram_1.WebGLShaderProgram(this.context, shaderProgram.fragmentShader, shaderProgram.uniforms);
+                        program.initUniforms(), shaderProgram = program;
+                    }
+                } else shaderProgram = this._defaultProgram;
+                return shaderProgram;
+            }, WebGLRenderer.prototype.setShaderProgram = function(shaderProgram) {
+                this._program = this.initializeShaderProgram(shaderProgram);
+            }, WebGLRenderer.prototype.getDefaultShaderProgram = function() {
+                return this._defaultProgram;
+            }, WebGLRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
+                return null;
+            }, WebGLRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {}, 
+            WebGLRenderer.prototype._makeTextureForSurface = function(surface) {
+                var image = surface._drawable, w = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.width), h = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.height);
+                if (w !== image.width || h !== image.height) {
+                    var canvas = document.createElement("canvas");
+                    canvas.width = w, canvas.height = h;
+                    var context = canvas.getContext("2d");
+                    context.globalCompositeOperation = "copy", context.drawImage(image, 0, 0), image = context.getImageData(0, 0, w, h);
+                }
+                surface._drawable._texture = this._makeTexture(image), surface._drawable._textureOffsetX = 0, 
+                surface._drawable._textureOffsetY = 0, surface._drawable._textureWidth = w, surface._drawable._textureHeight = h;
+            }, WebGLRenderer.prototype._makeTextureRaw = function(width, height, pixels) {
+                void 0 === pixels && (pixels = null);
+                var texture = this.context.createTexture();
+                return this.context.bindTexture(this.context.TEXTURE_2D, texture), this.context.pixelStorei(this.context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_S, this.context.CLAMP_TO_EDGE), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_T, this.context.CLAMP_TO_EDGE), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MAG_FILTER, this.context.NEAREST), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MIN_FILTER, this.context.NEAREST), 
+                this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, width, height, 0, this.context.RGBA, this.context.UNSIGNED_BYTE, pixels), 
+                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture), texture;
+            }, WebGLRenderer.prototype._disposeTexture = function(texture) {
+                this._currentTexture === texture && this._commit();
+            }, WebGLRenderer.prototype._assignTexture = function(image, x, y, texture) {
+                if (this.context.bindTexture(this.context.TEXTURE_2D, texture), image instanceof HTMLVideoElement) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_assignTexture: HTMLVideoElement is not supported.");
+                this.context.texSubImage2D(this.context.TEXTURE_2D, 0, x, y, this.context.RGBA, this.context.UNSIGNED_BYTE, image), 
+                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture);
+            }, WebGLRenderer.prototype._clearTexture = function(texturePixels, width, height, texture) {
+                this.context.bindTexture(this.context.TEXTURE_2D, texture), this.context.texSubImage2D(this.context.TEXTURE_2D, 0, 0, 0, width, height, this.context.RGBA, this.context.UNSIGNED_BYTE, texturePixels), 
+                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture);
+            }, WebGLRenderer.prototype._init = function() {
+                this._width = this.surface.width, this._height = this.surface.height, this._beginCount = 0;
+                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this.context);
+                this._renderTargetStack = new RenderTargetStack(this._width, this._height), this._shaderProgramStack = new WebGLShaderProgram_1.ShaderProgramStack(program), 
+                this._program = program, this._defaultProgram = program, this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), 
+                this._fillRectTexture = this._makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
+                this._drawImageColor = WebGLColor_1.WebGLColor.get("white"), this._maxSpriteCount = 1024, 
+                this._vertices = this._makeBuffer(24 * this._maxSpriteCount * 4), this._verticesCache = new Float32Array(24 * this._maxSpriteCount), 
+                this._numSprites = 0;
+                var state = this.currentState();
+                this._currentTexture = this._fillRectTexture, this._currentColor = this._drawImageColor, 
+                this._currentAlpha = 1, this._currentCompositeOperation = state.globalCompositeOperation, 
+                this._currentShaderProgram = program, this._currentShaderProgram.use();
+                try {
+                    this._currentShaderProgram.set_aVertex(this._vertices), this._currentShaderProgram.set_uColor(this._currentColor), 
+                    this._currentShaderProgram.set_uAlpha(this._currentAlpha), this._currentShaderProgram.set_uSampler(0);
+                } finally {
+                    this._currentShaderProgram.unuse();
+                }
+                this.context.viewport(0, 0, this.surface.width, this.surface.height), this.context.enable(this.context.BLEND), 
+                this.context.activeTexture(this.context.TEXTURE0), this.context.bindTexture(this.context.TEXTURE_2D, this._fillRectTexture), 
+                this._compositeOps = {
+                    "source-atop": [ this.context.DST_ALPHA, this.context.ONE_MINUS_SRC_ALPHA ],
+                    "source-in": [ this.context.DST_ALPHA, this.context.ZERO ],
+                    "source-out": [ this.context.ONE_MINUS_DST_ALPHA, this.context.ZERO ],
+                    "source-over": [ this.context.ONE, this.context.ONE_MINUS_SRC_ALPHA ],
+                    "destination-atop": [ this.context.ONE_MINUS_DST_ALPHA, this.context.SRC_ALPHA ],
+                    "destination-in": [ this.context.ZERO, this.context.SRC_ALPHA ],
+                    "destination-out": [ this.context.ZERO, this.context.ONE_MINUS_SRC_ALPHA ],
+                    "destination-over": [ this.context.ONE_MINUS_DST_ALPHA, this.context.ONE ],
+                    lighter: [ this.context.ONE, this.context.ONE ],
+                    copy: [ this.context.ONE, this.context.ZERO ],
+                    xor: [ this.context.ONE_MINUS_DST_ALPHA, this.context.ONE_MINUS_SRC_ALPHA ]
+                };
+                var compositeOperation = this._compositeOps[this._currentCompositeOperation];
+                this.context.blendFunc(compositeOperation[0], compositeOperation[1]);
+            }, WebGLRenderer.prototype._drawImage = function(texture, shaderProgram, x, y, w, h, texCoord, color) {
+                this._numSprites >= this._maxSpriteCount && this._commit(), this._currentShaderProgram !== shaderProgram && (this._currentShaderProgram = shaderProgram, 
+                this._commit(), this._currentShaderProgram.use(), this._currentShaderProgram.updateUniforms(), 
+                this._currentCompositeOperation = null, this._currentAlpha = null, this._currentColor = [], 
+                this._currentTexture = null), this._currentTexture !== texture && (this._currentTexture = texture, 
+                this._commit(), this.context.bindTexture(this.context.TEXTURE_2D, texture)), this._currentColor[0] === color[0] && this._currentColor[1] === color[1] && this._currentColor[2] === color[2] && this._currentColor[3] === color[3] || (this._currentColor = color, 
+                this._commit(), this._currentShaderProgram.set_uColor(color));
+                var state = this.currentState();
+                if (this._currentAlpha !== state.globalAlpha && (this._currentAlpha = state.globalAlpha, 
+                this._commit(), this._currentShaderProgram.set_uAlpha(state.globalAlpha)), this._currentCompositeOperation !== state.globalCompositeOperation) {
+                    this._currentCompositeOperation = state.globalCompositeOperation, this._commit();
+                    var compositeOperation = this._compositeOps[this._currentCompositeOperation];
+                    this.context.blendFunc(compositeOperation[0], compositeOperation[1]);
+                }
+                this._register(this._transformVertex(x, y, w, h, state.transformer), texCoord);
+            }, WebGLRenderer.prototype._transformVertex = function(x, y, w, h, transformer) {
+                var cw = 2 / this._width, ch = -2 / this._height, m = transformer.matrix, a = cw * w * m[0], b = ch * w * m[1], c = cw * h * m[2], d = ch * h * m[3], e = cw * (x * m[0] + y * m[2] + m[4]) - 1, f = ch * (x * m[1] + y * m[3] + m[5]) + 1;
+                return [ e, f, a + e, b + f, a + c + e, b + d + f, e, f, a + c + e, b + d + f, c + e, d + f ];
+            }, WebGLRenderer.prototype._register = function(vertex, texCoord) {
+                var offset = 6 * this._numSprites;
+                ++this._numSprites;
+                for (var i = 0; i < 6; ++i) this._verticesCache[4 * (i + offset) + 0] = vertex[2 * i + 0], 
+                this._verticesCache[4 * (i + offset) + 1] = vertex[2 * i + 1], this._verticesCache[4 * (i + offset) + 2] = texCoord[2 * i + 0], 
+                this._verticesCache[4 * (i + offset) + 3] = texCoord[2 * i + 1];
+            }, WebGLRenderer.prototype._commit = function() {
+                this._numSprites > 0 && (this.context.bindBuffer(this.context.ARRAY_BUFFER, this._vertices), 
+                this.context.bufferSubData(this.context.ARRAY_BUFFER, 0, this._verticesCache.subarray(0, 24 * this._numSprites)), 
+                this.context.drawArrays(this.context.TRIANGLES, 0, 6 * this._numSprites), this._numSprites = 0);
+            }, WebGLRenderer.prototype._makeTexture = function(data) {
+                var texture = this.context.createTexture();
+                return this.context.bindTexture(this.context.TEXTURE_2D, texture), this.context.pixelStorei(this.context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_S, this.context.CLAMP_TO_EDGE), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_T, this.context.CLAMP_TO_EDGE), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MAG_FILTER, this.context.NEAREST), 
+                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MIN_FILTER, this.context.NEAREST), 
+                data instanceof HTMLImageElement ? this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data) : data instanceof HTMLCanvasElement ? this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data) : data instanceof ImageData && this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data), 
+                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture), texture;
+            }, WebGLRenderer.prototype._makeBuffer = function(data) {
+                var buffer = this.context.createBuffer();
+                return this.context.bindBuffer(this.context.ARRAY_BUFFER, buffer), this.context.bufferData(this.context.ARRAY_BUFFER, data, this.context.DYNAMIC_DRAW), 
+                buffer;
+            }, WebGLRenderer;
+        }(StateHoldingRenderer_1.StateHoldingRenderer);
+        exports.WebGLRenderer = WebGLRenderer;
+    }, {
+        "./RenderingHelper": 17,
+        "./RenderingState": 18,
+        "./StateHoldingRenderer": 19,
+        "./WebGLColor": 23,
+        "./WebGLShaderProgram": 27,
+        "./WebGLTextureAtlas": 28,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    27: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), ShaderProgramStack = function() {
+            function ShaderProgramStack(program) {
+                this._programs = [], this._programs.push(program);
+            }
+            return ShaderProgramStack.prototype.push = function(program) {
+                this._programs.push(program);
+            }, ShaderProgramStack.prototype.pop = function() {
+                return this._programs.pop();
+            }, ShaderProgramStack.prototype.top = function() {
+                return this._programs[this._programs.length - 1];
+            }, ShaderProgramStack;
+        }();
+        exports.ShaderProgramStack = ShaderProgramStack;
+        var WebGLShaderProgram = function(_super) {
+            function WebGLShaderProgram(context, fSrc, uniforms) {
+                var _this = this, vSrc = WebGLShaderProgram._DEFAULT_VERTEX_SHADER, fSrc = fSrc || WebGLShaderProgram._DEFAULT_FRAGMENT_SHADER, program = WebGLShaderProgram._makeShaderProgram(context, vSrc, fSrc);
+                return _this = _super.call(this, {
+                    fragmentShader: fSrc,
+                    uniforms: uniforms
+                }) || this, _this.program = program, _this._context = context, _this._aVertex = context.getAttribLocation(_this.program, "aVertex"), 
+                _this._uColor = context.getUniformLocation(_this.program, "uColor"), _this._uAlpha = context.getUniformLocation(_this.program, "uAlpha"), 
+                _this._uSampler = context.getUniformLocation(_this.program, "uSampler"), _this._uniformCaches = [], 
+                _this._uniformSetterTable = {
+                    float: _this._uniform1f.bind(_this),
+                    int: _this._uniform1i.bind(_this),
+                    vec2: _this._uniform2fv.bind(_this),
+                    vec3: _this._uniform3fv.bind(_this),
+                    vec4: _this._uniform4fv.bind(_this),
+                    ivec2: _this._uniform2iv.bind(_this),
+                    ivec3: _this._uniform3iv.bind(_this),
+                    ivec4: _this._uniform4iv.bind(_this),
+                    mat2: _this._uniformMatrix2fv.bind(_this),
+                    mat3: _this._uniformMatrix3fv.bind(_this),
+                    mat4: _this._uniformMatrix4fv.bind(_this)
+                }, _this;
+            }
+            return __extends(WebGLShaderProgram, _super), WebGLShaderProgram._makeShader = function(gl, typ, src) {
+                var shader = gl.createShader(typ);
+                if (gl.shaderSource(shader, src), gl.compileShader(shader), !gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    var msg = gl.getShaderInfoLog(shader);
+                    throw gl.deleteShader(shader), new Error(msg);
+                }
+                return shader;
+            }, WebGLShaderProgram._makeShaderProgram = function(gl, vSrc, fSrc) {
+                var program = gl.createProgram(), vShader = WebGLShaderProgram._makeShader(gl, gl.VERTEX_SHADER, vSrc);
+                gl.attachShader(program, vShader), gl.deleteShader(vShader);
+                var fShader = WebGLShaderProgram._makeShader(gl, gl.FRAGMENT_SHADER, fSrc);
+                if (gl.attachShader(program, fShader), gl.deleteShader(fShader), gl.linkProgram(program), 
+                !gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    var msg = gl.getProgramInfoLog(program);
+                    throw gl.deleteProgram(program), new Error(msg);
+                }
+                return program;
+            }, WebGLShaderProgram.prototype.set_aVertex = function(buffer) {
+                this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.enableVertexAttribArray(this._aVertex), 
+                this._context.vertexAttribPointer(this._aVertex, 4, this._context.FLOAT, !1, 0, 0);
+            }, WebGLShaderProgram.prototype.set_uColor = function(rgba) {
+                this._context.uniform4f(this._uColor, rgba[0], rgba[1], rgba[2], rgba[3]);
+            }, WebGLShaderProgram.prototype.set_uAlpha = function(alpha) {
+                this._context.uniform1f(this._uAlpha, alpha);
+            }, WebGLShaderProgram.prototype.set_uSampler = function(value) {
+                this._context.uniform1i(this._uSampler, value);
+            }, WebGLShaderProgram.prototype.updateUniforms = function() {
+                for (var i = 0; i < this._uniformCaches.length; ++i) {
+                    var cache = this._uniformCaches[i], value = this.uniforms[cache.name].value;
+                    (cache.isArray || value !== cache.beforeValue) && (cache.update(cache.loc, value), 
+                    cache.beforeValue = value);
+                }
+            }, WebGLShaderProgram.prototype.initUniforms = function() {
+                var _this = this, uniformCaches = [], uniforms = this.uniforms;
+                null != uniforms && Object.keys(uniforms).forEach(function(k) {
+                    var type = uniforms[k].type, isArray = !("int" === type || "float" === type), update = _this._uniformSetterTable[type];
+                    if (!update) throw g.ExceptionFactory.createAssertionError("WebGLShaderProgram#initUniforms: Uniform type '" + type + "' is not supported.");
+                    uniformCaches.push({
+                        name: k,
+                        update: update,
+                        beforeValue: null,
+                        isArray: isArray,
+                        loc: _this._context.getUniformLocation(_this.program, k)
+                    });
+                }), this._uniformCaches = uniformCaches;
+            }, WebGLShaderProgram.prototype.use = function() {
+                this._context.useProgram(this.program);
+            }, WebGLShaderProgram.prototype.unuse = function() {
+                this._context.useProgram(null);
+            }, WebGLShaderProgram.prototype.destroy = function() {
+                this._context.deleteProgram(this.program);
+            }, WebGLShaderProgram.prototype._uniform1f = function(loc, v) {
+                this._context.uniform1f(loc, v);
+            }, WebGLShaderProgram.prototype._uniform1i = function(loc, v) {
+                this._context.uniform1i(loc, v);
+            }, WebGLShaderProgram.prototype._uniform2fv = function(loc, v) {
+                this._context.uniform2fv(loc, v);
+            }, WebGLShaderProgram.prototype._uniform3fv = function(loc, v) {
+                this._context.uniform3fv(loc, v);
+            }, WebGLShaderProgram.prototype._uniform4fv = function(loc, v) {
+                this._context.uniform4fv(loc, v);
+            }, WebGLShaderProgram.prototype._uniform2iv = function(loc, v) {
+                this._context.uniform2iv(loc, v);
+            }, WebGLShaderProgram.prototype._uniform3iv = function(loc, v) {
+                this._context.uniform3iv(loc, v);
+            }, WebGLShaderProgram.prototype._uniform4iv = function(loc, v) {
+                this._context.uniform4iv(loc, v);
+            }, WebGLShaderProgram.prototype._uniformMatrix2fv = function(loc, v) {
+                this._context.uniformMatrix2fv(loc, !1, v);
+            }, WebGLShaderProgram.prototype._uniformMatrix3fv = function(loc, v) {
+                this._context.uniformMatrix3fv(loc, !1, v);
+            }, WebGLShaderProgram.prototype._uniformMatrix4fv = function(loc, v) {
+                this._context.uniformMatrix4fv(loc, !1, v);
+            }, WebGLShaderProgram._DEFAULT_VERTEX_SHADER = "#version 100\nprecision mediump float;\nattribute vec4 aVertex;\nvarying vec2 vTexCoord;\nvarying vec4 vColor;\nuniform vec4 uColor;\nuniform float uAlpha;\nvoid main() {    gl_Position = vec4(aVertex.xy, 0.0, 1.0);    vTexCoord = aVertex.zw;    vColor = uColor * uAlpha;}", 
+            WebGLShaderProgram._DEFAULT_FRAGMENT_SHADER = "#version 100\nprecision mediump float;\nvarying vec2 vTexCoord;\nvarying vec4 vColor;\nuniform sampler2D uSampler;\nvoid main() {    gl_FragColor = texture2D(uSampler, vTexCoord) * vColor;}", 
+            WebGLShaderProgram;
+        }(g.ShaderProgram);
+        exports.WebGLShaderProgram = WebGLShaderProgram;
+    }, {
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    28: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var WebGLTextureMap_1 = require("./WebGLTextureMap"), WebGLTextureAtlas = function() {
+            function WebGLTextureAtlas() {
+                this._maps = [], this._insertPos = 0, this.emptyTexturePixels = new Uint8Array(WebGLTextureAtlas.TEXTURE_SIZE * WebGLTextureAtlas.TEXTURE_SIZE * 4);
+            }
+            return WebGLTextureAtlas.prototype.clear = function() {
+                for (var i = 0; i < this._maps.length; ++i) this._maps[i].dispose();
+            }, WebGLTextureAtlas.prototype.showOccupancy = function() {
+                for (var i = 0; i < this._maps.length; ++i) console.log("occupancy[" + i + "]: " + this._maps[i].occupancy());
+            }, WebGLTextureAtlas.prototype._makeTextureForSurface = function(renderer, surface) {
+                var image = surface._drawable;
+                if (image && !image._texture) {
+                    var width = image.width, height = image.height;
+                    return width >= WebGLTextureAtlas.TEXTURE_SIZE || height >= WebGLTextureAtlas.TEXTURE_SIZE ? void renderer._makeTextureForSurface(surface) : void this._assign(renderer, surface, this._maps);
+                }
+            }, WebGLTextureAtlas.prototype._assign = function(renderer, surface, maps) {
+                for (var map, i = 0; i < maps.length; ++i) if (map = maps[(i + this._insertPos) % maps.length].insert(surface)) return this._register(renderer, map, surface._drawable), 
+                void (this._insertPos = i);
+                map = null, maps.length >= WebGLTextureAtlas.TEXTURE_COUNT && (map = maps.shift(), 
+                renderer._disposeTexture(map.texture), map.dispose(), renderer._clearTexture(this.emptyTexturePixels, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE, map.texture)), 
+                map || (map = new WebGLTextureMap_1.WebGLTextureMap(renderer._makeTextureRaw(WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE), 0, 0, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE)), 
+                maps.push(map), map = map.insert(surface), this._register(renderer, map, surface._drawable);
+            }, WebGLTextureAtlas.prototype._register = function(renderer, map, image) {
+                image._texture = map.texture, image._textureOffsetX = map.offsetX, image._textureOffsetY = map.offsetY, 
+                image._textureWidth = WebGLTextureAtlas.TEXTURE_SIZE, image._textureHeight = WebGLTextureAtlas.TEXTURE_SIZE, 
+                renderer._assignTexture(image, map.offsetX, map.offsetY, map.texture);
+            }, WebGLTextureAtlas.TEXTURE_SIZE = 1024, WebGLTextureAtlas.TEXTURE_COUNT = 16, 
+            WebGLTextureAtlas;
+        }();
+        exports.WebGLTextureAtlas = WebGLTextureAtlas;
+    }, {
+        "./WebGLTextureMap": 29
+    } ],
+    29: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var WebGLTextureMap = function() {
+            function WebGLTextureMap(texture, offsetX, offsetY, width, height) {
+                this.texture = texture, this.offsetX = offsetX, this.offsetY = offsetY, this._width = width, 
+                this._height = height;
+            }
+            return WebGLTextureMap.prototype.dispose = function() {
+                this._left && (this._left.dispose(), this._left = null), this._right && (this._right.dispose(), 
+                this._right = null), this._surface && (this._surface._drawable && (this._surface._drawable._texture = null), 
+                this._surface = null);
+            }, WebGLTextureMap.prototype.capacity = function() {
+                return this._width * this._height;
+            }, WebGLTextureMap.prototype.area = function() {
+                if (!this._surface) return 0;
+                var image = this._surface._drawable, a = image.width * image.height;
+                return this._left && (a += this._left.area()), this._right && (a += this._right.area()), 
+                a;
+            }, WebGLTextureMap.prototype.occupancy = function() {
+                return this.area() / this.capacity();
+            }, WebGLTextureMap.prototype.insert = function(surface) {
+                var image = surface._drawable, width = image.width + WebGLTextureMap.TEXTURE_MARGIN, height = image.height + WebGLTextureMap.TEXTURE_MARGIN;
+                if (this._surface) {
+                    if (this._left) {
+                        var left = this._left.insert(surface);
+                        if (left) return left;
+                    }
+                    if (this._right) {
+                        var right = this._right.insert(surface);
+                        if (right) return right;
+                    }
+                    return null;
+                }
+                if (this._width < width || this._height < height) return null;
+                var remainWidth = this._width - width, remainHeight = this._height - height;
+                return remainWidth <= remainHeight ? (this._left = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, height), 
+                this._right = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, this._width, remainHeight)) : (this._left = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, width, remainHeight), 
+                this._right = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, this._height)), 
+                this._surface = surface, this;
+            }, WebGLTextureMap.TEXTURE_MARGIN = 1, WebGLTextureMap;
+        }();
+        exports.WebGLTextureMap = WebGLTextureMap;
+    }, {} ],
+    30: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var SurfaceFactory, CanvasSurface_1 = require("../CanvasSurface"), RenderingHelper_1 = require("../RenderingHelper"), WebGLPrimarySurface_1 = require("../WebGLPrimarySurface"), WebGLBackSurface_1 = require("../WebGLBackSurface");
         !function(SurfaceFactory) {
             function createPrimarySurface(width, height, rendererCandidates) {
-                return new CanvasSurface_1.CanvasSurface(width, height);
+                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? new WebGLPrimarySurface_1.WebGLPrimarySurface(width, height) : new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
             }
             function createBackSurface(width, height, platform, rendererCandidates) {
-                return new CanvasSurface_1.CanvasSurface(width, height);
+                if (RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates)) {
+                    var renderer = platform.getPrimarySurface().renderer();
+                    return new WebGLBackSurface_1.WebGLBackSurface(width, height, renderer);
+                }
+                return new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
             }
             SurfaceFactory.createPrimarySurface = createPrimarySurface, SurfaceFactory.createBackSurface = createBackSurface;
         }(SurfaceFactory = exports.SurfaceFactory || (exports.SurfaceFactory = {}));
     }, {
-        "./CanvasSurface": 13
+        "../CanvasSurface": 14,
+        "../RenderingHelper": 17,
+        "../WebGLBackSurface": 21,
+        "../WebGLPrimarySurface": 24
     } ],
-    18: [ function(require, module, exports) {
+    31: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -967,10 +2024,9 @@ require = function e(t, n, r) {
                     offset: this.getOffsetFromEvent(pagePosition)
                 }), delete this.pointerEventLock[identifier]);
             }, InputAbstractHandler.prototype.getOffsetFromEvent = function(e) {
-                var bounding = this.inputView.getBoundingClientRect();
                 return {
-                    x: (e.pageX - Math.round(window.pageXOffset + bounding.left)) / this._xScale,
-                    y: (e.pageY - Math.round(window.pageYOffset + bounding.top)) / this._yScale
+                    x: e.offsetX,
+                    y: e.offsetY
                 };
             }, InputAbstractHandler.prototype.getScale = function() {
                 return {
@@ -982,9 +2038,9 @@ require = function e(t, n, r) {
         exports.InputAbstractHandler = InputAbstractHandler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 31
+        "@akashic/akashic-pdi": 44
     } ],
-    19: [ function(require, module, exports) {
+    32: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1031,9 +2087,9 @@ require = function e(t, n, r) {
         }(InputAbstractHandler_1.InputAbstractHandler);
         exports.MouseHandler = MouseHandler;
     }, {
-        "./InputAbstractHandler": 18
+        "./InputAbstractHandler": 31
     } ],
-    20: [ function(require, module, exports) {
+    33: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1060,19 +2116,19 @@ require = function e(t, n, r) {
                 return _this.onTouchDown = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
-                        _this.pointDown(touch.identifier, touch);
+                        _this.pointDown(touch.identifier, _this.convertToPagePosition(touch));
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
                 }, _this.onTouchMove = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
-                        _this.pointMove(touch.identifier, touch);
+                        _this.pointMove(touch.identifier, _this.convertToPagePosition(touch));
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
                 }, _this.onTouchUp = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
-                        _this.pointUp(touch.identifier, touch);
+                        _this.pointUp(touch.identifier, _this.convertToPagePosition(touch));
                     }
                     _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
                 }, _this;
@@ -1085,14 +2141,20 @@ require = function e(t, n, r) {
             }, TouchHandler.prototype.stop = function() {
                 _super.prototype.stop.call(this), this.inputView.removeEventListener("touchstart", this.onTouchDown), 
                 this.inputView.removeEventListener("touchmove", this.onTouchMove), this.inputView.removeEventListener("touchend", this.onTouchUp);
+            }, TouchHandler.prototype.convertToPagePosition = function(e) {
+                var bounding = this.inputView.getBoundingClientRect(), scale = this.getScale();
+                return {
+                    offsetX: (e.pageX - Math.round(window.pageXOffset + bounding.left)) / scale.x,
+                    offsetY: (e.pageY - Math.round(window.pageYOffset + bounding.top)) / scale.y
+                };
             }, TouchHandler;
         }(MouseHandler_1.MouseHandler);
         exports.TouchHandler = TouchHandler;
     }, {
         "../RuntimeInfo": 7,
-        "./MouseHandler": 19
+        "./MouseHandler": 32
     } ],
-    21: [ function(require, module, exports) {
+    34: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1115,7 +2177,7 @@ require = function e(t, n, r) {
         }();
         exports.AudioPluginManager = AudioPluginManager;
     }, {} ],
-    22: [ function(require, module, exports) {
+    35: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1133,7 +2195,7 @@ require = function e(t, n, r) {
             }
         };
     }, {} ],
-    23: [ function(require, module, exports) {
+    36: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1210,7 +2272,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    24: [ function(require, module, exports) {
+    37: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1271,7 +2333,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    25: [ function(require, module, exports) {
+    38: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1304,7 +2366,7 @@ require = function e(t, n, r) {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
                     for (var supportedExtensions = [ "ogg", "aac", "mp4" ], i = 0, len = supportedExtensions.length; i < len; i++) {
-                        var ext = supportedExtensions[i], supported = "no" !== audioElement.canPlayType("audio/" + ext) && "" !== audioElement.canPlayType("audio/" + ext);
+                        var ext = supportedExtensions[i], canPlay = audioElement.canPlayType("audio/" + ext), supported = "no" !== canPlay && "" !== canPlay;
                         supported && supportedFormats.push(ext);
                     }
                 } catch (e) {}
@@ -1313,10 +2375,10 @@ require = function e(t, n, r) {
         }();
         exports.HTMLAudioPlugin = HTMLAudioPlugin;
     }, {
-        "./HTMLAudioAsset": 23,
-        "./HTMLAudioPlayer": 24
+        "./HTMLAudioAsset": 36,
+        "./HTMLAudioPlayer": 37
     } ],
-    26: [ function(require, module, exports) {
+    39: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1370,16 +2432,17 @@ require = function e(t, n, r) {
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
     }, {
-        "../../utils/XHRLoader": 30,
-        "./WebAudioHelper": 27,
+        "../../utils/XHRLoader": 43,
+        "./WebAudioHelper": 40,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    27: [ function(require, module, exports) {
+    40: [ function(require, module, exports) {
         "use strict";
         var WebAudioHelper, AudioContext = window.AudioContext || window.webkitAudioContext, singleContext = null;
         !function(WebAudioHelper) {
             function getAudioContext() {
-                return singleContext || (singleContext = new AudioContext()), singleContext;
+                return singleContext || (singleContext = new AudioContext(), WebAudioHelper._workAroundSafari()), 
+                singleContext;
             }
             function createGainNode(context) {
                 return context.createGain ? context.createGain() : context.createGainNode();
@@ -1389,11 +2452,16 @@ require = function e(t, n, r) {
                 return sourceNode.start ? sourceNode : (sourceNode.start = sourceNode.noteOn, sourceNode.stop = sourceNode.noteOff, 
                 sourceNode);
             }
+            function _workAroundSafari() {
+                document.addEventListener("touchstart", function touchInitializeHandler() {
+                    document.removeEventListener("touchstart", touchInitializeHandler), singleContext.createBufferSource().start(0);
+                }, !0);
+            }
             WebAudioHelper.getAudioContext = getAudioContext, WebAudioHelper.createGainNode = createGainNode, 
-            WebAudioHelper.createBufferNode = createBufferNode;
+            WebAudioHelper.createBufferNode = createBufferNode, WebAudioHelper._workAroundSafari = _workAroundSafari;
         }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
     }, {} ],
-    28: [ function(require, module, exports) {
+    41: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1448,10 +2516,10 @@ require = function e(t, n, r) {
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
     }, {
-        "./WebAudioHelper": 27,
+        "./WebAudioHelper": 40,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    29: [ function(require, module, exports) {
+    42: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1480,7 +2548,7 @@ require = function e(t, n, r) {
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
                     for (var supportedExtensions = [ "ogg", "aac", "mp4" ], i = 0, len = supportedExtensions.length; i < len; i++) {
-                        var ext = supportedExtensions[i], supported = "no" !== audioElement.canPlayType("audio/" + ext) && "" !== audioElement.canPlayType("audio/" + ext);
+                        var ext = supportedExtensions[i], canPlay = audioElement.canPlayType("audio/" + ext), supported = "no" !== canPlay && "" !== canPlay;
                         supported && supportedFormats.push(ext);
                     }
                 } catch (e) {}
@@ -1489,10 +2557,10 @@ require = function e(t, n, r) {
         }();
         exports.WebAudioPlugin = WebAudioPlugin;
     }, {
-        "./WebAudioAsset": 26,
-        "./WebAudioPlayer": 28
+        "./WebAudioAsset": 39,
+        "./WebAudioPlayer": 41
     } ],
-    30: [ function(require, module, exports) {
+    43: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1530,7 +2598,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    31: [ function(require, module, exports) {
+    44: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
