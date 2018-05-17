@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 0.14.0
+## 0.13.18
 * v2のエンジンモジュールを以下に更新
   * akashic-engine@2.2.0
   * game-driver@1.1.1
