@@ -77,11 +77,11 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./canvas/RenderingHelper"), InputHandlerLayer_1 = require("./InputHandlerLayer"), ContainerController = function() {
-            function ContainerController() {
+        var g = require("@akashic/akashic-engine"), InputHandlerLayer_1 = require("./InputHandlerLayer"), ContainerController = function() {
+            function ContainerController(resourceFactory) {
                 this.container = null, this.surface = null, this.inputHandlerLayer = null, this.rootView = null, 
                 this.useResizeForScaling = !1, this.pointEventTrigger = new g.Trigger(), this._rendererReq = null, 
-                this._disablePreventDefault = !1;
+                this._disablePreventDefault = !1, this.resourceFactory = resourceFactory;
             }
             return ContainerController.prototype.initialize = function(param) {
                 this._rendererReq = param.rendererRequirement, this._disablePreventDefault = !!param.disablePreventDefault, 
@@ -100,7 +100,7 @@ require = function e(t, n, r) {
             }, ContainerController.prototype.unloadView = function() {
                 if (this.inputHandlerLayer.disablePointerEvent(), this.rootView) for (;this.rootView.firstChild; ) this.rootView.removeChild(this.rootView.firstChild);
             }, ContainerController.prototype._loadView = function() {
-                var _a = this._rendererReq, width = _a.primarySurfaceWidth, height = _a.primarySurfaceHeight, rc = _a.rendererCandidates, disablePreventDefault = this._disablePreventDefault;
+                var _a = this._rendererReq, width = _a.primarySurfaceWidth, height = _a.primarySurfaceHeight, disablePreventDefault = this._disablePreventDefault;
                 this.container = document.createDocumentFragment(), this.inputHandlerLayer ? (this.inputHandlerLayer.setViewSize({
                     width: width,
                     height: height
@@ -109,8 +109,8 @@ require = function e(t, n, r) {
                     width: width,
                     height: height,
                     disablePreventDefault: disablePreventDefault
-                }), this.surface = RenderingHelper_1.RenderingHelper.createPrimarySurface(width, height, rc), 
-                this.inputHandlerLayer.view.appendChild(this.surface.getHTMLElement()), this.container.appendChild(this.inputHandlerLayer.view);
+                }), this.surface = this.resourceFactory.createPrimarySurface(width, height), this.inputHandlerLayer.view.appendChild(this.surface.getHTMLElement()), 
+                this.container.appendChild(this.inputHandlerLayer.view);
             }, ContainerController.prototype._appendToRootView = function(rootView) {
                 rootView.appendChild(this.container), this.inputHandlerLayer.enablePointerEvent(), 
                 this.inputHandlerLayer.pointEventTrigger.add(this.pointEventTrigger.fire, this.pointEventTrigger);
@@ -119,7 +119,6 @@ require = function e(t, n, r) {
         exports.ContainerController = ContainerController;
     }, {
         "./InputHandlerLayer": 3,
-        "./canvas/RenderingHelper": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     3: [ function(require, module, exports) {
@@ -165,15 +164,16 @@ require = function e(t, n, r) {
         });
         var RafLooper_1 = require("./RafLooper"), ResourceFactory_1 = require("./ResourceFactory"), ContainerController_1 = require("./ContainerController"), AudioPluginManager_1 = require("./plugin/AudioPluginManager"), AudioManager_1 = require("./AudioManager"), AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), Platform = function() {
             function Platform(param) {
-                this.containerView = param.containerView, this.containerController = new ContainerController_1.ContainerController(), 
-                this.audioPluginManager = new AudioPluginManager_1.AudioPluginManager(), param.audioPlugins && this.audioPluginManager.tryInstallPlugin(param.audioPlugins), 
+                this.containerView = param.containerView, this.audioPluginManager = new AudioPluginManager_1.AudioPluginManager(), 
+                param.audioPlugins && this.audioPluginManager.tryInstallPlugin(param.audioPlugins), 
                 this.audioPluginManager.tryInstallPlugin(AudioPluginRegistry_1.AudioPluginRegistry.getRegisteredAudioPlugins()), 
                 this._audioManager = new AudioManager_1.AudioManager(), this.amflow = param.amflow, 
                 this._platformEventHandler = null, this._resourceFactory = param.resourceFactory || new ResourceFactory_1.ResourceFactory({
                     audioPluginManager: this.audioPluginManager,
                     platform: this,
                     audioManager: this._audioManager
-                }), this._rendererReq = null, this._disablePreventDefault = !!param.disablePreventDefault;
+                }), this.containerController = new ContainerController_1.ContainerController(this._resourceFactory), 
+                this._rendererReq = null, this._disablePreventDefault = !!param.disablePreventDefault;
             }
             return Platform.prototype.setPlatformEventHandler = function(handler) {
                 this.containerController && (this.containerController.pointEventTrigger.removeAll({
@@ -279,11 +279,12 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), HTMLImageAsset_1 = require("./asset/HTMLImageAsset"), HTMLVideoAsset_1 = require("./asset/HTMLVideoAsset"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), XHRScriptAsset_1 = require("./asset/XHRScriptAsset"), RenderingHelper_1 = require("./canvas/RenderingHelper"), GlyphFactory_1 = require("./canvas/GlyphFactory"), ResourceFactory = function(_super) {
+        var g = require("@akashic/akashic-engine"), HTMLImageAsset_1 = require("./asset/HTMLImageAsset"), HTMLVideoAsset_1 = require("./asset/HTMLVideoAsset"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), XHRScriptAsset_1 = require("./asset/XHRScriptAsset"), GlyphFactory_1 = require("./canvas/GlyphFactory"), SurfaceFactory_1 = require("./canvas/shims/SurfaceFactory"), ResourceFactory = function(_super) {
             function ResourceFactory(param) {
                 var _this = _super.call(this) || this;
                 return _this._audioPluginManager = param.audioPluginManager, _this._audioManager = param.audioManager, 
-                _this._platform = param.platform, _this;
+                _this._platform = param.platform, _this._surfaceFactory = new SurfaceFactory_1.SurfaceFactory(), 
+                _this;
             }
             return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
                 var activePlugin = this._audioPluginManager.getActivePlugin(), audioAsset = activePlugin.createAsset(id, assetPath, duration, system, loop, hint);
@@ -300,8 +301,10 @@ require = function e(t, n, r) {
                 return new XHRTextAsset_1.XHRTextAsset(id, assetPath);
             }, ResourceFactory.prototype.createScriptAsset = function(id, assetPath) {
                 return new XHRScriptAsset_1.XHRScriptAsset(id, assetPath);
+            }, ResourceFactory.prototype.createPrimarySurface = function(width, height) {
+                return this._surfaceFactory.createPrimarySurface(width, height, this._rendererCandidates);
             }, ResourceFactory.prototype.createSurface = function(width, height) {
-                return RenderingHelper_1.RenderingHelper.createBackSurface(width, height, this._platform, this._rendererCandidates);
+                return this._surfaceFactory.createBackSurface(width, height, this._rendererCandidates);
             }, ResourceFactory.prototype.createGlyphFactory = function(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
                 return new GlyphFactory_1.GlyphFactory(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight);
             }, ResourceFactory.prototype._onAudioAssetDestroyed = function(asset) {
@@ -314,8 +317,8 @@ require = function e(t, n, r) {
         "./asset/HTMLVideoAsset": 9,
         "./asset/XHRScriptAsset": 11,
         "./asset/XHRTextAsset": 12,
-        "./canvas/GlyphFactory": 16,
-        "./canvas/RenderingHelper": 17,
+        "./canvas/GlyphFactory": 14,
+        "./canvas/shims/SurfaceFactory": 18,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     7: [ function(require, module, exports) {
@@ -571,30 +574,6 @@ require = function e(t, n, r) {
     } ],
     13: [ function(require, module, exports) {
         "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var AffineTransformer = function() {
-            function AffineTransformer(rhs) {
-                rhs ? this.matrix = new Float32Array(rhs.matrix) : this.matrix = new Float32Array([ 1, 0, 0, 1, 0, 0 ]);
-            }
-            return AffineTransformer.prototype.scale = function(x, y) {
-                var m = this.matrix;
-                return m[0] *= x, m[1] *= x, m[2] *= y, m[3] *= y, this;
-            }, AffineTransformer.prototype.translate = function(x, y) {
-                var m = this.matrix;
-                return m[4] += m[0] * x + m[2] * y, m[5] += m[1] * x + m[3] * y, this;
-            }, AffineTransformer.prototype.transform = function(matrix) {
-                var m = this.matrix, a = matrix[0] * m[0] + matrix[1] * m[2], b = matrix[0] * m[1] + matrix[1] * m[3], c = matrix[2] * m[0] + matrix[3] * m[2], d = matrix[2] * m[1] + matrix[3] * m[3], e = matrix[4] * m[0] + matrix[5] * m[2] + m[4], f = matrix[4] * m[1] + matrix[5] * m[3] + m[5];
-                return m[0] = a, m[1] = b, m[2] = c, m[3] = d, m[4] = e, m[5] = f, this;
-            }, AffineTransformer.prototype.copyFrom = function(rhs) {
-                return this.matrix.set(rhs.matrix), this;
-            }, AffineTransformer;
-        }();
-        exports.AffineTransformer = AffineTransformer;
-    }, {} ],
-    14: [ function(require, module, exports) {
-        "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
                 __proto__: []
@@ -614,108 +593,29 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), Context2DRenderer_1 = require("./Context2DRenderer"), CanvasSurface = function(_super) {
-            function CanvasSurface(width, height, rendererCandidates) {
+        var g = require("@akashic/akashic-engine"), CanvasSurface = function(_super) {
+            function CanvasSurface(width, height) {
                 var _this = this, canvas = document.createElement("canvas");
                 return _this = _super.call(this, width, height, canvas) || this, canvas.width = width, 
-                canvas.height = height, _this.canvas = canvas, _this._rendererCandidates = rendererCandidates, 
-                _this._renderer = void 0, _this;
+                canvas.height = height, _this.canvas = canvas, _this._renderer = void 0, _this;
             }
-            return __extends(CanvasSurface, _super), CanvasSurface.prototype.context = function() {
-                return this.canvas.getContext("2d");
-            }, CanvasSurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this)), 
-                this._renderer;
-            }, CanvasSurface.prototype.getHTMLElement = function() {
+            return __extends(CanvasSurface, _super), CanvasSurface.prototype.getHTMLElement = function() {
                 return this.canvas;
-            }, CanvasSurface.prototype.changePhysicalScale = function(xScale, yScale) {
-                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
-                this._context.scale(xScale, yScale);
             }, CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
                 var canvasStyle = this.canvas.style;
                 "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
                 canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(xScale * this.width) + "px", 
                 canvasStyle.height = Math.floor(yScale * this.width) + "px");
-            }, CanvasSurface.prototype.isPlaying = function() {
-                throw g.ExceptionFactory.createAssertionError("CanvasSurface#isPlaying() is not implemented");
             }, CanvasSurface;
         }(g.Surface);
         exports.CanvasSurface = CanvasSurface;
     }, {
-        "./Context2DRenderer": 15,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    15: [ function(require, module, exports) {
-        "use strict";
-        var __extends = this && this.__extends || function() {
-            var extendStatics = Object.setPrototypeOf || {
-                __proto__: []
-            } instanceof Array && function(d, b) {
-                d.__proto__ = b;
-            } || function(d, b) {
-                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
-            };
-            return function(d, b) {
-                function __() {
-                    this.constructor = d;
-                }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
-            };
-        }();
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), Context2DRenderer = function(_super) {
-            function Context2DRenderer(surface) {
-                var _this = _super.call(this) || this;
-                return _this.surface = surface, _this.context = surface.context(), _this;
-            }
-            return __extends(Context2DRenderer, _super), Context2DRenderer.prototype.clear = function() {
-                this.context.clearRect(0, 0, this.surface.width, this.surface.height);
-            }, Context2DRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                this.context.drawImage(surface._drawable, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, width, height);
-            }, Context2DRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
-                for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
-            }, Context2DRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
-                RenderingHelper_1.RenderingHelper.drawSystemTextByContext2D(this.context, text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly);
-            }, Context2DRenderer.prototype.translate = function(x, y) {
-                this.context.translate(x, y);
-            }, Context2DRenderer.prototype.transform = function(matrix) {
-                this.context.transform.apply(this.context, matrix);
-            }, Context2DRenderer.prototype.opacity = function(opacity) {
-                this.context.globalAlpha *= opacity;
-            }, Context2DRenderer.prototype.save = function() {
-                this.context.save();
-            }, Context2DRenderer.prototype.restore = function() {
-                this.context.restore();
-            }, Context2DRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
-                var _fillStyle = this.context.fillStyle;
-                this.context.fillStyle = cssColor, this.context.fillRect(x, y, width, height), this.context.fillStyle = _fillStyle;
-            }, Context2DRenderer.prototype.setCompositeOperation = function(operation) {
-                this.context.globalCompositeOperation = RenderingHelper_1.RenderingHelper.toTextFromCompositeOperation(operation);
-            }, Context2DRenderer.prototype.setOpacity = function(opacity) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
-            }, Context2DRenderer.prototype.setTransform = function(matrix) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
-            }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
-            }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
-                return this.context.getImageData(sx, sy, sw, sh);
-            }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
-                void 0 === dirtyX && (dirtyX = 0), void 0 === dirtyY && (dirtyY = 0), void 0 === dirtyWidth && (dirtyWidth = imageData.width), 
-                void 0 === dirtyHeight && (dirtyHeight = imageData.height), this.context.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
-            }, Context2DRenderer;
-        }(g.Renderer);
-        exports.Context2DRenderer = Context2DRenderer;
-    }, {
-        "./RenderingHelper": 17,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ],
-    16: [ function(require, module, exports) {
+    14: [ function(require, module, exports) {
         "use strict";
         function createGlyphRenderedSurface(code, fontSize, cssFontFamily, baselineHeight, marginW, marginH, needImageData, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
-            var scale = fontSize < GlyphFactory._environmentMinimumFontSize ? fontSize / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scale), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scale), surface = new CanvasSurface_1.CanvasSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d"), str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
+            var scale = fontSize < GlyphFactory._environmentMinimumFontSize ? fontSize / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scale), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scale), surface = new Context2DSurface_1.Context2DSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d"), str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
             context.save(), context.font = fontWeightValue + fontSize + "px " + cssFontFamily, 
             context.textAlign = "left", context.textBaseline = "alphabetic", context.lineJoin = "bevel", 
             1 !== scale && context.scale(scale, scale), strokeWidth > 0 && (context.lineWidth = strokeWidth, 
@@ -791,7 +691,7 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), CanvasSurface_1 = require("./CanvasSurface"), genericFontFamilyNames = [ "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui" ], GlyphFactory = function(_super) {
+        var g = require("@akashic/akashic-engine"), Context2DSurface_1 = require("./context2d/Context2DSurface"), genericFontFamilyNames = [ "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui" ], GlyphFactory = function(_super) {
             function GlyphFactory(fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
                 var _this = _super.call(this, fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) || this;
                 _this._glyphAreas = {}, _this._cssFontFamily = fontFamily2CSSFontFamily(fontFamily);
@@ -820,15 +720,15 @@ require = function e(t, n, r) {
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;
     }, {
-        "./CanvasSurface": 14,
+        "./context2d/Context2DSurface": 17,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    17: [ function(require, module, exports) {
+    15: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var RenderingHelper, g = require("@akashic/akashic-engine"), SurfaceFactory_1 = require("./shims/SurfaceFactory");
+        var RenderingHelper;
         !function(RenderingHelper) {
             function toPowerOfTwo(x) {
                 if (0 !== (x & x - 1)) {
@@ -840,7 +740,106 @@ require = function e(t, n, r) {
             function clamp(x) {
                 return Math.min(Math.max(x, 0), 1);
             }
-            function toTextFromCompositeOperation(operation) {
+            function usedWebGL(rendererCandidates) {
+                var used = !1;
+                return rendererCandidates && 0 < rendererCandidates.length && (used = "webgl" === rendererCandidates[0]), 
+                used;
+            }
+            RenderingHelper.toPowerOfTwo = toPowerOfTwo, RenderingHelper.clamp = clamp, RenderingHelper.usedWebGL = usedWebGL;
+        }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
+    }, {} ],
+    16: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), Context2DRenderer = function(_super) {
+            function Context2DRenderer(surface) {
+                var _this = _super.call(this) || this;
+                return _this.surface = surface, _this.context = surface.context(), _this;
+            }
+            return __extends(Context2DRenderer, _super), Context2DRenderer.prototype.clear = function() {
+                this.context.clearRect(0, 0, this.surface.width, this.surface.height);
+            }, Context2DRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+                this.context.drawImage(surface._drawable, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, width, height);
+            }, Context2DRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+                for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
+            }, Context2DRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+                var fontFamilyValue, textAlignValue, textBaselineValue, context = this.context;
+                switch (context.save(), fontFamily) {
+                  case g.FontFamily.Monospace:
+                    fontFamilyValue = "monospace";
+                    break;
+
+                  case g.FontFamily.Serif:
+                    fontFamilyValue = "serif";
+                    break;
+
+                  default:
+                    fontFamilyValue = "sans-serif";
+                }
+                switch (context.font = fontSize + "px " + fontFamilyValue, textAlign) {
+                  case g.TextAlign.Right:
+                    textAlignValue = "right";
+                    break;
+
+                  case g.TextAlign.Center:
+                    textAlignValue = "center";
+                    break;
+
+                  default:
+                    textAlignValue = "left";
+                }
+                switch (context.textAlign = textAlignValue, textBaseline) {
+                  case g.TextBaseline.Top:
+                    textBaselineValue = "top";
+                    break;
+
+                  case g.TextBaseline.Middle:
+                    textBaselineValue = "middle";
+                    break;
+
+                  case g.TextBaseline.Bottom:
+                    textBaselineValue = "bottom";
+                    break;
+
+                  default:
+                    textBaselineValue = "alphabetic";
+                }
+                context.textBaseline = textBaselineValue, context.lineJoin = "bevel", strokeWidth > 0 && (context.lineWidth = strokeWidth, 
+                context.strokeStyle = strokeColor, "undefined" == typeof maxWidth ? context.strokeText(text, x, y) : context.strokeText(text, x, y, maxWidth)), 
+                strokeOnly || (context.fillStyle = textColor, "undefined" == typeof maxWidth ? context.fillText(text, x, y) : context.fillText(text, x, y, maxWidth)), 
+                context.restore();
+            }, Context2DRenderer.prototype.translate = function(x, y) {
+                this.context.translate(x, y);
+            }, Context2DRenderer.prototype.transform = function(matrix) {
+                this.context.transform.apply(this.context, matrix);
+            }, Context2DRenderer.prototype.opacity = function(opacity) {
+                this.context.globalAlpha *= opacity;
+            }, Context2DRenderer.prototype.save = function() {
+                this.context.save();
+            }, Context2DRenderer.prototype.restore = function() {
+                this.context.restore();
+            }, Context2DRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                var _fillStyle = this.context.fillStyle;
+                this.context.fillStyle = cssColor, this.context.fillRect(x, y, width, height), this.context.fillStyle = _fillStyle;
+            }, Context2DRenderer.prototype.setCompositeOperation = function(operation) {
                 var operationText;
                 switch (operation) {
                   case g.CompositeOperation.SourceAtop:
@@ -886,123 +885,25 @@ require = function e(t, n, r) {
                   default:
                     operationText = "source-over";
                 }
-                return operationText;
-            }
-            function toCompositeOperationFromText(operationText) {
-                var operation;
-                switch (operationText) {
-                  case "source-atop":
-                    operation = g.CompositeOperation.SourceAtop;
-                    break;
-
-                  case "lighter":
-                    operation = g.CompositeOperation.Lighter;
-                    break;
-
-                  case "copy":
-                    operation = g.CompositeOperation.Copy;
-                    break;
-
-                  default:
-                    operation = g.CompositeOperation.SourceOver;
-                }
-                return operation;
-            }
-            function drawSystemTextByContext2D(context, text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
-                var fontFamilyValue, textAlignValue, textBaselineValue;
-                switch (context.save(), fontFamily) {
-                  case g.FontFamily.Monospace:
-                    fontFamilyValue = "monospace";
-                    break;
-
-                  case g.FontFamily.Serif:
-                    fontFamilyValue = "serif";
-                    break;
-
-                  default:
-                    fontFamilyValue = "sans-serif";
-                }
-                switch (context.font = fontSize + "px " + fontFamilyValue, textAlign) {
-                  case g.TextAlign.Right:
-                    textAlignValue = "right";
-                    break;
-
-                  case g.TextAlign.Center:
-                    textAlignValue = "center";
-                    break;
-
-                  default:
-                    textAlignValue = "left";
-                }
-                switch (context.textAlign = textAlignValue, textBaseline) {
-                  case g.TextBaseline.Top:
-                    textBaselineValue = "top";
-                    break;
-
-                  case g.TextBaseline.Middle:
-                    textBaselineValue = "middle";
-                    break;
-
-                  case g.TextBaseline.Bottom:
-                    textBaselineValue = "bottom";
-                    break;
-
-                  default:
-                    textBaselineValue = "alphabetic";
-                }
-                context.textBaseline = textBaselineValue, context.lineJoin = "bevel", strokeWidth > 0 && (context.lineWidth = strokeWidth, 
-                context.strokeStyle = strokeColor, "undefined" == typeof maxWidth ? context.strokeText(text, x, y) : context.strokeText(text, x, y, maxWidth)), 
-                strokeOnly || (context.fillStyle = textColor, "undefined" == typeof maxWidth ? context.fillText(text, x, y) : context.fillText(text, x, y, maxWidth)), 
-                context.restore();
-            }
-            function createPrimarySurface(width, height, rendererCandidates) {
-                return SurfaceFactory_1.SurfaceFactory.createPrimarySurface(width, height, rendererCandidates);
-            }
-            function createBackSurface(width, height, platform, rendererCandidates) {
-                return SurfaceFactory_1.SurfaceFactory.createBackSurface(width, height, platform, rendererCandidates);
-            }
-            function usedWebGL(rendererCandidates) {
-                var used = !1;
-                return rendererCandidates && 0 < rendererCandidates.length && (used = "webgl" === rendererCandidates[0]), 
-                used;
-            }
-            function transformCoordinateSystem(matrix, height) {
-                matrix[1] *= -1, matrix[3] *= -1, matrix[5] = -matrix[5] + height;
-            }
-            RenderingHelper.toPowerOfTwo = toPowerOfTwo, RenderingHelper.clamp = clamp, RenderingHelper.toTextFromCompositeOperation = toTextFromCompositeOperation, 
-            RenderingHelper.toCompositeOperationFromText = toCompositeOperationFromText, RenderingHelper.drawSystemTextByContext2D = drawSystemTextByContext2D, 
-            RenderingHelper.createPrimarySurface = createPrimarySurface, RenderingHelper.createBackSurface = createBackSurface, 
-            RenderingHelper.usedWebGL = usedWebGL, RenderingHelper.transformCoordinateSystem = transformCoordinateSystem;
-        }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
+                this.context.globalCompositeOperation = operationText;
+            }, Context2DRenderer.prototype.setOpacity = function(opacity) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
+            }, Context2DRenderer.prototype.setTransform = function(matrix) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
+            }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
+                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
+            }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
+                return this.context.getImageData(sx, sy, sw, sh);
+            }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+                void 0 === dirtyX && (dirtyX = 0), void 0 === dirtyY && (dirtyY = 0), void 0 === dirtyWidth && (dirtyWidth = imageData.width), 
+                void 0 === dirtyHeight && (dirtyHeight = imageData.height), this.context.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+            }, Context2DRenderer;
+        }(g.Renderer);
+        exports.Context2DRenderer = Context2DRenderer;
     }, {
-        "./shims/SurfaceFactory": 30,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    18: [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var AffineTransformer_1 = require("./AffineTransformer"), RenderingState = function() {
-            function RenderingState(rhs) {
-                rhs ? (this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
-                this.transformer = new AffineTransformer_1.AffineTransformer(rhs.transformer)) : (this.globalAlpha = 1, 
-                this.globalCompositeOperation = "source-over", this.transformer = new AffineTransformer_1.AffineTransformer());
-            }
-            return RenderingState.prototype.copyFrom = function(rhs) {
-                return this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
-                this.transformer.copyFrom(rhs.transformer), this;
-            }, RenderingState.prototype.updateFrom = function(rhs) {
-                return this.globalAlpha *= rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
-                this.transformer.transform(Array.prototype.slice.call(rhs.transformer.matrix)), 
-                this;
-            }, RenderingState;
-        }();
-        exports.RenderingState = RenderingState;
-    }, {
-        "./AffineTransformer": 13
-    } ],
-    19: [ function(require, module, exports) {
+    17: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -1023,75 +924,98 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), RenderingState_1 = require("./RenderingState"), StateHoldingRenderer = function(_super) {
-            function StateHoldingRenderer(capacity) {
-                var _this = _super.call(this) || this;
-                return _this._stateStack = [], _this._stateStackPointer = 0, _this._capacity = 0, 
-                _this._reallocation(0 < capacity ? capacity : StateHoldingRenderer.DEFAULT_CAPACITY), 
-                _this;
+        var Context2DRenderer_1 = require("./Context2DRenderer"), CanvasSurface_1 = require("../CanvasSurface"), Context2DSurface = function(_super) {
+            function Context2DSurface() {
+                return null !== _super && _super.apply(this, arguments) || this;
             }
-            return __extends(StateHoldingRenderer, _super), StateHoldingRenderer.prototype.save = function() {
-                this._pushState();
-            }, StateHoldingRenderer.prototype.restore = function() {
-                this._popState();
-            }, StateHoldingRenderer.prototype.translate = function(x, y) {
-                this.currentState().transformer.translate(x, y);
-            }, StateHoldingRenderer.prototype.transform = function(matrix) {
-                this.currentState().transformer.transform(matrix);
-            }, StateHoldingRenderer.prototype.opacity = function(opacity) {
-                this.currentState().globalAlpha *= opacity;
-            }, StateHoldingRenderer.prototype.setCompositeOperation = function(operation) {
-                this.currentState().globalCompositeOperation = RenderingHelper_1.RenderingHelper.toTextFromCompositeOperation(operation);
-            }, StateHoldingRenderer.prototype.currentState = function() {
-                return this._stateStack[this._stateStackPointer];
-            }, StateHoldingRenderer.prototype.capacity = function() {
-                return this._capacity;
-            }, StateHoldingRenderer.prototype.clear = function() {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#clear() is not implemented");
-            }, StateHoldingRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, destOffsetX, destOffsetY) {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawImage() is not implemented");
-            }, StateHoldingRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSprites() is not implemented");
-            }, StateHoldingRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#drawSystemText() is not implemented");
-            }, StateHoldingRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#fillRect() is not implemented");
-            }, StateHoldingRenderer.prototype.setTransform = function(matrix) {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setTransform() is not implemented");
-            }, StateHoldingRenderer.prototype.setOpacity = function(opacity) {
-                throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#setOpacity() is not implemented");
-            }, StateHoldingRenderer.prototype._pushState = function() {
-                var old = this.currentState();
-                ++this._stateStackPointer, this._isOverCapacity && this._reallocation(this._stateStackPointer + 1), 
-                this.currentState().copyFrom(old);
-            }, StateHoldingRenderer.prototype._popState = function() {
-                if (!(this._stateStackPointer > 0)) throw g.ExceptionFactory.createAssertionError("StateHoldingRenderer#restore: state stack under-flow.");
-                --this._stateStackPointer;
-            }, StateHoldingRenderer.prototype._isOverCapacity = function() {
-                return this._capacity <= this._stateStackPointer;
-            }, StateHoldingRenderer.prototype._reallocation = function(newCapacity) {
-                var oldCapacity = this._capacity;
-                if (oldCapacity < newCapacity) {
-                    newCapacity < 2 * oldCapacity ? this._capacity *= 2 : this._capacity = newCapacity;
-                    for (var i = oldCapacity; i < this._capacity; ++i) this._stateStack.push(new RenderingState_1.RenderingState());
-                }
-            }, StateHoldingRenderer.DEFAULT_CAPACITY = 16, StateHoldingRenderer;
-        }(g.Renderer);
-        exports.StateHoldingRenderer = StateHoldingRenderer;
+            return __extends(Context2DSurface, _super), Context2DSurface.prototype.context = function() {
+                return this._context || (this._context = this.canvas.getContext("2d")), this._context;
+            }, Context2DSurface.prototype.renderer = function() {
+                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this)), 
+                this._renderer;
+            }, Context2DSurface.prototype.changePhysicalScale = function(xScale, yScale) {
+                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
+                this._context.scale(xScale, yScale);
+            }, Context2DSurface.prototype.isPlaying = function() {
+                return !1;
+            }, Context2DSurface;
+        }(CanvasSurface_1.CanvasSurface);
+        exports.Context2DSurface = Context2DSurface;
     }, {
-        "./RenderingHelper": 17,
-        "./RenderingState": 18,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
+        "../CanvasSurface": 13,
+        "./Context2DRenderer": 16
     } ],
-    20: [ function(require, module, exports) {
+    18: [ function(require, module, exports) {
         "use strict";
-        function getSystemTextOperations(surface) {
-            return surface._systemTextOps;
-        }
         Object.defineProperty(exports, "__esModule", {
             value: !0
-        }), exports.getSystemTextOperations = getSystemTextOperations;
+        });
+        var RenderingHelper_1 = require("../RenderingHelper"), Context2DSurface_1 = require("../context2d/Context2DSurface"), WebGLSharedObject_1 = require("../webgl/WebGLSharedObject"), SurfaceFactory = function() {
+            function SurfaceFactory() {}
+            return SurfaceFactory.prototype.createPrimarySurface = function(width, height, rendererCandidates) {
+                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? (this._shared || (this._shared = new WebGLSharedObject_1.WebGLSharedObject(width, height)), 
+                this._shared.getPrimarySurface()) : new Context2DSurface_1.Context2DSurface(width, height);
+            }, SurfaceFactory.prototype.createBackSurface = function(width, height, rendererCandidates) {
+                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? this._shared.createBackSurface(width, height) : new Context2DSurface_1.Context2DSurface(width, height);
+            }, SurfaceFactory;
+        }();
+        exports.SurfaceFactory = SurfaceFactory;
+    }, {
+        "../RenderingHelper": 15,
+        "../context2d/Context2DSurface": 17,
+        "../webgl/WebGLSharedObject": 28
+    } ],
+    19: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var AffineTransformer = function() {
+            function AffineTransformer(rhs) {
+                rhs ? this.matrix = new Float32Array(rhs.matrix) : this.matrix = new Float32Array([ 1, 0, 0, 1, 0, 0 ]);
+            }
+            return AffineTransformer.prototype.scale = function(x, y) {
+                var m = this.matrix;
+                return m[0] *= x, m[1] *= x, m[2] *= y, m[3] *= y, this;
+            }, AffineTransformer.prototype.translate = function(x, y) {
+                var m = this.matrix;
+                return m[4] += m[0] * x + m[2] * y, m[5] += m[1] * x + m[3] * y, this;
+            }, AffineTransformer.prototype.transform = function(matrix) {
+                var m = this.matrix, a = matrix[0] * m[0] + matrix[1] * m[2], b = matrix[0] * m[1] + matrix[1] * m[3], c = matrix[2] * m[0] + matrix[3] * m[2], d = matrix[2] * m[1] + matrix[3] * m[3], e = matrix[4] * m[0] + matrix[5] * m[2] + m[4], f = matrix[4] * m[1] + matrix[5] * m[3] + m[5];
+                return m[0] = a, m[1] = b, m[2] = c, m[3] = d, m[4] = e, m[5] = f, this;
+            }, AffineTransformer.prototype.setTransform = function(matrix) {
+                var m = this.matrix;
+                m[0] = matrix[0], m[1] = matrix[1], m[2] = matrix[2], m[3] = matrix[3], m[4] = matrix[4], 
+                m[5] = matrix[5];
+            }, AffineTransformer.prototype.copyFrom = function(rhs) {
+                return this.matrix.set(rhs.matrix), this;
+            }, AffineTransformer;
+        }();
+        exports.AffineTransformer = AffineTransformer;
     }, {} ],
+    20: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), AffineTransformer_1 = require("./AffineTransformer"), RenderingState = function() {
+            function RenderingState(rhs) {
+                rhs ? (this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
+                this.transformer = new AffineTransformer_1.AffineTransformer(rhs.transformer), this.shaderProgram = rhs.shaderProgram) : (this.globalAlpha = 1, 
+                this.globalCompositeOperation = g.CompositeOperation.SourceOver, this.transformer = new AffineTransformer_1.AffineTransformer(), 
+                this.shaderProgram = null);
+            }
+            return RenderingState.prototype.copyFrom = function(rhs) {
+                return this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
+                this.transformer.copyFrom(rhs.transformer), this.shaderProgram = rhs.shaderProgram, 
+                this;
+            }, RenderingState;
+        }();
+        exports.RenderingState = RenderingState;
+    }, {
+        "./AffineTransformer": 19,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
     21: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
@@ -1113,30 +1037,22 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), WebGLBackSurfaceRenderer_1 = require("./WebGLBackSurfaceRenderer"), WebGLBackSurface = function(_super) {
-            function WebGLBackSurface(width, height, webGLRenderer) {
-                var _this = _super.call(this, width, height) || this;
-                _this._systemTextOps = [], _this._webGLRenderer = webGLRenderer;
-                var texWidth = Math.ceil(width), texHeight = Math.ceil(height), renderTarget = webGLRenderer.createTextureFrameBuffer(texWidth, texHeight);
-                return _this._frameBuffer = renderTarget.frameBuffer, _this._drawable = {}, _this._drawable._texture = renderTarget.texture, 
-                _this._drawable._textureOffsetX = 0, _this._drawable._textureOffsetY = 0, _this._drawable._textureWidth = texWidth, 
-                _this._drawable._textureHeight = texHeight, _this;
+        var WebGLBackSurfaceRenderer_1 = require("./WebGLBackSurfaceRenderer"), WebGLPrimarySurface_1 = require("./WebGLPrimarySurface"), WebGLBackSurface = function(_super) {
+            function WebGLBackSurface() {
+                return null !== _super && _super.apply(this, arguments) || this;
             }
             return __extends(WebGLBackSurface, _super), WebGLBackSurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new WebGLBackSurfaceRenderer_1.WebGLBackSurfaceRenderer(this)), 
+                return this._renderer || (this._renderer = new WebGLBackSurfaceRenderer_1.WebGLBackSurfaceRenderer(this, this._shared)), 
                 this._renderer;
             }, WebGLBackSurface.prototype.destroy = function() {
-                this._webGLRenderer.context.deleteFramebuffer(this._frameBuffer), this._frameBuffer = void 0, 
-                this._webGLRenderer._disposeTexture(this._drawable._texture), this._webGLRenderer.context.deleteTexture(this._drawable._texture), 
-                this._drawable._texture = void 0, _super.prototype.destroy.call(this);
-            }, WebGLBackSurface.prototype.isPlaying = function() {
-                throw g.ExceptionFactory.createAssertionError("WebGLBackSurface#isPlaying() is not implemented");
+                this._renderer && this._renderer.destroy(), this._renderer = void 0, this._drawable = void 0, 
+                _super.prototype.destroy.call(this);
             }, WebGLBackSurface;
-        }(g.Surface);
+        }(WebGLPrimarySurface_1.WebGLPrimarySurface);
         exports.WebGLBackSurface = WebGLBackSurface;
     }, {
         "./WebGLBackSurfaceRenderer": 22,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
+        "./WebGLPrimarySurface": 24
     } ],
     22: [ function(require, module, exports) {
         "use strict";
@@ -1159,83 +1075,37 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("./RenderingHelper"), RenderingState_1 = require("./RenderingState"), SystemText_1 = require("./SystemText"), WebGLShaderProgram_1 = require("./WebGLShaderProgram"), WebGLBackSurfaceRenderer = function(_super) {
-            function WebGLBackSurfaceRenderer(surface) {
-                var _this = _super.call(this) || this;
-                return _this._surface = surface, _this._renderer = surface._webGLRenderer, _this._program = _this._renderer.getDefaultShaderProgram(), 
-                _this._shaderProgramStack = new WebGLShaderProgram_1.ShaderProgramStack(_this._program), 
-                _this;
+        var WebGLRenderer_1 = require("./WebGLRenderer"), RenderingState_1 = require("./RenderingState"), WebGLBackSurfaceRenderer = function(_super) {
+            function WebGLBackSurfaceRenderer(surface, shared) {
+                var _this = _super.call(this, shared, shared.createRenderTarget(surface.width, surface.height)) || this;
+                return surface._drawable = {
+                    texture: _this._renderTarget.texture,
+                    textureOffsetX: 0,
+                    textureOffsetY: 0,
+                    textureWidth: surface.width,
+                    textureHeight: surface.height
+                }, _this;
             }
-            return __extends(WebGLBackSurfaceRenderer, _super), WebGLBackSurfaceRenderer.prototype.translate = function(x, y) {
-                this._renderer.translate(x, y);
-            }, WebGLBackSurfaceRenderer.prototype.transform = function(matrix) {
-                this._renderer.transform(matrix);
-            }, WebGLBackSurfaceRenderer.prototype.opacity = function(opacity) {
-                this._renderer.opacity(opacity);
-            }, WebGLBackSurfaceRenderer.prototype.save = function() {
-                this._renderer.save(), this._shaderProgramStack.push(this._program);
-            }, WebGLBackSurfaceRenderer.prototype.restore = function() {
-                this._renderer.restore(), this._program = this._shaderProgramStack.pop();
-            }, WebGLBackSurfaceRenderer.prototype.setCompositeOperation = function(operation) {
-                this._renderer.setCompositeOperation(operation);
-            }, WebGLBackSurfaceRenderer.prototype.setTransform = function(matrix) {
-                this._renderer.setTransform(matrix);
-            }, WebGLBackSurfaceRenderer.prototype.setOpacity = function(opacity) {
-                this._renderer.setOpacity(opacity);
-            }, WebGLBackSurfaceRenderer.prototype.clear = function() {
-                this._renderer.clear(), this._surface._systemTextOps = [];
-            }, WebGLBackSurfaceRenderer.prototype.begin = function() {
-                _super.prototype.begin.call(this), this._renderer.pushRenderTarget(this._surface);
+            return __extends(WebGLBackSurfaceRenderer, _super), WebGLBackSurfaceRenderer.prototype.begin = function() {
+                _super.prototype.begin.call(this), this.save();
+                var rs = new RenderingState_1.RenderingState(this.currentState()), matrix = rs.transformer.matrix;
+                matrix[1] *= -1, matrix[3] *= -1, matrix[5] = -matrix[5] + this._renderTarget.height, 
+                this.currentState().copyFrom(rs), this._shared.pushRenderTarget(this._renderTarget);
             }, WebGLBackSurfaceRenderer.prototype.end = function() {
-                this._renderer.popRenderTarget(), _super.prototype.end.call(this);
-            }, WebGLBackSurfaceRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
-                this._renderer.drawSprites(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count);
-            }, WebGLBackSurfaceRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
-                var op = {
-                    state: new RenderingState_1.RenderingState(this._renderer.currentState()),
-                    parameter: arguments
-                };
-                RenderingHelper_1.RenderingHelper.transformCoordinateSystem(op.state.transformer.matrix, this._surface.height), 
-                this._surface._systemTextOps.push(op);
-            }, WebGLBackSurfaceRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                this._renderer._drawImageExcludingSystemText(surface, this._program, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
-                var srcOps = SystemText_1.getSystemTextOperations(surface);
-                if (srcOps) for (var i = 0; i < srcOps.length; i = i + 1 | 0) {
-                    var op = {
-                        state: new RenderingState_1.RenderingState(this._renderer.currentState()).updateFrom(srcOps[i].state),
-                        parameter: srcOps[i].parameter
-                    };
-                    RenderingHelper_1.RenderingHelper.transformCoordinateSystem(op.state.transformer.matrix, this._surface.height), 
-                    this._surface._systemTextOps.push(op);
-                }
-            }, WebGLBackSurfaceRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
-                this._renderer.fillRect(x, y, width, height, cssColor);
-            }, WebGLBackSurfaceRenderer.prototype.setShaderProgram = function(shaderProgram) {
-                this._program = this._renderer.initializeShaderProgram(shaderProgram);
-            }, WebGLBackSurfaceRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
-                return null;
-            }, WebGLBackSurfaceRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {}, 
-            WebGLBackSurfaceRenderer.prototype._subImage = function(imageData, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                for (var src = imageData.data, dst = new Uint8Array(width * height * 4), j = 0, d = 0; j < height; j++) for (var s = 4 * (imageData.width * (offsetY + j) + offsetX), i = 0, len = 4 * width; i < len; i++) dst[d++] = src[s++];
-                var gl = this._renderer.context;
-                gl.bindTexture(gl.TEXTURE_2D, this._surface._drawable._texture), gl.texSubImage2D(gl.TEXTURE_2D, 0, canvasOffsetX, canvasOffsetY, width, height, gl.RGBA, gl.UNSIGNED_BYTE, dst), 
-                this._renderer.context.bindTexture(this._renderer.context.TEXTURE_2D, this._renderer._currentTexture);
+                this.restore(), this._shared.popRenderTarget(), _super.prototype.end.call(this);
             }, WebGLBackSurfaceRenderer;
-        }(g.Renderer);
+        }(WebGLRenderer_1.WebGLRenderer);
         exports.WebGLBackSurfaceRenderer = WebGLBackSurfaceRenderer;
     }, {
-        "./RenderingHelper": 17,
-        "./RenderingState": 18,
-        "./SystemText": 20,
-        "./WebGLShaderProgram": 27,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
+        "./RenderingState": 20,
+        "./WebGLRenderer": 26
     } ],
     23: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var WebGLColor, RenderingHelper_1 = require("./RenderingHelper");
+        var WebGLColor, RenderingHelper_1 = require("../RenderingHelper");
         !function(WebGLColor) {
             function get(color) {
                 var rgba = "string" == typeof color ? WebGLColor._toColor(color) : [ color[0], color[1], color[2], color[3] ];
@@ -1409,7 +1279,7 @@ require = function e(t, n, r) {
             }, WebGLColor.get = get, WebGLColor._hsl2rgb = _hsl2rgb, WebGLColor._toColor = _toColor;
         }(WebGLColor = exports.WebGLColor || (exports.WebGLColor = {}));
     }, {
-        "./RenderingHelper": 17
+        "../RenderingHelper": 15
     } ],
     24: [ function(require, module, exports) {
         "use strict";
@@ -1432,35 +1302,28 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var CanvasSurface_1 = require("./CanvasSurface"), WebGLPrimarySurfaceRenderer_1 = require("./WebGLPrimarySurfaceRenderer"), WebGLPrimarySurface = function(_super) {
-            function WebGLPrimarySurface(width, height, zIndexes) {
-                var _this = _super.call(this, width, height, [ "webgl" ]) || this;
-                return _this._upperSurface = new CanvasSurface_1.CanvasSurface(width, height), _this.setCanvasStyle(zIndexes), 
-                _this;
+        var CanvasSurface_1 = require("../CanvasSurface"), WebGLPrimarySurfaceRenderer_1 = require("./WebGLPrimarySurfaceRenderer"), WebGLPrimarySurface = function(_super) {
+            function WebGLPrimarySurface(shared, width, height) {
+                var _this = _super.call(this, width, height) || this;
+                return _this.canvas.style.position = "absolute", _this._shared = shared, _this;
             }
             return __extends(WebGLPrimarySurface, _super), WebGLPrimarySurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new WebGLPrimarySurfaceRenderer_1.WebGLPrimarySurfaceRenderer(this)), 
+                return this._renderer || (this._renderer = new WebGLPrimarySurfaceRenderer_1.WebGLPrimarySurfaceRenderer(this._shared, this._shared.getPrimaryRenderTarget(this.width, this.height))), 
                 this._renderer;
-            }, WebGLPrimarySurface.prototype.changeCanvasSize = function(width, height) {
-                var xScale = width / this.width, yScale = height / this.height;
-                _super.prototype.changeVisualScale.call(this, xScale, yScale), this._upperSurface.changeVisualScale(xScale, yScale);
-            }, WebGLPrimarySurface.prototype.setCanvasStyle = function(zIndexes) {
-                this._upperSurface.canvas.style.position = "absolute", this.canvas.style.position = "absolute", 
-                zIndexes ? (this.canvas.style.zIndex = zIndexes.base || "0", this._upperSurface.canvas.style.zIndex = zIndexes.upper || "1") : (this.canvas.style.zIndex = "0", 
-                this._upperSurface.canvas.style.zIndex = "1");
+            }, WebGLPrimarySurface.prototype.changePhysicalScale = function(xScale, yScale) {
+                var width = Math.ceil(this.width * xScale), height = Math.ceil(this.height * yScale);
+                this.canvas.width = width, this.canvas.height = height, this.renderer().changeViewportSize(width, height);
+            }, WebGLPrimarySurface.prototype.isPlaying = function() {
+                return !1;
             }, WebGLPrimarySurface;
         }(CanvasSurface_1.CanvasSurface);
         exports.WebGLPrimarySurface = WebGLPrimarySurface;
     }, {
-        "./CanvasSurface": 14,
+        "../CanvasSurface": 13,
         "./WebGLPrimarySurfaceRenderer": 25
     } ],
     25: [ function(require, module, exports) {
         "use strict";
-        function applyRenderingState(renderer, state) {
-            renderer.transform(Array.prototype.slice.call(state.transformer.matrix)), renderer.opacity(state.globalAlpha), 
-            renderer.setCompositeOperation(RenderingHelper_1.RenderingHelper.toCompositeOperationFromText(state.globalCompositeOperation));
-        }
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
                 __proto__: []
@@ -1480,34 +1343,19 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var WebGLRenderer_1 = require("./WebGLRenderer"), RenderingHelper_1 = require("./RenderingHelper"), SystemText_1 = require("./SystemText"), WebGLPrimarySurfaceRenderer = function(_super) {
-            function WebGLPrimarySurfaceRenderer(surface) {
-                var _this = _super.call(this, surface) || this;
-                return _this._upperRenderer = surface._upperSurface.renderer(), _this;
+        var WebGLRenderer_1 = require("./WebGLRenderer"), WebGLPrimarySurfaceRenderer = function(_super) {
+            function WebGLPrimarySurfaceRenderer(shared, renderTarget) {
+                var _this = _super.call(this, shared, renderTarget) || this;
+                return _this._shared.pushRenderTarget(_this._renderTarget), _this;
             }
-            return __extends(WebGLPrimarySurfaceRenderer, _super), WebGLPrimarySurfaceRenderer.prototype.clear = function() {
-                _super.prototype.clear.call(this), this._upperRenderer.clear();
-            }, WebGLPrimarySurfaceRenderer.prototype._drawImageExcludingSystemText = function(surface, shaderProgram, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                _super.prototype.drawImageWithShaderProgram.call(this, surface, shaderProgram, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
-            }, WebGLPrimarySurfaceRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                _super.prototype.drawImage.call(this, surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
-                var srcOps = SystemText_1.getSystemTextOperations(surface);
-                if (srcOps) for (var i = 0; i < srcOps.length; i = i + 1 | 0) {
-                    this._upperRenderer.save(), applyRenderingState(this._upperRenderer, this.currentState()), 
-                    applyRenderingState(this._upperRenderer, srcOps[i].state);
-                    var parameter = srcOps[i].parameter;
-                    this._upperRenderer.drawSystemText.apply(this._upperRenderer, parameter), this._upperRenderer.restore();
-                }
-            }, WebGLPrimarySurfaceRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
-                this._upperRenderer.save(), applyRenderingState(this._upperRenderer, this.currentState()), 
-                this._upperRenderer.drawSystemText(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly), 
-                this._upperRenderer.restore();
+            return __extends(WebGLPrimarySurfaceRenderer, _super), WebGLPrimarySurfaceRenderer.prototype.begin = function() {
+                _super.prototype.begin.call(this), this._shared.begin();
+            }, WebGLPrimarySurfaceRenderer.prototype.end = function() {
+                _super.prototype.end.call(this), this._shared.end();
             }, WebGLPrimarySurfaceRenderer;
         }(WebGLRenderer_1.WebGLRenderer);
         exports.WebGLPrimarySurfaceRenderer = WebGLPrimarySurfaceRenderer;
     }, {
-        "./RenderingHelper": 17,
-        "./SystemText": 20,
         "./WebGLRenderer": 26
     } ],
     26: [ function(require, module, exports) {
@@ -1531,212 +1379,85 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), StateHoldingRenderer_1 = require("./StateHoldingRenderer"), RenderingHelper_1 = require("./RenderingHelper"), WebGLColor_1 = require("./WebGLColor"), WebGLShaderProgram_1 = require("./WebGLShaderProgram"), WebGLTextureAtlas_1 = require("./WebGLTextureAtlas"), RenderingState_1 = require("./RenderingState"), RenderTargetStack = function() {
-            function RenderTargetStack(width, height) {
-                this._renderTargets = [], this._renderTargets.push({
-                    width: width,
-                    height: height,
-                    _frameBuffer: null
-                });
-            }
-            return RenderTargetStack.prototype.push = function(renderTarget) {
-                this._renderTargets.push(renderTarget);
-            }, RenderTargetStack.prototype.pop = function() {
-                return this._renderTargets.pop();
-            }, RenderTargetStack.prototype.top = function() {
-                return this._renderTargets[this._renderTargets.length - 1];
-            }, RenderTargetStack;
-        }(), WebGLRenderer = function(_super) {
-            function WebGLRenderer(surface) {
+        var g = require("@akashic/akashic-engine"), WebGLColor_1 = require("./WebGLColor"), RenderingState_1 = require("./RenderingState"), WebGLRenderer = function(_super) {
+            function WebGLRenderer(shared, renderTarget) {
                 var _this = _super.call(this) || this;
-                if (_this.surface = surface, _this.context = surface.canvas.getContext("webgl", {
-                    depth: !1,
-                    preserveDrawingBuffer: !0
-                }), !_this.context) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#constructor: could not initialize WebGLRenderingContext");
-                return _this._init(), _this;
+                return _this._stateStack = [], _this._stateStackPointer = 0, _this._capacity = 0, 
+                _this._reallocation(WebGLRenderer.DEFAULT_CAPACITY), _this._whiteColor = [ 1, 1, 1, 1 ], 
+                _this._shared = shared, _this._renderTarget = renderTarget, _this;
             }
-            return __extends(WebGLRenderer, _super), WebGLRenderer.prototype.pushRenderTarget = function(surface) {
-                this._commit(), this._renderTargetStack.push(surface), this.save();
-                var rs = new RenderingState_1.RenderingState();
-                RenderingHelper_1.RenderingHelper.transformCoordinateSystem(rs.transformer.matrix, surface.height), 
-                this.currentState().copyFrom(rs), this.context.viewport(0, 0, surface.width, surface.height), 
-                this._width = surface.width, this._height = surface.height, this.context.bindFramebuffer(this.context.FRAMEBUFFER, surface._frameBuffer);
-            }, WebGLRenderer.prototype.popRenderTarget = function() {
-                this._commit(), this._renderTargetStack.pop();
-                var renderTarget = this._renderTargetStack.top();
-                this.context.bindFramebuffer(this.context.FRAMEBUFFER, renderTarget._frameBuffer), 
-                this._width = renderTarget.width, this._height = renderTarget.height, this.context.viewport(0, 0, this._width, this._height), 
-                this.restore();
-            }, WebGLRenderer.prototype.clear = function() {
-                this.context.clear(this.context.COLOR_BUFFER_BIT);
-            }, WebGLRenderer.prototype.begin = function() {
-                ++this._beginCount, 1 === this._beginCount && (this.clear(), this._currentShaderProgram.use());
+            return __extends(WebGLRenderer, _super), WebGLRenderer.prototype.clear = function() {
+                this._shared.clear();
             }, WebGLRenderer.prototype.end = function() {
-                --this._beginCount, 0 === this._beginCount && (this._commit(), this._currentShaderProgram.unuse());
+                this._shared.end();
             }, WebGLRenderer.prototype.save = function() {
-                _super.prototype.save.call(this), this._shaderProgramStack.push(this._program);
+                this._pushState();
             }, WebGLRenderer.prototype.restore = function() {
-                _super.prototype.restore.call(this), this._program = this._shaderProgramStack.pop();
+                this._popState();
+            }, WebGLRenderer.prototype.translate = function(x, y) {
+                this.currentState().transformer.translate(x, y);
+            }, WebGLRenderer.prototype.transform = function(matrix) {
+                this.currentState().transformer.transform(matrix);
+            }, WebGLRenderer.prototype.opacity = function(opacity) {
+                this.currentState().globalAlpha *= opacity;
+            }, WebGLRenderer.prototype.setCompositeOperation = function(operation) {
+                this.currentState().globalCompositeOperation = operation;
+            }, WebGLRenderer.prototype.currentState = function() {
+                return this._stateStack[this._stateStackPointer];
+            }, WebGLRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+                this._shared.draw(this.currentState(), this._shared.getFillRectSurfaceTexture(), 0, 0, width, height, x, y, WebGLColor_1.WebGLColor.get(cssColor));
             }, WebGLRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
                 for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
-            }, WebGLRenderer.prototype.drawImageWithShaderProgram = function(surface, shaderProgram, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                if (!surface._drawable) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: no drawable surface.");
-                if (surface._drawable._texture instanceof WebGLTexture || this._textureAtlas._makeTextureForSurface(this, surface), 
-                !surface._drawable._texture) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: could not create a texture.");
-                var image = surface._drawable, tw = 1 / image._textureWidth, th = 1 / image._textureHeight, ox = image._textureOffsetX, oy = image._textureOffsetY, s = tw * (ox + offsetX + width), t = th * (oy + offsetY + height), u = tw * (ox + offsetX), v = th * (oy + offsetY);
-                this._drawImage(image._texture, shaderProgram, canvasOffsetX, canvasOffsetY, width, height, [ u, v, s, v, s, t, u, v, s, t, u, t ], this._drawImageColor);
             }, WebGLRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                this.drawImageWithShaderProgram(surface, this._program, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY);
-            }, WebGLRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
-                this._drawImage(this._fillRectTexture, this._defaultProgram, x, y, width, height, [ 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 ], WebGLColor_1.WebGLColor.get(cssColor));
-            }, WebGLRenderer.prototype.createTextureFrameBuffer = function(width, height) {
-                var context = this.context, frameBuffer = context.createFramebuffer();
-                context.bindFramebuffer(context.FRAMEBUFFER, frameBuffer);
-                var texture = context.createTexture();
-                context.bindTexture(context.TEXTURE_2D, texture), context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR), 
-                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR), 
-                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE), 
-                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE), 
-                context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, width, height, 0, context.RGBA, context.UNSIGNED_BYTE, null), 
-                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, texture, 0), 
-                context.bindTexture(context.TEXTURE_2D, this._currentTexture);
-                var renderTarget = this._renderTargetStack.top();
-                return context.bindFramebuffer(context.FRAMEBUFFER, renderTarget._frameBuffer), 
-                {
-                    frameBuffer: frameBuffer,
-                    texture: texture
-                };
-            }, WebGLRenderer.prototype.initializeShaderProgram = function(shaderProgram) {
-                if (shaderProgram) {
-                    if (!shaderProgram.program) {
-                        var program = new WebGLShaderProgram_1.WebGLShaderProgram(this.context, shaderProgram.fragmentShader, shaderProgram.uniforms);
-                        program.initUniforms(), shaderProgram = program;
-                    }
-                } else shaderProgram = this._defaultProgram;
-                return shaderProgram;
+                if (!surface._drawable) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: no drawable surface.");
+                if (surface._drawable.texture instanceof WebGLTexture || this._shared.makeTextureForSurface(surface), 
+                !surface._drawable.texture) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: could not create a texture.");
+                this._shared.draw(this.currentState(), surface._drawable, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, this._whiteColor);
+            }, WebGLRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {}, 
+            WebGLRenderer.prototype.setTransform = function(matrix) {
+                this.currentState().transformer.setTransform(matrix);
+            }, WebGLRenderer.prototype.setOpacity = function(opacity) {
+                this.currentState().globalAlpha = opacity;
             }, WebGLRenderer.prototype.setShaderProgram = function(shaderProgram) {
-                this._program = this.initializeShaderProgram(shaderProgram);
-            }, WebGLRenderer.prototype.getDefaultShaderProgram = function() {
-                return this._defaultProgram;
-            }, WebGLRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
-                return null;
-            }, WebGLRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {}, 
-            WebGLRenderer.prototype._makeTextureForSurface = function(surface) {
-                var image = surface._drawable, w = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.width), h = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.height);
-                if (w !== image.width || h !== image.height) {
-                    var canvas = document.createElement("canvas");
-                    canvas.width = w, canvas.height = h;
-                    var context = canvas.getContext("2d");
-                    context.globalCompositeOperation = "copy", context.drawImage(image, 0, 0), image = context.getImageData(0, 0, w, h);
-                }
-                surface._drawable._texture = this._makeTexture(image), surface._drawable._textureOffsetX = 0, 
-                surface._drawable._textureOffsetY = 0, surface._drawable._textureWidth = w, surface._drawable._textureHeight = h;
-            }, WebGLRenderer.prototype._makeTextureRaw = function(width, height, pixels) {
-                void 0 === pixels && (pixels = null);
-                var texture = this.context.createTexture();
-                return this.context.bindTexture(this.context.TEXTURE_2D, texture), this.context.pixelStorei(this.context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_S, this.context.CLAMP_TO_EDGE), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_T, this.context.CLAMP_TO_EDGE), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MAG_FILTER, this.context.NEAREST), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MIN_FILTER, this.context.NEAREST), 
-                this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, width, height, 0, this.context.RGBA, this.context.UNSIGNED_BYTE, pixels), 
-                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture), texture;
-            }, WebGLRenderer.prototype._disposeTexture = function(texture) {
-                this._currentTexture === texture && this._commit();
-            }, WebGLRenderer.prototype._assignTexture = function(image, x, y, texture) {
-                if (this.context.bindTexture(this.context.TEXTURE_2D, texture), image instanceof HTMLVideoElement) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_assignTexture: HTMLVideoElement is not supported.");
-                this.context.texSubImage2D(this.context.TEXTURE_2D, 0, x, y, this.context.RGBA, this.context.UNSIGNED_BYTE, image), 
-                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture);
-            }, WebGLRenderer.prototype._clearTexture = function(texturePixels, width, height, texture) {
-                this.context.bindTexture(this.context.TEXTURE_2D, texture), this.context.texSubImage2D(this.context.TEXTURE_2D, 0, 0, 0, width, height, this.context.RGBA, this.context.UNSIGNED_BYTE, texturePixels), 
-                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture);
-            }, WebGLRenderer.prototype._init = function() {
-                this._width = this.surface.width, this._height = this.surface.height, this._beginCount = 0;
-                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this.context);
-                this._renderTargetStack = new RenderTargetStack(this._width, this._height), this._shaderProgramStack = new WebGLShaderProgram_1.ShaderProgramStack(program), 
-                this._program = program, this._defaultProgram = program, this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), 
-                this._fillRectTexture = this._makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
-                this._drawImageColor = WebGLColor_1.WebGLColor.get("white"), this._maxSpriteCount = 1024, 
-                this._vertices = this._makeBuffer(24 * this._maxSpriteCount * 4), this._verticesCache = new Float32Array(24 * this._maxSpriteCount), 
-                this._numSprites = 0;
-                var state = this.currentState();
-                this._currentTexture = this._fillRectTexture, this._currentColor = this._drawImageColor, 
-                this._currentAlpha = 1, this._currentCompositeOperation = state.globalCompositeOperation, 
-                this._currentShaderProgram = program, this._currentShaderProgram.use();
-                try {
-                    this._currentShaderProgram.set_aVertex(this._vertices), this._currentShaderProgram.set_uColor(this._currentColor), 
-                    this._currentShaderProgram.set_uAlpha(this._currentAlpha), this._currentShaderProgram.set_uSampler(0);
-                } finally {
-                    this._currentShaderProgram.unuse();
-                }
-                this.context.viewport(0, 0, this.surface.width, this.surface.height), this.context.enable(this.context.BLEND), 
-                this.context.activeTexture(this.context.TEXTURE0), this.context.bindTexture(this.context.TEXTURE_2D, this._fillRectTexture), 
-                this._compositeOps = {
-                    "source-atop": [ this.context.DST_ALPHA, this.context.ONE_MINUS_SRC_ALPHA ],
-                    "source-in": [ this.context.DST_ALPHA, this.context.ZERO ],
-                    "source-out": [ this.context.ONE_MINUS_DST_ALPHA, this.context.ZERO ],
-                    "source-over": [ this.context.ONE, this.context.ONE_MINUS_SRC_ALPHA ],
-                    "destination-atop": [ this.context.ONE_MINUS_DST_ALPHA, this.context.SRC_ALPHA ],
-                    "destination-in": [ this.context.ZERO, this.context.SRC_ALPHA ],
-                    "destination-out": [ this.context.ZERO, this.context.ONE_MINUS_SRC_ALPHA ],
-                    "destination-over": [ this.context.ONE_MINUS_DST_ALPHA, this.context.ONE ],
-                    lighter: [ this.context.ONE, this.context.ONE ],
-                    copy: [ this.context.ONE, this.context.ZERO ],
-                    xor: [ this.context.ONE_MINUS_DST_ALPHA, this.context.ONE_MINUS_SRC_ALPHA ]
+                this.currentState().shaderProgram = this._shared.initializeShaderProgram(shaderProgram);
+            }, WebGLRenderer.prototype.changeViewportSize = function(width, height) {
+                var old = this._renderTarget;
+                this._renderTarget = {
+                    width: old.width,
+                    height: old.height,
+                    viewportWidth: width,
+                    viewportHeight: height,
+                    texture: old.texture,
+                    framebuffer: old.framebuffer
                 };
-                var compositeOperation = this._compositeOps[this._currentCompositeOperation];
-                this.context.blendFunc(compositeOperation[0], compositeOperation[1]);
-            }, WebGLRenderer.prototype._drawImage = function(texture, shaderProgram, x, y, w, h, texCoord, color) {
-                this._numSprites >= this._maxSpriteCount && this._commit(), this._currentShaderProgram !== shaderProgram && (this._currentShaderProgram = shaderProgram, 
-                this._commit(), this._currentShaderProgram.use(), this._currentShaderProgram.updateUniforms(), 
-                this._currentCompositeOperation = null, this._currentAlpha = null, this._currentColor = [], 
-                this._currentTexture = null), this._currentTexture !== texture && (this._currentTexture = texture, 
-                this._commit(), this.context.bindTexture(this.context.TEXTURE_2D, texture)), this._currentColor[0] === color[0] && this._currentColor[1] === color[1] && this._currentColor[2] === color[2] && this._currentColor[3] === color[3] || (this._currentColor = color, 
-                this._commit(), this._currentShaderProgram.set_uColor(color));
-                var state = this.currentState();
-                if (this._currentAlpha !== state.globalAlpha && (this._currentAlpha = state.globalAlpha, 
-                this._commit(), this._currentShaderProgram.set_uAlpha(state.globalAlpha)), this._currentCompositeOperation !== state.globalCompositeOperation) {
-                    this._currentCompositeOperation = state.globalCompositeOperation, this._commit();
-                    var compositeOperation = this._compositeOps[this._currentCompositeOperation];
-                    this.context.blendFunc(compositeOperation[0], compositeOperation[1]);
+            }, WebGLRenderer.prototype.destroy = function() {
+                this._shared.deleteRenderTarget(this._renderTarget), this._shared = void 0, this._renderTarget = void 0, 
+                this._whiteColor = void 0;
+            }, WebGLRenderer.prototype._getImageData = function() {
+                throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_getImageData() is not implemented");
+            }, WebGLRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+                throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_putImageData() is not implemented");
+            }, WebGLRenderer.prototype._pushState = function() {
+                var old = this.currentState();
+                ++this._stateStackPointer, this._isOverCapacity() && this._reallocation(this._stateStackPointer + 1), 
+                this.currentState().copyFrom(old);
+            }, WebGLRenderer.prototype._popState = function() {
+                if (!(this._stateStackPointer > 0)) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#restore: state stack under-flow.");
+                this.currentState().shaderProgram = null, --this._stateStackPointer;
+            }, WebGLRenderer.prototype._isOverCapacity = function() {
+                return this._capacity <= this._stateStackPointer;
+            }, WebGLRenderer.prototype._reallocation = function(newCapacity) {
+                var oldCapacity = this._capacity;
+                if (oldCapacity < newCapacity) {
+                    newCapacity < 2 * oldCapacity ? this._capacity *= 2 : this._capacity = newCapacity;
+                    for (var i = oldCapacity; i < this._capacity; ++i) this._stateStack.push(new RenderingState_1.RenderingState());
                 }
-                this._register(this._transformVertex(x, y, w, h, state.transformer), texCoord);
-            }, WebGLRenderer.prototype._transformVertex = function(x, y, w, h, transformer) {
-                var cw = 2 / this._width, ch = -2 / this._height, m = transformer.matrix, a = cw * w * m[0], b = ch * w * m[1], c = cw * h * m[2], d = ch * h * m[3], e = cw * (x * m[0] + y * m[2] + m[4]) - 1, f = ch * (x * m[1] + y * m[3] + m[5]) + 1;
-                return [ e, f, a + e, b + f, a + c + e, b + d + f, e, f, a + c + e, b + d + f, c + e, d + f ];
-            }, WebGLRenderer.prototype._register = function(vertex, texCoord) {
-                var offset = 6 * this._numSprites;
-                ++this._numSprites;
-                for (var i = 0; i < 6; ++i) this._verticesCache[4 * (i + offset) + 0] = vertex[2 * i + 0], 
-                this._verticesCache[4 * (i + offset) + 1] = vertex[2 * i + 1], this._verticesCache[4 * (i + offset) + 2] = texCoord[2 * i + 0], 
-                this._verticesCache[4 * (i + offset) + 3] = texCoord[2 * i + 1];
-            }, WebGLRenderer.prototype._commit = function() {
-                this._numSprites > 0 && (this.context.bindBuffer(this.context.ARRAY_BUFFER, this._vertices), 
-                this.context.bufferSubData(this.context.ARRAY_BUFFER, 0, this._verticesCache.subarray(0, 24 * this._numSprites)), 
-                this.context.drawArrays(this.context.TRIANGLES, 0, 6 * this._numSprites), this._numSprites = 0);
-            }, WebGLRenderer.prototype._makeTexture = function(data) {
-                var texture = this.context.createTexture();
-                return this.context.bindTexture(this.context.TEXTURE_2D, texture), this.context.pixelStorei(this.context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_S, this.context.CLAMP_TO_EDGE), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_WRAP_T, this.context.CLAMP_TO_EDGE), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MAG_FILTER, this.context.NEAREST), 
-                this.context.texParameteri(this.context.TEXTURE_2D, this.context.TEXTURE_MIN_FILTER, this.context.NEAREST), 
-                data instanceof HTMLImageElement ? this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data) : data instanceof HTMLCanvasElement ? this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data) : data instanceof ImageData && this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data), 
-                this.context.bindTexture(this.context.TEXTURE_2D, this._currentTexture), texture;
-            }, WebGLRenderer.prototype._makeBuffer = function(data) {
-                var buffer = this.context.createBuffer();
-                return this.context.bindBuffer(this.context.ARRAY_BUFFER, buffer), this.context.bufferData(this.context.ARRAY_BUFFER, data, this.context.DYNAMIC_DRAW), 
-                buffer;
-            }, WebGLRenderer;
-        }(StateHoldingRenderer_1.StateHoldingRenderer);
+            }, WebGLRenderer.DEFAULT_CAPACITY = 16, WebGLRenderer;
+        }(g.Renderer);
         exports.WebGLRenderer = WebGLRenderer;
     }, {
-        "./RenderingHelper": 17,
-        "./RenderingState": 18,
-        "./StateHoldingRenderer": 19,
+        "./RenderingState": 20,
         "./WebGLColor": 23,
-        "./WebGLShaderProgram": 27,
-        "./WebGLTextureAtlas": 28,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     27: [ function(require, module, exports) {
@@ -1760,20 +1481,7 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), ShaderProgramStack = function() {
-            function ShaderProgramStack(program) {
-                this._programs = [], this._programs.push(program);
-            }
-            return ShaderProgramStack.prototype.push = function(program) {
-                this._programs.push(program);
-            }, ShaderProgramStack.prototype.pop = function() {
-                return this._programs.pop();
-            }, ShaderProgramStack.prototype.top = function() {
-                return this._programs[this._programs.length - 1];
-            }, ShaderProgramStack;
-        }();
-        exports.ShaderProgramStack = ShaderProgramStack;
-        var WebGLShaderProgram = function(_super) {
+        var g = require("@akashic/akashic-engine"), WebGLShaderProgram = function(_super) {
             function WebGLShaderProgram(context, fSrc, uniforms) {
                 var _this = this, vSrc = WebGLShaderProgram._DEFAULT_VERTEX_SHADER, fSrc = fSrc || WebGLShaderProgram._DEFAULT_FRAGMENT_SHADER, program = WebGLShaderProgram._makeShaderProgram(context, vSrc, fSrc);
                 return _this = _super.call(this, {
@@ -1828,11 +1536,11 @@ require = function e(t, n, r) {
                     (cache.isArray || value !== cache.beforeValue) && (cache.update(cache.loc, value), 
                     cache.beforeValue = value);
                 }
-            }, WebGLShaderProgram.prototype.initUniforms = function() {
+            }, WebGLShaderProgram.prototype.initializeUniforms = function() {
                 var _this = this, uniformCaches = [], uniforms = this.uniforms;
                 null != uniforms && Object.keys(uniforms).forEach(function(k) {
                     var type = uniforms[k].type, isArray = !("int" === type || "float" === type), update = _this._uniformSetterTable[type];
-                    if (!update) throw g.ExceptionFactory.createAssertionError("WebGLShaderProgram#initUniforms: Uniform type '" + type + "' is not supported.");
+                    if (!update) throw g.ExceptionFactory.createAssertionError("WebGLShaderProgram#initializeUniforms: Uniform type '" + type + "' is not supported.");
                     uniformCaches.push({
                         name: k,
                         update: update,
@@ -1882,7 +1590,201 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var WebGLTextureMap_1 = require("./WebGLTextureMap"), WebGLTextureAtlas = function() {
+        var g = require("@akashic/akashic-engine"), WebGLShaderProgram_1 = require("./WebGLShaderProgram"), WebGLTextureAtlas_1 = require("./WebGLTextureAtlas"), WebGLPrimarySurface_1 = require("./WebGLPrimarySurface"), WebGLBackSurface_1 = require("./WebGLBackSurface"), WebGLSharedObject = function() {
+            function WebGLSharedObject(width, height) {
+                var surface = new WebGLPrimarySurface_1.WebGLPrimarySurface(this, width, height), context = surface.canvas.getContext("webgl", {
+                    depth: !1,
+                    preserveDrawingBuffer: !0
+                });
+                if (!context) throw g.ExceptionFactory.createAssertionError("WebGLSharedObject#constructor: could not initialize WebGLRenderingContext");
+                this._surface = surface, this._context = context, this._init();
+            }
+            return WebGLSharedObject.prototype.getFillRectSurfaceTexture = function() {
+                return this._fillRectSurfaceTexture;
+            }, WebGLSharedObject.prototype.getPrimarySurface = function() {
+                return this._surface;
+            }, WebGLSharedObject.prototype.createBackSurface = function(width, height) {
+                return new WebGLBackSurface_1.WebGLBackSurface(this, width, height);
+            }, WebGLSharedObject.prototype.pushRenderTarget = function(renderTarget) {
+                this._commit(), this._renderTargetStack.push(renderTarget), this._context.bindFramebuffer(this._context.FRAMEBUFFER, renderTarget.framebuffer), 
+                this._context.viewport(0, 0, renderTarget.viewportWidth, renderTarget.viewportHeight);
+            }, WebGLSharedObject.prototype.popRenderTarget = function() {
+                this._commit(), this._renderTargetStack.pop();
+                var renderTarget = this.getCurrentRenderTarget();
+                this._context.bindFramebuffer(this._context.FRAMEBUFFER, renderTarget.framebuffer), 
+                this._context.viewport(0, 0, renderTarget.viewportWidth, renderTarget.viewportHeight);
+            }, WebGLSharedObject.prototype.getCurrentRenderTarget = function() {
+                return this._renderTargetStack[this._renderTargetStack.length - 1];
+            }, WebGLSharedObject.prototype.begin = function() {
+                this.clear(), this._currentShaderProgram.use(), this._currentShaderProgram.set_aVertex(this._vertices), 
+                this._currentShaderProgram.set_uColor(this._currentColor), this._currentShaderProgram.set_uAlpha(this._currentAlpha), 
+                this._currentShaderProgram.set_uSampler(0), this._currentShaderProgram.updateUniforms();
+            }, WebGLSharedObject.prototype.clear = function() {
+                this._context.clear(this._context.COLOR_BUFFER_BIT);
+            }, WebGLSharedObject.prototype.draw = function(state, surfaceTexture, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, color) {
+                this._numSprites >= this._maxSpriteCount && this._commit();
+                var shaderProgram;
+                if (shaderProgram = surfaceTexture === this._fillRectSurfaceTexture || null == state.shaderProgram ? this._defaultShaderProgram : state.shaderProgram, 
+                this._currentShaderProgram !== shaderProgram && (this._commit(), this._currentShaderProgram = shaderProgram, 
+                this._currentShaderProgram.use(), this._currentShaderProgram.updateUniforms(), this._currentCompositeOperation = null, 
+                this._currentAlpha = null, this._currentColor = [], this._currentTexture = null), 
+                this._currentTexture !== surfaceTexture.texture && (this._currentTexture = surfaceTexture.texture, 
+                this._commit(), this._context.bindTexture(this._context.TEXTURE_2D, surfaceTexture.texture)), 
+                this._currentColor[0] === color[0] && this._currentColor[1] === color[1] && this._currentColor[2] === color[2] && this._currentColor[3] === color[3] || (this._currentColor = color, 
+                this._commit(), this._currentShaderProgram.set_uColor(color)), this._currentAlpha !== state.globalAlpha && (this._currentAlpha = state.globalAlpha, 
+                this._commit(), this._currentShaderProgram.set_uAlpha(state.globalAlpha)), this._currentCompositeOperation !== state.globalCompositeOperation) {
+                    this._currentCompositeOperation = state.globalCompositeOperation, this._commit();
+                    var compositeOperation = this._compositeOps[this._currentCompositeOperation];
+                    this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
+                }
+                var tw = 1 / surfaceTexture.textureWidth, th = 1 / surfaceTexture.textureHeight, ox = surfaceTexture.textureOffsetX, oy = surfaceTexture.textureOffsetY, s = tw * (ox + offsetX + width), t = th * (oy + offsetY + height), u = tw * (ox + offsetX), v = th * (oy + offsetY);
+                this._register(this._transformVertex(canvasOffsetX, canvasOffsetY, width, height, state.transformer), [ u, v, s, v, s, t, u, v, s, t, u, t ]);
+            }, WebGLSharedObject.prototype.end = function() {
+                this._commit();
+            }, WebGLSharedObject.prototype.makeTextureForSurface = function(surface) {
+                this._textureAtlas.makeTextureForSurface(this, surface);
+            }, WebGLSharedObject.prototype.disposeTexture = function(texture) {
+                this._currentTexture === texture && this._commit();
+            }, WebGLSharedObject.prototype.assignTexture = function(image, x, y, texture) {
+                if (this._context.bindTexture(this._context.TEXTURE_2D, texture), image instanceof HTMLVideoElement) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#assignTexture: HTMLVideoElement is not supported.");
+                this._context.texSubImage2D(this._context.TEXTURE_2D, 0, x, y, this._context.RGBA, this._context.UNSIGNED_BYTE, image), 
+                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture);
+            }, WebGLSharedObject.prototype.clearTexture = function(texturePixels, width, height, texture) {
+                this._context.bindTexture(this._context.TEXTURE_2D, texture), this._context.texSubImage2D(this._context.TEXTURE_2D, 0, 0, 0, width, height, this._context.RGBA, this._context.UNSIGNED_BYTE, texturePixels), 
+                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture);
+            }, WebGLSharedObject.prototype.makeTextureRaw = function(width, height, pixels) {
+                void 0 === pixels && (pixels = null);
+                var texture = this._context.createTexture();
+                return this._context.bindTexture(this._context.TEXTURE_2D, texture), this._context.pixelStorei(this._context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_S, this._context.CLAMP_TO_EDGE), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_T, this._context.CLAMP_TO_EDGE), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MAG_FILTER, this._context.NEAREST), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MIN_FILTER, this._context.NEAREST), 
+                this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, width, height, 0, this._context.RGBA, this._context.UNSIGNED_BYTE, pixels), 
+                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture), texture;
+            }, WebGLSharedObject.prototype.makeTexture = function(data) {
+                var texture = this._context.createTexture();
+                return this._context.bindTexture(this._context.TEXTURE_2D, texture), this._context.pixelStorei(this._context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_S, this._context.CLAMP_TO_EDGE), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_T, this._context.CLAMP_TO_EDGE), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MAG_FILTER, this._context.NEAREST), 
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MIN_FILTER, this._context.NEAREST), 
+                data instanceof HTMLImageElement ? this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data) : data instanceof HTMLCanvasElement ? this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data) : data instanceof ImageData && this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data), 
+                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture), texture;
+            }, WebGLSharedObject.prototype.getPrimaryRenderTarget = function(width, height) {
+                return this._renderTarget;
+            }, WebGLSharedObject.prototype.createRenderTarget = function(width, height) {
+                var context = this._context, framebuffer = context.createFramebuffer();
+                context.bindFramebuffer(context.FRAMEBUFFER, framebuffer);
+                var texture = context.createTexture();
+                context.bindTexture(context.TEXTURE_2D, texture), context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR), 
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR), 
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE), 
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE), 
+                context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, width, height, 0, context.RGBA, context.UNSIGNED_BYTE, null), 
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, texture, 0), 
+                context.bindTexture(context.TEXTURE_2D, this._currentTexture);
+                var renderTaget = this.getCurrentRenderTarget();
+                return context.bindFramebuffer(context.FRAMEBUFFER, renderTaget.framebuffer), {
+                    width: width,
+                    height: height,
+                    viewportWidth: width,
+                    viewportHeight: height,
+                    framebuffer: framebuffer,
+                    texture: texture
+                };
+            }, WebGLSharedObject.prototype.deleteRenderTarget = function(renderTaget) {
+                var context = this._context;
+                this.getCurrentRenderTarget() === renderTaget && this._commit(), context.deleteFramebuffer(renderTaget.framebuffer), 
+                context.deleteTexture(renderTaget.texture);
+            }, WebGLSharedObject.prototype.getContext = function() {
+                return this._context;
+            }, WebGLSharedObject.prototype.getDefaultShaderProgram = function() {
+                return this._defaultShaderProgram;
+            }, WebGLSharedObject.prototype.initializeShaderProgram = function(shaderProgram) {
+                if (shaderProgram) {
+                    if (!shaderProgram.program) {
+                        var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context, shaderProgram.fragmentShader, shaderProgram.uniforms);
+                        program.initializeUniforms(), shaderProgram = program;
+                    }
+                } else shaderProgram = this._defaultShaderProgram;
+                return shaderProgram;
+            }, WebGLSharedObject.prototype._init = function() {
+                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
+                this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
+                this._fillRectSurfaceTexture = {
+                    texture: this._fillRectTexture,
+                    textureWidth: 1,
+                    textureHeight: 1,
+                    textureOffsetX: 0,
+                    textureOffsetY: 0
+                }, this._renderTarget = {
+                    width: this._surface.width,
+                    height: this._surface.height,
+                    viewportWidth: this._surface.width,
+                    viewportHeight: this._surface.height,
+                    framebuffer: null,
+                    texture: null
+                }, this._maxSpriteCount = 1024, this._vertices = this._makeBuffer(24 * this._maxSpriteCount * 4), 
+                this._verticesCache = new Float32Array(24 * this._maxSpriteCount), this._numSprites = 0, 
+                this._currentTexture = null, this._currentColor = [ 1, 1, 1, 1 ], this._currentAlpha = 1, 
+                this._currentCompositeOperation = g.CompositeOperation.SourceOver, this._currentShaderProgram = program, 
+                this._defaultShaderProgram = program, this._renderTargetStack = [], this._currentShaderProgram.use();
+                try {
+                    this._currentShaderProgram.set_aVertex(this._vertices), this._currentShaderProgram.set_uColor(this._currentColor), 
+                    this._currentShaderProgram.set_uAlpha(this._currentAlpha), this._currentShaderProgram.set_uSampler(0);
+                } finally {
+                    this._currentShaderProgram.unuse();
+                }
+                this._context.enable(this._context.BLEND), this._context.activeTexture(this._context.TEXTURE0), 
+                this._context.bindTexture(this._context.TEXTURE_2D, this._fillRectTexture), this._compositeOps = (_a = {}, 
+                _a[g.CompositeOperation.SourceAtop] = [ this._context.DST_ALPHA, this._context.ONE_MINUS_SRC_ALPHA ], 
+                _a[g.CompositeOperation.ExperimentalSourceIn] = [ this._context.DST_ALPHA, this._context.ZERO ], 
+                _a[g.CompositeOperation.ExperimentalSourceOut] = [ this._context.ONE_MINUS_DST_ALPHA, this._context.ZERO ], 
+                _a[g.CompositeOperation.SourceOver] = [ this._context.ONE, this._context.ONE_MINUS_SRC_ALPHA ], 
+                _a[g.CompositeOperation.ExperimentalDestinationAtop] = [ this._context.ONE_MINUS_DST_ALPHA, this._context.SRC_ALPHA ], 
+                _a[g.CompositeOperation.ExperimentalDestinationIn] = [ this._context.ZERO, this._context.SRC_ALPHA ], 
+                _a[g.CompositeOperation.DestinationOut] = [ this._context.ZERO, this._context.ONE_MINUS_SRC_ALPHA ], 
+                _a[g.CompositeOperation.DestinationOver] = [ this._context.ONE_MINUS_DST_ALPHA, this._context.ONE ], 
+                _a[g.CompositeOperation.Lighter] = [ this._context.ONE, this._context.ONE ], _a[g.CompositeOperation.Copy] = [ this._context.ONE, this._context.ZERO ], 
+                _a[g.CompositeOperation.Xor] = [ this._context.ONE_MINUS_DST_ALPHA, this._context.ONE_MINUS_SRC_ALPHA ], 
+                _a);
+                var compositeOperation = this._compositeOps[this._currentCompositeOperation];
+                this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
+                var _a;
+            }, WebGLSharedObject.prototype._makeBuffer = function(data) {
+                var buffer = this._context.createBuffer();
+                return this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW), 
+                buffer;
+            }, WebGLSharedObject.prototype._transformVertex = function(x, y, w, h, transformer) {
+                var renderTaget = this.getCurrentRenderTarget(), cw = 2 / renderTaget.width, ch = -2 / renderTaget.height, m = transformer.matrix, a = cw * w * m[0], b = ch * w * m[1], c = cw * h * m[2], d = ch * h * m[3], e = cw * (x * m[0] + y * m[2] + m[4]) - 1, f = ch * (x * m[1] + y * m[3] + m[5]) + 1;
+                return [ e, f, a + e, b + f, a + c + e, b + d + f, e, f, a + c + e, b + d + f, c + e, d + f ];
+            }, WebGLSharedObject.prototype._register = function(vertex, texCoord) {
+                var offset = 6 * this._numSprites;
+                ++this._numSprites;
+                for (var i = 0; i < 6; ++i) this._verticesCache[4 * (i + offset) + 0] = vertex[2 * i + 0], 
+                this._verticesCache[4 * (i + offset) + 1] = vertex[2 * i + 1], this._verticesCache[4 * (i + offset) + 2] = texCoord[2 * i + 0], 
+                this._verticesCache[4 * (i + offset) + 3] = texCoord[2 * i + 1];
+            }, WebGLSharedObject.prototype._commit = function() {
+                this._numSprites > 0 && (this._context.bindBuffer(this._context.ARRAY_BUFFER, this._vertices), 
+                this._context.bufferSubData(this._context.ARRAY_BUFFER, 0, this._verticesCache.subarray(0, 24 * this._numSprites)), 
+                this._context.drawArrays(this._context.TRIANGLES, 0, 6 * this._numSprites), this._numSprites = 0);
+            }, WebGLSharedObject;
+        }();
+        exports.WebGLSharedObject = WebGLSharedObject;
+    }, {
+        "./WebGLBackSurface": 21,
+        "./WebGLPrimarySurface": 24,
+        "./WebGLShaderProgram": 27,
+        "./WebGLTextureAtlas": 29,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    29: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var WebGLTextureMap_1 = require("./WebGLTextureMap"), RenderingHelper_1 = require("../RenderingHelper"), WebGLTextureAtlas = function() {
             function WebGLTextureAtlas() {
                 this._maps = [], this._insertPos = 0, this.emptyTexturePixels = new Uint8Array(WebGLTextureAtlas.TEXTURE_SIZE * WebGLTextureAtlas.TEXTURE_SIZE * 4);
             }
@@ -1890,31 +1792,44 @@ require = function e(t, n, r) {
                 for (var i = 0; i < this._maps.length; ++i) this._maps[i].dispose();
             }, WebGLTextureAtlas.prototype.showOccupancy = function() {
                 for (var i = 0; i < this._maps.length; ++i) console.log("occupancy[" + i + "]: " + this._maps[i].occupancy());
-            }, WebGLTextureAtlas.prototype._makeTextureForSurface = function(renderer, surface) {
+            }, WebGLTextureAtlas.prototype.makeTextureForSurface = function(shared, surface) {
                 var image = surface._drawable;
-                if (image && !image._texture) {
+                if (image && !image.texture) {
                     var width = image.width, height = image.height;
-                    return width >= WebGLTextureAtlas.TEXTURE_SIZE || height >= WebGLTextureAtlas.TEXTURE_SIZE ? void renderer._makeTextureForSurface(surface) : void this._assign(renderer, surface, this._maps);
+                    if (width >= WebGLTextureAtlas.TEXTURE_SIZE || height >= WebGLTextureAtlas.TEXTURE_SIZE) {
+                        var w = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.width), h = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.height);
+                        if (w !== image.width || h !== image.height) {
+                            var canvas = document.createElement("canvas");
+                            canvas.width = w, canvas.height = h;
+                            var canvasContext = canvas.getContext("2d");
+                            canvasContext.globalCompositeOperation = "copy", canvasContext.drawImage(image, 0, 0), 
+                            image = canvasContext.getImageData(0, 0, w, h);
+                        }
+                        return surface._drawable.texture = shared.makeTexture(image), surface._drawable.textureOffsetX = 0, 
+                        surface._drawable.textureOffsetY = 0, surface._drawable.textureWidth = w, void (surface._drawable.textureHeight = h);
+                    }
+                    this._assign(shared, surface, this._maps);
                 }
-            }, WebGLTextureAtlas.prototype._assign = function(renderer, surface, maps) {
-                for (var map, i = 0; i < maps.length; ++i) if (map = maps[(i + this._insertPos) % maps.length].insert(surface)) return this._register(renderer, map, surface._drawable), 
+            }, WebGLTextureAtlas.prototype._assign = function(shared, surface, maps) {
+                for (var map, i = 0; i < maps.length; ++i) if (map = maps[(i + this._insertPos) % maps.length].insert(surface)) return this._register(shared, map, surface._drawable), 
                 void (this._insertPos = i);
                 map = null, maps.length >= WebGLTextureAtlas.TEXTURE_COUNT && (map = maps.shift(), 
-                renderer._disposeTexture(map.texture), map.dispose(), renderer._clearTexture(this.emptyTexturePixels, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE, map.texture)), 
-                map || (map = new WebGLTextureMap_1.WebGLTextureMap(renderer._makeTextureRaw(WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE), 0, 0, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE)), 
-                maps.push(map), map = map.insert(surface), this._register(renderer, map, surface._drawable);
-            }, WebGLTextureAtlas.prototype._register = function(renderer, map, image) {
-                image._texture = map.texture, image._textureOffsetX = map.offsetX, image._textureOffsetY = map.offsetY, 
-                image._textureWidth = WebGLTextureAtlas.TEXTURE_SIZE, image._textureHeight = WebGLTextureAtlas.TEXTURE_SIZE, 
-                renderer._assignTexture(image, map.offsetX, map.offsetY, map.texture);
+                shared.disposeTexture(map.texture), map.dispose(), shared.clearTexture(this.emptyTexturePixels, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE, map.texture)), 
+                map || (map = new WebGLTextureMap_1.WebGLTextureMap(shared.makeTextureRaw(WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE), 0, 0, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE)), 
+                maps.push(map), map = map.insert(surface), this._register(shared, map, surface._drawable);
+            }, WebGLTextureAtlas.prototype._register = function(shared, map, image) {
+                image.texture = map.texture, image.textureOffsetX = map.offsetX, image.textureOffsetY = map.offsetY, 
+                image.textureWidth = WebGLTextureAtlas.TEXTURE_SIZE, image.textureHeight = WebGLTextureAtlas.TEXTURE_SIZE, 
+                shared.assignTexture(image, map.offsetX, map.offsetY, map.texture);
             }, WebGLTextureAtlas.TEXTURE_SIZE = 1024, WebGLTextureAtlas.TEXTURE_COUNT = 16, 
             WebGLTextureAtlas;
         }();
         exports.WebGLTextureAtlas = WebGLTextureAtlas;
     }, {
-        "./WebGLTextureMap": 29
+        "../RenderingHelper": 15,
+        "./WebGLTextureMap": 30
     } ],
-    29: [ function(require, module, exports) {
+    30: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -1926,7 +1841,7 @@ require = function e(t, n, r) {
             }
             return WebGLTextureMap.prototype.dispose = function() {
                 this._left && (this._left.dispose(), this._left = null), this._right && (this._right.dispose(), 
-                this._right = null), this._surface && (this._surface._drawable && (this._surface._drawable._texture = null), 
+                this._right = null), this._surface && (this._surface._drawable && (this._surface._drawable.texture = null), 
                 this._surface = null);
             }, WebGLTextureMap.prototype.capacity = function() {
                 return this._width * this._height;
@@ -1960,31 +1875,6 @@ require = function e(t, n, r) {
         }();
         exports.WebGLTextureMap = WebGLTextureMap;
     }, {} ],
-    30: [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var SurfaceFactory, CanvasSurface_1 = require("../CanvasSurface"), RenderingHelper_1 = require("../RenderingHelper"), WebGLPrimarySurface_1 = require("../WebGLPrimarySurface"), WebGLBackSurface_1 = require("../WebGLBackSurface");
-        !function(SurfaceFactory) {
-            function createPrimarySurface(width, height, rendererCandidates) {
-                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? new WebGLPrimarySurface_1.WebGLPrimarySurface(width, height) : new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
-            }
-            function createBackSurface(width, height, platform, rendererCandidates) {
-                if (RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates)) {
-                    var renderer = platform.getPrimarySurface().renderer();
-                    return new WebGLBackSurface_1.WebGLBackSurface(width, height, renderer);
-                }
-                return new CanvasSurface_1.CanvasSurface(width, height, rendererCandidates);
-            }
-            SurfaceFactory.createPrimarySurface = createPrimarySurface, SurfaceFactory.createBackSurface = createBackSurface;
-        }(SurfaceFactory = exports.SurfaceFactory || (exports.SurfaceFactory = {}));
-    }, {
-        "../CanvasSurface": 14,
-        "../RenderingHelper": 17,
-        "../WebGLBackSurface": 21,
-        "../WebGLPrimarySurface": 24
-    } ],
     31: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.13.19
+* v2のエンジンモジュールを以下に更新
+  * akashic-engine@2.2.0
+    * 更新なし
+  * game-driver@1.1.1
+    * 更新なし
+  * pdi-browser@1.3.1
+
 ## 0.13.18
 * v2のエンジンモジュールを以下に更新
   * akashic-engine@2.2.0
