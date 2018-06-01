@@ -11,7 +11,7 @@
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
   "devDependencies": {
-    "@akashic/akashic-engine": "~2.2.0",
+    "@akashic/akashic-engine": "~2.2.1",
     "browserify": "^13.0.0",
     "cpx": "^1.5.0"
   },

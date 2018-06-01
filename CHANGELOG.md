@@ -3,6 +3,10 @@
 ## UNRELEASED CHANGES
 * akashic-sandboxインストール時にエラーが出力されていた問題を修正
 
+## 0.13.20
+* v2のエンジンモジュールを以下に更新
+  * akashic-engine@2.2.1
+
 ## 0.13.19
 * v2のエンジンモジュールを以下に更新
   * akashic-engine@2.2.0
