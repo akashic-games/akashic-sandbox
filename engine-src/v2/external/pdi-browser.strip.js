@@ -892,6 +892,8 @@ require = function e(t, n, r) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
             }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
+            }, Context2DRenderer.prototype.isSupportedShaderProgram = function() {
+                return !1;
             }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
                 return this.context.getImageData(sx, sy, sw, sh);
             }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
@@ -1420,6 +1422,8 @@ require = function e(t, n, r) {
                 this.currentState().globalAlpha = opacity;
             }, WebGLRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 this.currentState().shaderProgram = this._shared.initializeShaderProgram(shaderProgram);
+            }, WebGLRenderer.prototype.isSupportedShaderProgram = function() {
+                return !0;
             }, WebGLRenderer.prototype.changeViewportSize = function(width, height) {
                 var old = this._renderTarget;
                 this._renderTarget = {
@@ -1493,6 +1497,8 @@ require = function e(t, n, r) {
                 _this._uniformSetterTable = {
                     float: _this._uniform1f.bind(_this),
                     int: _this._uniform1i.bind(_this),
+                    float_v: _this._uniform1fv.bind(_this),
+                    int_v: _this._uniform1iv.bind(_this),
                     vec2: _this._uniform2fv.bind(_this),
                     vec3: _this._uniform3fv.bind(_this),
                     vec4: _this._uniform4fv.bind(_this),
@@ -1539,7 +1545,9 @@ require = function e(t, n, r) {
             }, WebGLShaderProgram.prototype.initializeUniforms = function() {
                 var _this = this, uniformCaches = [], uniforms = this.uniforms;
                 null != uniforms && Object.keys(uniforms).forEach(function(k) {
-                    var type = uniforms[k].type, isArray = !("int" === type || "float" === type), update = _this._uniformSetterTable[type];
+                    var type = uniforms[k].type, isArray = Array.isArray(uniforms[k].value);
+                    !isArray || "int" !== type && "float" !== type || (type += "_v");
+                    var update = _this._uniformSetterTable[type];
                     if (!update) throw g.ExceptionFactory.createAssertionError("WebGLShaderProgram#initializeUniforms: Uniform type '" + type + "' is not supported.");
                     uniformCaches.push({
                         name: k,
@@ -1559,6 +1567,10 @@ require = function e(t, n, r) {
                 this._context.uniform1f(loc, v);
             }, WebGLShaderProgram.prototype._uniform1i = function(loc, v) {
                 this._context.uniform1i(loc, v);
+            }, WebGLShaderProgram.prototype._uniform1fv = function(loc, v) {
+                this._context.uniform1fv(loc, v);
+            }, WebGLShaderProgram.prototype._uniform1iv = function(loc, v) {
+                this._context.uniform1iv(loc, v);
             }, WebGLShaderProgram.prototype._uniform2fv = function(loc, v) {
                 this._context.uniform2fv(loc, v);
             }, WebGLShaderProgram.prototype._uniform3fv = function(loc, v) {
@@ -1710,7 +1722,7 @@ require = function e(t, n, r) {
                 } else shaderProgram = this._defaultShaderProgram;
                 return shaderProgram;
             }, WebGLSharedObject.prototype._init = function() {
-                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
+                var _a, program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
                 this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
                 this._fillRectSurfaceTexture = {
                     texture: this._fillRectTexture,
@@ -1751,7 +1763,6 @@ require = function e(t, n, r) {
                 _a);
                 var compositeOperation = this._compositeOps[this._currentCompositeOperation];
                 this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
-                var _a;
             }, WebGLSharedObject.prototype._makeBuffer = function(data) {
                 var buffer = this._context.createBuffer();
                 return this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW), 
