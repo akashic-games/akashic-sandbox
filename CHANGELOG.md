@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.13.21
+* v2のエンジンモジュールを以下に更新
+  * akashic-engine@2.3.0
+  * pdi-browser@1.4.0
+
 ## 0.13.20
 * v2のエンジンモジュールを以下に更新
   * akashic-engine@2.2.1
