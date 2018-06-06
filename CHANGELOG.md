@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED CHANGES
+## 0.13.22
 * akashic-sandboxインストール時にエラーが出力されていた問題を修正
 
 ## 0.13.21
