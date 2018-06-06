@@ -90,12 +90,10 @@ npm run build # src/以下をビルド
 * @akashic/pdi-browser
 * @akashic/game-storage
 
-Akashic Engine v2(もしくはv1)向けの上記内部モジュールを更新する方法は以下の通りです。
+Akashic Engine v2向けとv1向けの両方に対して、上記内部モジュールを更新する方法は以下の通りです。
 
 ```sh
-cd engine-src/v2 # v1向けの内部モジュールを更新する場合は cd engine-src/v1
-npm run update-external # 内部モジュールの更新
-npm run build # js/以下への反映
+npm run update # 内部モジュールの更新とjs/以下への反映
 ```
 
 ## テスト方法

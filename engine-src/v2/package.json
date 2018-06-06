@@ -3,11 +3,9 @@
   "version": "0.0.1",
   "description": "To build akashic-sandbox to run the contents of akashic-engine v2",
   "scripts": {
-    "build": "npm run build:v2 && npm run copy:common",
-    "build:v2": "npm run build:browserify && npm run copy:v2",
+    "build": "npm run build:browserify && npm run copy:v2",
     "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ../../js/v2/akashic-engine.js",
     "copy:v2": "cpx js/**/*.js ../../js/v2 && cpx external/**/*.js ../../js/v2",
-    "copy:common": "cpx ../common/js/**/*.js ../../js && cpx ../common/external/**/*.js ../../js",
     "update-external": "node ../../build/copyfiles.js"
   },
   "author": "DWANGO Co., Ltd.",
