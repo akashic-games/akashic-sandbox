@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED CHANGES
+* 内部モジュールの更新方法の変更
+
 ## 0.13.22
 * akashic-sandboxインストール時にエラーが出力されていた問題を修正
 

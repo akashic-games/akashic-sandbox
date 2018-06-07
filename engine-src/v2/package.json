@@ -3,17 +3,12 @@
   "version": "0.0.1",
   "description": "To build akashic-sandbox to run the contents of akashic-engine v2",
   "scripts": {
-    "build": "npm run build:browserify && npm run copy:v2",
-    "build:browserify": "browserify --require ./node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ../../js/v2/akashic-engine.js",
-    "copy:v2": "cpx js/**/*.js ../../js/v2 && cpx external/**/*.js ../../js/v2",
     "update-external": "node ../../build/copyfiles.js"
   },
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
   "devDependencies": {
-    "@akashic/akashic-engine": "~2.3.0",
-    "browserify": "^13.0.0",
-    "cpx": "^1.5.0"
+    "@akashic/akashic-engine": "~2.3.0"
   },
   "optionalDependencies": {
     "@akashic/game-driver": "~1.1.1",
