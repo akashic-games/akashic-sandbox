@@ -2,9 +2,6 @@
   "name": "@akashic/akashic-sandbox-v1",
   "version": "0.0.1",
   "description": "To build akashic-sandbox to run the contents of akashic-engine v1",
-  "scripts": {
-    "update-external": "node ../../build/copyfiles.js v1"
-  },
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
   "devDependencies": {
