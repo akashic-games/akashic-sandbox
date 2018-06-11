@@ -33,8 +33,9 @@ var files = [
 ];
 
 files.forEach(filepath => {
+	const inputPath = path.resolve(__dirname + "/../engine-src/" + version, filepath);
 	const outputPath = path.resolve(__dirname + "/../engine-src/" + version + "/external/", path.basename(filepath, ".js") + ".strip.js");
-	fs.writeFileSync(outputPath, minify(filepath).code);
+	fs.writeFileSync(outputPath, minify(inputPath).code);
 });
 
 var files_common = [
@@ -42,6 +43,7 @@ var files_common = [
 ];
 
 files_common.forEach(filepath => {
+	const inputPath = path.resolve(__dirname + "/../engine-src/" + version, filepath);
 	const outputPath = path.resolve(__dirname + "/../engine-src/common/external/", path.basename(filepath, ".js") + ".strip.js");
-	fs.writeFileSync(outputPath, minify(filepath).code);
+	fs.writeFileSync(outputPath, minify(inputPath).code);
 });
