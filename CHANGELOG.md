@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED CHANGES
+## 0.13.23
 * 内部モジュールの更新方法の変更
 
 ## 0.13.22
