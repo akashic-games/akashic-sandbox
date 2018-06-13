@@ -21,34 +21,6 @@ require = function e(t, n, r) {
     for (var i = "function" == typeof require && require, o = 0; o < r.length; o++) s(r[o]);
     return s;
 }({
-    "@akashic/pdi-browser": [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        var Platform_1 = require("./Platform");
-        exports.Platform = Platform_1.Platform;
-        var ResourceFactory_1 = require("./ResourceFactory");
-        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
-        var g = require("@akashic/akashic-engine");
-        exports.g = g;
-        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
-        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
-        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
-        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
-        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
-        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
-        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
-        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
-    }, {
-        "./Platform": 4,
-        "./ResourceFactory": 6,
-        "./plugin/AudioPluginManager": 34,
-        "./plugin/AudioPluginRegistry": 35,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 38,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 42,
-        "@akashic/akashic-engine": "@akashic/akashic-engine"
-    } ],
     1: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -94,9 +66,9 @@ require = function e(t, n, r) {
             }, ContainerController.prototype.getRenderer = function() {
                 if (!this.surface) throw new Error("this container has no surface");
                 return this.surface.renderer();
-            }, ContainerController.prototype.changeScale = function(xScale, yScale) {
-                this.useResizeForScaling ? this.surface.changePhysicalScale(xScale, yScale) : this.surface.changeVisualScale(xScale, yScale), 
-                this.inputHandlerLayer._inputHandler.setScale(xScale, yScale);
+            }, ContainerController.prototype.changeScale = function(scaleX, scaleY) {
+                this.useResizeForScaling ? (this.surface.changePhysicalScale(scaleX, scaleY), this.inputHandlerLayer._inputHandler && this.inputHandlerLayer._inputHandler.setPhysicalScale(scaleX, scaleY)) : (this.surface.changeVisualScale(scaleX, scaleY), 
+                this.inputHandlerLayer._inputHandler && this.inputHandlerLayer._inputHandler.setScale(scaleX, scaleY));
             }, ContainerController.prototype.unloadView = function() {
                 if (this.inputHandlerLayer.disablePointerEvent(), this.rootView) for (;this.rootView.firstChild; ) this.rootView.removeChild(this.rootView.firstChild);
             }, ContainerController.prototype._loadView = function() {
@@ -217,12 +189,12 @@ require = function e(t, n, r) {
                 return new RafLooper_1.RafLooper(fun);
             }, Platform.prototype.sendToExternal = function(playId, data) {}, Platform.prototype.registerAudioPlugins = function(plugins) {
                 return this.audioPluginManager.tryInstallPlugin(plugins);
-            }, Platform.prototype.setScale = function(xScale, yScale) {
-                this.containerController.changeScale(xScale, yScale);
             }, Platform.prototype.notifyViewMoved = function() {}, Platform.prototype.setMasterVolume = function(volume) {
                 this._audioManager && this._audioManager.setMasterVolume(volume);
             }, Platform.prototype.getMasterVolume = function() {
                 if (this._audioManager) return this._audioManager.getMasterVolume();
+            }, Platform.prototype.changeScale = function(scaleX, scaleY) {
+                this.containerController.changeScale(scaleX, scaleY), this.containerController.useResizeForScaling && this._resourceFactory.changeScale(scaleX, scaleY);
             }, Platform;
         }();
         exports.Platform = Platform;
@@ -283,7 +255,9 @@ require = function e(t, n, r) {
             function ResourceFactory(param) {
                 var _this = _super.call(this) || this;
                 return _this._audioPluginManager = param.audioPluginManager, _this._audioManager = param.audioManager, 
-                _this._platform = param.platform, _this._surfaceFactory = new SurfaceFactory_1.SurfaceFactory(), 
+                _this._platform = param.platform, _this._variableResolutionSurfaces = new WeakMap(), 
+                _this._glyphFactories = new WeakMap(), _this._keyObjects = [], _this._currentScaleX = 1, 
+                _this._currentScaleY = 1, _this._surfaceFactory = new SurfaceFactory_1.SurfaceFactory(), 
                 _this;
             }
             return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
@@ -301,15 +275,42 @@ require = function e(t, n, r) {
                 return new XHRTextAsset_1.XHRTextAsset(id, assetPath);
             }, ResourceFactory.prototype.createScriptAsset = function(id, assetPath) {
                 return new XHRScriptAsset_1.XHRScriptAsset(id, assetPath);
+            }, ResourceFactory.prototype.createSurface = function(width, height, state) {
+                void 0 === state && (state = g.SurfaceStateFlags.None);
+                var surface = this._surfaceFactory.createBackSurface(width, height, this._rendererCandidates, state);
+                if (surface.hasVariableResolution) {
+                    var canvasSurface = surface;
+                    canvasSurface.changePhysicalScale(this._currentScaleX, this._currentScaleY);
+                    var keyObject = this._createKeyObject();
+                    this._variableResolutionSurfaces.set(keyObject, canvasSurface);
+                }
+                return surface;
             }, ResourceFactory.prototype.createPrimarySurface = function(width, height) {
                 return this._surfaceFactory.createPrimarySurface(width, height, this._rendererCandidates);
-            }, ResourceFactory.prototype.createSurface = function(width, height) {
-                return this._surfaceFactory.createBackSurface(width, height, this._rendererCandidates);
             }, ResourceFactory.prototype.createGlyphFactory = function(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
-                return new GlyphFactory_1.GlyphFactory(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight);
+                var glyphFactory = new GlyphFactory_1.GlyphFactory(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight, this._currentScaleX, this._currentScaleY), keyObject = this._createKeyObject();
+                return this._glyphFactories.set(keyObject, glyphFactory), glyphFactory;
+            }, ResourceFactory.prototype.changeScale = function(scaleX, scaleY) {
+                this._currentScaleX = scaleX, this._currentScaleY = scaleY;
+                for (var _i = 0, _a = this._keyObjects; _i < _a.length; _i++) {
+                    var key = _a[_i];
+                    if (this._variableResolutionSurfaces.has(key)) {
+                        var surface = this._variableResolutionSurfaces.get(key);
+                        if (surface.destroyed()) continue;
+                        surface.changePhysicalScale(scaleX, scaleY), surface.contentReset.fire();
+                    } else if (this._glyphFactories.has(key)) {
+                        var glyphFactory = this._glyphFactories.get(key);
+                        glyphFactory.changeScale(scaleX, scaleY);
+                    }
+                }
             }, ResourceFactory.prototype._onAudioAssetDestroyed = function(asset) {
                 this._audioManager.removeAudioAsset(asset);
-            }, ResourceFactory;
+            }, ResourceFactory.prototype._createKeyObject = function() {
+                var keyObject = {
+                    id: ResourceFactory._nextKeyObjectId
+                };
+                return this._keyObjects.push(keyObject), ResourceFactory._nextKeyObjectId++, keyObject;
+            }, ResourceFactory._nextKeyObjectId = 0, ResourceFactory;
         }(g.ResourceFactory);
         exports.ResourceFactory = ResourceFactory;
     }, {
@@ -594,18 +595,19 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), CanvasSurface = function(_super) {
-            function CanvasSurface(width, height) {
+            function CanvasSurface(width, height, state) {
+                void 0 === state && (state = g.SurfaceStateFlags.None);
                 var _this = this, canvas = document.createElement("canvas");
-                return _this = _super.call(this, width, height, canvas) || this, canvas.width = width, 
+                return _this = _super.call(this, width, height, canvas, state) || this, canvas.width = width, 
                 canvas.height = height, _this.canvas = canvas, _this._renderer = void 0, _this;
             }
             return __extends(CanvasSurface, _super), CanvasSurface.prototype.getHTMLElement = function() {
                 return this.canvas;
-            }, CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
+            }, CanvasSurface.prototype.changeVisualScale = function(scaleX, scaleY) {
                 var canvasStyle = this.canvas.style;
-                "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
-                canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(xScale * this.width) + "px", 
-                canvasStyle.height = Math.floor(yScale * this.width) + "px");
+                "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + scaleX + "," + scaleY + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
+                canvasStyle.webkitTransform = "scale(" + scaleX + "," + scaleY + ")") : (canvasStyle.width = Math.floor(scaleX * this.width) + "px", 
+                canvasStyle.height = Math.floor(scaleY * this.width) + "px");
             }, CanvasSurface;
         }(g.Surface);
         exports.CanvasSurface = CanvasSurface;
@@ -614,13 +616,17 @@ require = function e(t, n, r) {
     } ],
     14: [ function(require, module, exports) {
         "use strict";
-        function createGlyphRenderedSurface(code, fontSize, cssFontFamily, baselineHeight, marginW, marginH, needImageData, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
-            var scale = fontSize < GlyphFactory._environmentMinimumFontSize ? fontSize / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scale), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scale), surface = new Context2DSurface_1.Context2DSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d"), str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
+        function createGlyphRenderedSurface(code, fontSize, cssFontFamily, baselineHeight, marginW, marginH, needImageData, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight, scaleX, scaleY) {
+            var scaleXCoefficient = fontSize * scaleX < GlyphFactory._environmentMinimumFontSize ? fontSize * scaleX / GlyphFactory._environmentMinimumFontSize : 1, scaleYCoefficient = fontSize * scaleY < GlyphFactory._environmentMinimumFontSize ? fontSize * scaleY / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scaleXCoefficient), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scaleYCoefficient), surface = new Context2DSurface_1.Context2DSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d");
+            canvas.width = surface.width * scaleX, canvas.height = surface.height * scaleY, 
+            context.scale(scaleX, scaleY), surface.scaleX = scaleX, surface.scaleY = scaleY;
+            var str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
             context.save(), context.font = fontWeightValue + fontSize + "px " + cssFontFamily, 
             context.textAlign = "left", context.textBaseline = "alphabetic", context.lineJoin = "bevel", 
-            1 !== scale && context.scale(scale, scale), strokeWidth > 0 && (context.lineWidth = strokeWidth, 
-            context.strokeStyle = strokeColor, context.strokeText(str, marginW, marginH + baselineHeight)), 
-            strokeOnly || (context.fillStyle = fontColor, context.fillText(str, marginW, marginH + baselineHeight));
+            1 === scaleXCoefficient && 1 === scaleYCoefficient || context.scale(scaleXCoefficient, scaleYCoefficient), 
+            strokeWidth > 0 && (context.lineWidth = strokeWidth, context.strokeStyle = strokeColor, 
+            context.strokeText(str, marginW, marginH + baselineHeight)), strokeOnly || (context.fillStyle = fontColor, 
+            context.fillText(str, marginW, marginH + baselineHeight));
             var advanceWidth = context.measureText(str).width;
             context.restore();
             var result = {
@@ -630,24 +636,28 @@ require = function e(t, n, r) {
             };
             return result;
         }
-        function calcGlyphArea(imageData) {
+        function calcGlyphArea(imageData, scaleX, scaleY) {
             for (var sx = imageData.width, sy = imageData.height, ex = 0, ey = 0, currentPos = 0, y = 0, height = imageData.height; y < height; y = y + 1 | 0) for (var x = 0, width = imageData.width; x < width; x = x + 1 | 0) {
                 var a = imageData.data[currentPos + 3];
                 0 !== a && (x < sx && (sx = x), x > ex && (ex = x), y < sy && (sy = y), y > ey && (ey = y)), 
                 currentPos += 4;
             }
             var glyphArea = void 0;
-            return glyphArea = sx === imageData.width ? {
+            if (sx === imageData.width) glyphArea = {
                 x: 0,
                 y: 0,
                 width: 0,
                 height: 0
-            } : {
-                x: sx,
-                y: sy,
-                width: ex - sx + 1,
-                height: ey - sy + 1
-            };
+            }; else {
+                var width = (ex - sx + 1) / scaleX, height = (ey - sy + 1) / scaleY;
+                sx /= scaleX, sy /= scaleY, glyphArea = {
+                    x: Math.round(sx),
+                    y: Math.round(sy),
+                    width: Math.ceil(width),
+                    height: Math.ceil(height)
+                };
+            }
+            return glyphArea;
         }
         function isGlyphAreaEmpty(glyphArea) {
             return 0 === glyphArea.width || 0 === glyphArea.height;
@@ -692,9 +702,10 @@ require = function e(t, n, r) {
             value: !0
         });
         var g = require("@akashic/akashic-engine"), Context2DSurface_1 = require("./context2d/Context2DSurface"), genericFontFamilyNames = [ "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui" ], GlyphFactory = function(_super) {
-            function GlyphFactory(fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
-                var _this = _super.call(this, fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) || this;
-                _this._glyphAreas = {}, _this._cssFontFamily = fontFamily2CSSFontFamily(fontFamily);
+            function GlyphFactory(fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight, scaleX, scaleY) {
+                var _this = _super.call(this, fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight, scaleX, scaleY) || this;
+                _this._glyphAreas = {}, _this._glyphAreasMap = {}, _this._glyphAreasMap[_this._getGlyphAreasMapKey()] = {}, 
+                _this._cssFontFamily = fontFamily2CSSFontFamily(fontFamily);
                 var fallbackFontFamilyName = fontFamily2FontFamilyName(g.FontFamily.SansSerif);
                 return _this._cssFontFamily.indexOf(fallbackFontFamilyName) === -1 && (_this._cssFontFamily += "," + fallbackFontFamilyName), 
                 _this._marginW = Math.ceil(.3 * _this.fontSize + _this.strokeWidth / 2), _this._marginH = Math.ceil(.3 * _this.fontSize + _this.strokeWidth / 2), 
@@ -702,12 +713,20 @@ require = function e(t, n, r) {
                 _this;
             }
             return __extends(GlyphFactory, _super), GlyphFactory.prototype.create = function(code) {
-                var result, glyphArea = this._glyphAreas[code];
-                return glyphArea || (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !0, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight), 
-                glyphArea = calcGlyphArea(result.imageData), glyphArea.advanceWidth = result.advanceWidth, 
-                this._glyphAreas[code] = glyphArea), isGlyphAreaEmpty(glyphArea) ? (result && result.surface.destroy(), 
-                new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, void 0, !0)) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !1, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight)), 
+                var result, glyphArea = this._glyphAreas[code], actualScaleX = this.scaleX, actualScaleY = this.scaleY;
+                if (!glyphArea) {
+                    var cachedGlyphArea = this._glyphAreasMap[this._getGlyphAreasMapKey()];
+                    null != cachedGlyphArea && null != cachedGlyphArea[code] ? (glyphArea = cachedGlyphArea[code], 
+                    this._glyphAreas[code] = glyphArea) : (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !0, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight, actualScaleX, actualScaleY), 
+                    glyphArea = calcGlyphArea(result.imageData, actualScaleX, actualScaleY), glyphArea.advanceWidth = result.advanceWidth, 
+                    null != this._glyphAreasMap[this._getGlyphAreasMapKey(1, 1)][code] && (glyphArea.width = this._glyphAreasMap[this._getGlyphAreasMapKey(1, 1)][code].width, 
+                    glyphArea.height = this._glyphAreasMap[this._getGlyphAreasMapKey(1, 1)][code].height), 
+                    this._glyphAreas[code] = glyphArea, this._glyphAreasMap[this._getGlyphAreasMapKey()][code] = glyphArea);
+                }
+                return isGlyphAreaEmpty(glyphArea) ? (result && result.surface.destroy(), new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, void 0, !0)) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !1, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight, actualScaleX, actualScaleY)), 
                 new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, !0));
+            }, GlyphFactory.prototype.changeScale = function(scaleX, scaleY) {
+                this.scaleX = scaleX, this.scaleY = scaleY, this._glyphAreas = {}, void 0 === this._glyphAreasMap[this._getGlyphAreasMapKey()] && (this._glyphAreasMap[this._getGlyphAreasMapKey()] = {});
             }, GlyphFactory.prototype.measureMinimumFontSize = function() {
                 var fontSize = 1, str = "M", canvas = document.createElement("canvas"), context = canvas.getContext("2d");
                 context.textAlign = "left", context.textBaseline = "alphabetic", context.lineJoin = "bevel";
@@ -716,6 +735,9 @@ require = function e(t, n, r) {
                 var width = context.measureText(str).width;
                 do preWidth = width, fontSize += 1, context.font = fontSize + "px sans-serif", width = context.measureText(str).width; while (preWidth === width || fontSize > 50);
                 return fontSize;
+            }, GlyphFactory.prototype._getGlyphAreasMapKey = function(scaleX, scaleY) {
+                return void 0 === scaleX && (scaleX = this.scaleX), void 0 === scaleY && (scaleY = this.scaleY), 
+                "x:" + scaleX + ",y:" + scaleY;
             }, GlyphFactory;
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;
@@ -777,7 +799,7 @@ require = function e(t, n, r) {
             return __extends(Context2DRenderer, _super), Context2DRenderer.prototype.clear = function() {
                 this.context.clearRect(0, 0, this.surface.width, this.surface.height);
             }, Context2DRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
-                this.context.drawImage(surface._drawable, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, width, height);
+                this.context.drawImage(surface._drawable, offsetX * surface.scaleX, offsetY * surface.scaleY, width * surface.scaleX, height * surface.scaleY, canvasOffsetX, canvasOffsetY, width, height);
             }, Context2DRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
                 for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
             }, Context2DRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
@@ -892,8 +914,6 @@ require = function e(t, n, r) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
             }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
-            }, Context2DRenderer.prototype.isSupportedShaderProgram = function() {
-                return !1;
             }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
                 return this.context.getImageData(sx, sy, sw, sh);
             }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
@@ -936,8 +956,9 @@ require = function e(t, n, r) {
                 return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this)), 
                 this._renderer;
             }, Context2DSurface.prototype.changePhysicalScale = function(xScale, yScale) {
-                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
-                this._context.scale(xScale, yScale);
+                this.hasVariableResolution && (this.canvas.width = Math.ceil(this.width * xScale), 
+                this.canvas.height = Math.ceil(this.height * yScale), this.context().scale(xScale, yScale), 
+                this.scaleX = xScale, this.scaleY = yScale);
             }, Context2DSurface.prototype.isPlaying = function() {
                 return !1;
             }, Context2DSurface;
@@ -952,20 +973,21 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var RenderingHelper_1 = require("../RenderingHelper"), Context2DSurface_1 = require("../context2d/Context2DSurface"), WebGLSharedObject_1 = require("../webgl/WebGLSharedObject"), SurfaceFactory = function() {
+        var g = require("@akashic/akashic-engine"), RenderingHelper_1 = require("../RenderingHelper"), Context2DSurface_1 = require("../context2d/Context2DSurface"), WebGLSharedObject_1 = require("../webgl/WebGLSharedObject"), SurfaceFactory = function() {
             function SurfaceFactory() {}
             return SurfaceFactory.prototype.createPrimarySurface = function(width, height, rendererCandidates) {
                 return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? (this._shared || (this._shared = new WebGLSharedObject_1.WebGLSharedObject(width, height)), 
-                this._shared.getPrimarySurface()) : new Context2DSurface_1.Context2DSurface(width, height);
-            }, SurfaceFactory.prototype.createBackSurface = function(width, height, rendererCandidates) {
-                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? this._shared.createBackSurface(width, height) : new Context2DSurface_1.Context2DSurface(width, height);
+                this._shared.getPrimarySurface()) : new Context2DSurface_1.Context2DSurface(width, height, g.SurfaceStateFlags.hasVariableResolution);
+            }, SurfaceFactory.prototype.createBackSurface = function(width, height, rendererCandidates, state) {
+                return void 0 === state && (state = g.SurfaceStateFlags.None), RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? this._shared.createBackSurface(width, height) : new Context2DSurface_1.Context2DSurface(width, height, state);
             }, SurfaceFactory;
         }();
         exports.SurfaceFactory = SurfaceFactory;
     }, {
         "../RenderingHelper": 15,
         "../context2d/Context2DSurface": 17,
-        "../webgl/WebGLSharedObject": 28
+        "../webgl/WebGLSharedObject": 28,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     19: [ function(require, module, exports) {
         "use strict";
@@ -1422,8 +1444,6 @@ require = function e(t, n, r) {
                 this.currentState().globalAlpha = opacity;
             }, WebGLRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 this.currentState().shaderProgram = this._shared.initializeShaderProgram(shaderProgram);
-            }, WebGLRenderer.prototype.isSupportedShaderProgram = function() {
-                return !0;
             }, WebGLRenderer.prototype.changeViewportSize = function(width, height) {
                 var old = this._renderTarget;
                 this._renderTarget = {
@@ -1497,8 +1517,6 @@ require = function e(t, n, r) {
                 _this._uniformSetterTable = {
                     float: _this._uniform1f.bind(_this),
                     int: _this._uniform1i.bind(_this),
-                    float_v: _this._uniform1fv.bind(_this),
-                    int_v: _this._uniform1iv.bind(_this),
                     vec2: _this._uniform2fv.bind(_this),
                     vec3: _this._uniform3fv.bind(_this),
                     vec4: _this._uniform4fv.bind(_this),
@@ -1545,9 +1563,7 @@ require = function e(t, n, r) {
             }, WebGLShaderProgram.prototype.initializeUniforms = function() {
                 var _this = this, uniformCaches = [], uniforms = this.uniforms;
                 null != uniforms && Object.keys(uniforms).forEach(function(k) {
-                    var type = uniforms[k].type, isArray = Array.isArray(uniforms[k].value);
-                    !isArray || "int" !== type && "float" !== type || (type += "_v");
-                    var update = _this._uniformSetterTable[type];
+                    var type = uniforms[k].type, isArray = !("int" === type || "float" === type), update = _this._uniformSetterTable[type];
                     if (!update) throw g.ExceptionFactory.createAssertionError("WebGLShaderProgram#initializeUniforms: Uniform type '" + type + "' is not supported.");
                     uniformCaches.push({
                         name: k,
@@ -1567,10 +1583,6 @@ require = function e(t, n, r) {
                 this._context.uniform1f(loc, v);
             }, WebGLShaderProgram.prototype._uniform1i = function(loc, v) {
                 this._context.uniform1i(loc, v);
-            }, WebGLShaderProgram.prototype._uniform1fv = function(loc, v) {
-                this._context.uniform1fv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform1iv = function(loc, v) {
-                this._context.uniform1iv(loc, v);
             }, WebGLShaderProgram.prototype._uniform2fv = function(loc, v) {
                 this._context.uniform2fv(loc, v);
             }, WebGLShaderProgram.prototype._uniform3fv = function(loc, v) {
@@ -1722,7 +1734,7 @@ require = function e(t, n, r) {
                 } else shaderProgram = this._defaultShaderProgram;
                 return shaderProgram;
             }, WebGLSharedObject.prototype._init = function() {
-                var _a, program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
+                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
                 this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
                 this._fillRectSurfaceTexture = {
                     texture: this._fillRectTexture,
@@ -1763,6 +1775,7 @@ require = function e(t, n, r) {
                 _a);
                 var compositeOperation = this._compositeOps[this._currentCompositeOperation];
                 this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
+                var _a;
             }, WebGLSharedObject.prototype._makeBuffer = function(data) {
                 var buffer = this._context.createBuffer();
                 return this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW), 
@@ -1896,7 +1909,8 @@ require = function e(t, n, r) {
             function InputAbstractHandler(inputView, disablePreventDefault) {
                 if (Object.getPrototypeOf && Object.getPrototypeOf(this) === InputAbstractHandler.prototype) throw new Error("InputAbstractHandler is abstract and should not be directly instantiated");
                 this.inputView = inputView, this.pointerEventLock = {}, this._xScale = 1, this._yScale = 1, 
-                this._disablePreventDefault = !!disablePreventDefault, this.pointTrigger = new g.Trigger();
+                this._physicalScaleX = 1, this._physicalScaleY = 1, this._disablePreventDefault = !!disablePreventDefault, 
+                this.pointTrigger = new g.Trigger();
             }
             return InputAbstractHandler.isSupported = function() {
                 return !1;
@@ -1906,6 +1920,8 @@ require = function e(t, n, r) {
                 throw new Error("This method is abstract");
             }, InputAbstractHandler.prototype.setScale = function(xScale, yScale) {
                 void 0 === yScale && (yScale = xScale), this._xScale = xScale, this._yScale = yScale;
+            }, InputAbstractHandler.prototype.setPhysicalScale = function(scaleX, scaleY) {
+                this._physicalScaleX = scaleX, this._physicalScaleY = scaleY;
             }, InputAbstractHandler.prototype.pointDown = function(identifier, pagePosition) {
                 this.pointTrigger.fire({
                     type: 0,
@@ -1926,13 +1942,13 @@ require = function e(t, n, r) {
                 }), delete this.pointerEventLock[identifier]);
             }, InputAbstractHandler.prototype.getOffsetFromEvent = function(e) {
                 return {
-                    x: e.offsetX,
-                    y: e.offsetY
+                    x: e.offsetX / this._physicalScaleX,
+                    y: e.offsetY / this._physicalScaleY
                 };
             }, InputAbstractHandler.prototype.getScale = function() {
                 return {
-                    x: this._xScale,
-                    y: this._yScale
+                    x: this._xScale * this._physicalScaleX,
+                    y: this._yScale * this._physicalScaleY
                 };
             }, InputAbstractHandler;
         }());
@@ -2504,5 +2520,33 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-    }, {} ]
+    }, {} ],
+    "@akashic/pdi-browser": [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var Platform_1 = require("./Platform");
+        exports.Platform = Platform_1.Platform;
+        var ResourceFactory_1 = require("./ResourceFactory");
+        exports.ResourceFactory = ResourceFactory_1.ResourceFactory;
+        var g = require("@akashic/akashic-engine");
+        exports.g = g;
+        var AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry");
+        exports.AudioPluginRegistry = AudioPluginRegistry_1.AudioPluginRegistry;
+        var AudioPluginManager_1 = require("./plugin/AudioPluginManager");
+        exports.AudioPluginManager = AudioPluginManager_1.AudioPluginManager;
+        var HTMLAudioPlugin_1 = require("./plugin/HTMLAudioPlugin/HTMLAudioPlugin");
+        exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
+        var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
+        exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+    }, {
+        "./Platform": 4,
+        "./ResourceFactory": 6,
+        "./plugin/AudioPluginManager": 34,
+        "./plugin/AudioPluginRegistry": 35,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 38,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 42,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ]
 }, {}, []);
