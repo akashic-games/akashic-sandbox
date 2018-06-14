@@ -144,10 +144,10 @@ window.addEventListener("load", function() {
 			startPoints: playlog ? playlog.startPoints : null
 		});
 		var isReplay = !!playlog;
-		var replayLastTime = null;
 		var replayStartTime = null;
 		var replayDuration = null;
 		if (isReplay) {
+			var replayLastTime = null;
 			var replayLastAge = playlog.tickList[1];
 			var ticksWithEvents = playlog.tickList[2];
 			loop: for (var i = ticksWithEvents.length - 1; i >= 0; --i) {
@@ -160,11 +160,8 @@ window.addEventListener("load", function() {
 					}
 				}
 			}
-			if (replayLastTime == null) {
-				replayLastTime = replayLastAge * 1000 / playlog.fps;
-			}
 			replayStartTime = playlog.startPoints[0].timestamp;
-			replayDuration = replayLastTime - replayStartTime;
+			replayDuration = (replayLastTime == null) ? (replayLastAge * 1000 / playlog.fps) : (replayLastTime - replayStartTime);
 		}
 
 		var pf = new pdiBrowser.Platform({
