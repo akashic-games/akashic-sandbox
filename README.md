@@ -4,7 +4,7 @@
 
 # Akashic Sandbox
 
-Akashic Sandboxは、Akashic Engineを使って作成されたゲームの動作確認ツールです。
+Akashic Sandboxは、 [Akashic Engine](https://akashic-games.github.io/) を使って作成されたゲームの動作確認ツールです。
 
 ## インストール
 
@@ -28,6 +28,8 @@ akashic-sandbox [-p <port>] [--cascade<cascade-path>] [<path>]
 
 `--cascade <cascade-path>` を与えると、 `path` にある game.json に対して `<cascade-path>` にある game.json がカスケードされます。
 `--cascade` を複数指定した場合、指定した順でカスケードされます。
+
+Akashic Engineの詳細な利用方法については、 [公式ページ](https://akashic-games.github.io/) を参照してください。
 
 ## Akashic Engine 2.0 を利用したコンテンツの起動方法
 
