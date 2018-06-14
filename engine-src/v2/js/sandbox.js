@@ -145,6 +145,8 @@ window.addEventListener("load", function() {
 		});
 		var isReplay = !!playlog;
 		var replayLastTime = null;
+		var replayStartTime = null;
+		var replayDuration = null;
 		if (isReplay) {
 			var replayLastAge = playlog.tickList[1];
 			var ticksWithEvents = playlog.tickList[2];
@@ -161,6 +163,8 @@ window.addEventListener("load", function() {
 			if (replayLastTime == null) {
 				replayLastTime = replayLastAge * 1000 / playlog.fps;
 			}
+			replayStartTime = playlog.startPoints[0].timestamp;
+			replayDuration = replayLastTime - replayStartTime;
 		}
 
 		var pf = new pdiBrowser.Platform({
@@ -181,7 +185,7 @@ window.addEventListener("load", function() {
 			errorHandler: function (e) { console.log("ERRORHANDLER:", e); }
 		});
 
-		var timeKeeper = new TimeKeeper(replayLastTime);
+		var timeKeeper = new TimeKeeper(replayDuration);
 
 		driver.gameCreatedTrigger.add(function (game) {
 			enableLogger(game);
@@ -206,7 +210,7 @@ window.addEventListener("load", function() {
 			if (devMode) {
 				setupDeveloperMenu({
 					isReplay: isReplay,
-					replayLastTime: replayLastTime,
+					replayDuration: replayDuration,
 					timeKeeper: timeKeeper
 				});
 			}
@@ -232,7 +236,8 @@ window.addEventListener("load", function() {
 				loopMode: gdr.LoopMode.Replay,
 				delayIgnoreThreshold: Number.MAX_VALUE,
 				jumpTryThreshold: Number.MAX_VALUE,
-				targetTimeFunc: timeKeeper.now.bind(timeKeeper)
+				targetTimeFunc: timeKeeper.now.bind(timeKeeper),
+				originDate: replayStartTime,
 			} : {
 				loopMode: gdr.LoopMode.Realtime
 			},
