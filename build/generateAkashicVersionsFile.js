@@ -3,7 +3,7 @@ var fs = require("fs");
 
 if (process.argv.length < 4) {
 	console.log("Please enter command as follows: node copyfiles.js version outputPath");
-	console.log("ex: node copyfiles.js v2 engine-src/v2/");
+	console.log("ex: node copyfiles.js v2 engine-src/v2");
 	throw new Error("invalid parameter");
 }
 
