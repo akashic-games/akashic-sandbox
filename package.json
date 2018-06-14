@@ -8,10 +8,10 @@
     "start": "npm run build && node bin/run",
     "build": "npm run copy:common && npm run build:v1 && npm run build:v2 && npm run build:client && npm run build:server",
     "copy:common": "cpx ./engine-src/common/js/**/*.js ./js && cpx ./engine-src/common/external/**/*.js ./js",
-    "build:v1": "cd ./engine-src/v1 && npm install && cd ../.. && npm run browserify:v1 && npm run copy:v1 && node ./build/generateAkashicVersionsFile.js v1",
+    "build:v1": "cd ./engine-src/v1 && npm install && cd ../.. && npm run browserify:v1 && npm run copy:v1 && node ./build/generateAkashicVersionsFile.js v1 js/v1 engine-src/v1/versions.json",
     "browserify:v1": "browserify --require ./engine-src/v1/node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ./js/v1/akashic-engine.js",
     "copy:v1": "cpx ./engine-src/v1/js/**/*.js ./js/v1 && cpx ./engine-src/v1/external/**/*.js ./js/v1",
-    "build:v2": "cd ./engine-src/v2 && npm install && cd ../.. && npm run browserify:v2 && npm run copy:v2 && node ./build/generateAkashicVersionsFile.js",
+    "build:v2": "cd ./engine-src/v2 && npm install && cd ../.. && npm run browserify:v2 && npm run copy:v2 && node ./build/generateAkashicVersionsFile.js v2 js/v2 engine-src/v2/versions.json",
     "browserify:v2": "browserify --require ./engine-src/v2/node_modules/@akashic/akashic-engine/lib/main.node.js:@akashic/akashic-engine --outfile ./js/v2/akashic-engine.js",
     "copy:v2": "cpx ./engine-src/v2/js/**/*.js ./js/v2 && cpx ./engine-src/v2/external/**/*.js ./js/v2",
     "build:client": "tsc -p src/client",
@@ -20,8 +20,8 @@
     "test": "npm run test:jasmine && npm run lint",
     "test:jasmine": "jasmine ./spec/**/*[sS]pec.js",
     "update": "npm run update:v1 && npm run update:v2",
-    "update:v1": "node ./build/copyfiles.js v1 && npm run browserify:v1 && npm run copy:v1 && npm run copy:common && node ./build/generateAkashicVersionsFile.js v1",
-    "update:v2": "node ./build/copyfiles.js && npm run browserify:v2 && npm run copy:v2 && npm run copy:common && node ./build/generateAkashicVersionsFile.js"
+    "update:v1": "node ./build/copyfiles.js v1 && npm run browserify:v1 && npm run copy:v1 && npm run copy:common && node ./build/generateAkashicVersionsFile.js v1 engine-src/v1",
+    "update:v2": "node ./build/copyfiles.js && npm run browserify:v2 && npm run copy:v2 && npm run copy:common && node ./build/generateAkashicVersionsFile.js v2 engine-src/v2"
   },
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
