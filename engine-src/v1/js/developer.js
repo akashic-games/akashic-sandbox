@@ -1,6 +1,6 @@
 /**
  * param.isReplay: boolean
- * param.replayLastTime: number
+ * param.replayDuration: number
  * param.timeKeeper: TimeKeeper
  */
 function setupDeveloperMenu(param) {
@@ -84,7 +84,7 @@ function setupDeveloperMenu(param) {
 		isPaused: false,
 		isReplay: param.isReplay,
 		currentTime: 0,
-		replayLastTime: param.replayLastTime,
+		replayDuration: param.replayDuration,
 		replayDone: false,
 		playlog: {
 			list: [] // {name: string, url: string}
