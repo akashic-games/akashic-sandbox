@@ -1,5 +1,4 @@
 var path = require("path");
-var fs = require("fs");
 ["v1", "v2"].forEach(function(version) {
 	console.log(version + ": start to check akashic-library-version");
 	var originalPackageJson = require(path.join(__dirname, "..", "engine-src", version, "package.json"));
