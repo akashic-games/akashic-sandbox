@@ -45,8 +45,8 @@ require = function e(t, n, r) {
         "./ResourceFactory": 6,
         "./plugin/AudioPluginManager": 34,
         "./plugin/AudioPluginRegistry": 35,
-        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 38,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 42,
+        "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 39,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 44,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     1: [ function(require, module, exports) {
@@ -530,7 +530,7 @@ require = function e(t, n, r) {
         }(g.ScriptAsset);
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
-        "../utils/XHRLoader": 43,
+        "../utils/XHRLoader": 45,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     12: [ function(require, module, exports) {
@@ -569,7 +569,7 @@ require = function e(t, n, r) {
         }(g.TextAsset);
         exports.XHRTextAsset = XHRTextAsset;
     }, {
-        "../utils/XHRLoader": 43,
+        "../utils/XHRLoader": 45,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     13: [ function(require, module, exports) {
@@ -1918,7 +1918,7 @@ require = function e(t, n, r) {
         exports.InputAbstractHandler = InputAbstractHandler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 44
+        "@akashic/akashic-pdi": 46
     } ],
     32: [ function(require, module, exports) {
         "use strict";
@@ -2154,6 +2154,66 @@ require = function e(t, n, r) {
     } ],
     37: [ function(require, module, exports) {
         "use strict";
+        function resumeHandler() {
+            playSuspendedAudioElements(), clearUserInteractListener();
+        }
+        function setUserInteractListener() {
+            document.addEventListener("keydown", resumeHandler, !0), document.addEventListener("mousedown", resumeHandler, !0), 
+            document.addEventListener("touchend", resumeHandler, !0);
+        }
+        function clearUserInteractListener() {
+            document.removeEventListener("keydown", resumeHandler), document.removeEventListener("mousedown", resumeHandler), 
+            document.removeEventListener("touchend", resumeHandler);
+        }
+        function playSuspendedAudioElements() {
+            state = 2, suspendedAudioElements.forEach(function(audio) {
+                return audio.play();
+            }), suspendedAudioElements = [];
+        }
+        var HTMLAudioAutoplayHelper, state = 0, suspendedAudioElements = [];
+        !function(HTMLAudioAutoplayHelper) {
+            function setupChromeMEIWorkaround(audio) {
+                function playHandler() {
+                    switch (state) {
+                      case 0:
+                      case 1:
+                        playSuspendedAudioElements();
+                        break;
+
+                      case 2:                    }
+                    state = 2, clearTimeout(timer);
+                }
+                function suspendedHandler() {
+                    switch (audio.removeEventListener("play", playHandler), state) {
+                      case 0:
+                        suspendedAudioElements.push(audio), state = 1, setUserInteractListener();
+                        break;
+
+                      case 1:
+                        suspendedAudioElements.push(audio);
+                        break;
+
+                      case 2:
+                        audio.play();
+                    }
+                }
+                switch (state) {
+                  case 0:
+                    audio.addEventListener("play", playHandler, !0);
+                    var timer = setTimeout(suspendedHandler, 100);
+                    break;
+
+                  case 1:
+                    suspendedAudioElements.push(audio);
+                    break;
+
+                  case 2:                }
+            }
+            HTMLAudioAutoplayHelper.setupChromeMEIWorkaround = setupChromeMEIWorkaround;
+        }(HTMLAudioAutoplayHelper || (HTMLAudioAutoplayHelper = {})), module.exports = HTMLAudioAutoplayHelper;
+    }, {} ],
+    38: [ function(require, module, exports) {
+        "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
                 __proto__: []
@@ -2173,7 +2233,7 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var g = require("@akashic/akashic-engine"), HTMLAudioPlayer = function(_super) {
+        var g = require("@akashic/akashic-engine"), autoPlayHelper = require("./HTMLAudioAutoplayHelper"), HTMLAudioPlayer = function(_super) {
             function HTMLAudioPlayer(system, manager) {
                 var _this = _super.call(this, system) || this;
                 return _this._manager = manager, _this._endedEventHandler = function() {
@@ -2185,9 +2245,10 @@ require = function e(t, n, r) {
             return __extends(HTMLAudioPlayer, _super), HTMLAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
                 var audio = asset.cloneElement();
-                audio ? (audio.volume = this._calculateVolume(), audio.play(), audio.loop = asset.loop, 
-                audio.addEventListener("ended", this._endedEventHandler, !1), audio.addEventListener("play", this._onPlayEventHandler, !1), 
-                this._isWaitingPlayEvent = !0, this._audioInstance = audio) : this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration), 
+                audio ? (autoPlayHelper.setupChromeMEIWorkaround(audio), audio.volume = this._calculateVolume(), 
+                audio.play().catch(function(err) {}), audio.loop = asset.loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
+                audio.addEventListener("play", this._onPlayEventHandler, !1), this._isWaitingPlayEvent = !0, 
+                this._audioInstance = audio) : this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration), 
                 _super.prototype.play.call(this, asset);
             }, HTMLAudioPlayer.prototype.stop = function() {
                 this.currentAudio && (this._clearEndedEventHandler(), this._audioInstance && (this._isWaitingPlayEvent ? this._isStopRequested = !0 : (this._audioInstance.pause(), 
@@ -2213,9 +2274,10 @@ require = function e(t, n, r) {
         }(g.AudioPlayer);
         exports.HTMLAudioPlayer = HTMLAudioPlayer;
     }, {
+        "./HTMLAudioAutoplayHelper": 37,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    38: [ function(require, module, exports) {
+    39: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2258,9 +2320,9 @@ require = function e(t, n, r) {
         exports.HTMLAudioPlugin = HTMLAudioPlugin;
     }, {
         "./HTMLAudioAsset": 36,
-        "./HTMLAudioPlayer": 37
+        "./HTMLAudioPlayer": 38
     } ],
-    39: [ function(require, module, exports) {
+    40: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2314,11 +2376,41 @@ require = function e(t, n, r) {
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
     }, {
-        "../../utils/XHRLoader": 43,
-        "./WebAudioHelper": 40,
+        "../../utils/XHRLoader": 45,
+        "./WebAudioHelper": 42,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    40: [ function(require, module, exports) {
+    41: [ function(require, module, exports) {
+        "use strict";
+        function resumeHandler() {
+            var context = helper.getAudioContext();
+            context.resume(), clearUserInteractListener();
+        }
+        function setUserInteractListener() {
+            document.addEventListener("keydown", resumeHandler, !0), document.addEventListener("mousedown", resumeHandler, !0), 
+            document.addEventListener("touchend", resumeHandler, !0);
+        }
+        function clearUserInteractListener() {
+            document.removeEventListener("keydown", resumeHandler), document.removeEventListener("mousedown", resumeHandler), 
+            document.removeEventListener("touchend", resumeHandler);
+        }
+        var WebAudioAutoplayHelper, helper = require("./WebAudioHelper");
+        !function(WebAudioAutoplayHelper) {
+            function setupChromeMEIWorkaround() {
+                var context = helper.getAudioContext();
+                if (!context || "function" != typeof context.resume) {
+                    var gain = helper.createGainNode(context), osc = context.createOscillator();
+                    osc.type = "sawtooth", osc.frequency.value = 440, osc.connect(gain), osc.start(0);
+                    var contextState = context.state;
+                    osc.disconnect(), "running" !== contextState && setUserInteractListener();
+                }
+            }
+            WebAudioAutoplayHelper.setupChromeMEIWorkaround = setupChromeMEIWorkaround;
+        }(WebAudioAutoplayHelper || (WebAudioAutoplayHelper = {})), module.exports = WebAudioAutoplayHelper;
+    }, {
+        "./WebAudioHelper": 42
+    } ],
+    42: [ function(require, module, exports) {
         "use strict";
         var WebAudioHelper, AudioContext = window.AudioContext || window.webkitAudioContext, singleContext = null;
         !function(WebAudioHelper) {
@@ -2343,7 +2435,7 @@ require = function e(t, n, r) {
             WebAudioHelper.createBufferNode = createBufferNode, WebAudioHelper._workAroundSafari = _workAroundSafari;
         }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
     }, {} ],
-    41: [ function(require, module, exports) {
+    43: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -2401,17 +2493,17 @@ require = function e(t, n, r) {
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
     }, {
-        "./WebAudioHelper": 40,
+        "./WebAudioHelper": 42,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    42: [ function(require, module, exports) {
+    44: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
-        var WebAudioAsset_1 = require("./WebAudioAsset"), WebAudioPlayer_1 = require("./WebAudioPlayer"), WebAudioPlugin = function() {
+        var WebAudioAsset_1 = require("./WebAudioAsset"), WebAudioPlayer_1 = require("./WebAudioPlayer"), autoPlayHelper = require("./WebAudioAutoplayHelper"), WebAudioPlugin = function() {
             function WebAudioPlugin() {
-                this.supportedFormats = this._detectSupportedFormats();
+                this.supportedFormats = this._detectSupportedFormats(), autoPlayHelper.setupChromeMEIWorkaround();
             }
             return WebAudioPlugin.isSupported = function() {
                 return "AudioContext" in window || "webkitAudioContext" in window;
@@ -2442,10 +2534,11 @@ require = function e(t, n, r) {
         }();
         exports.WebAudioPlugin = WebAudioPlugin;
     }, {
-        "./WebAudioAsset": 39,
-        "./WebAudioPlayer": 41
+        "./WebAudioAsset": 40,
+        "./WebAudioAutoplayHelper": 41,
+        "./WebAudioPlayer": 43
     } ],
-    43: [ function(require, module, exports) {
+    45: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -2483,7 +2576,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    44: [ function(require, module, exports) {
+    46: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
