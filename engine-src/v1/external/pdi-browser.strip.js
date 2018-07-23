@@ -995,16 +995,16 @@ require = function e(t, n, r) {
             function MouseHandler(inputView, disablePreventDefault) {
                 var _this = _super.call(this, inputView, disablePreventDefault) || this, identifier = 1;
                 return _this.onMouseDown = function(e) {
-                    0 === e.button && (_this.pointDown(identifier, e), window.addEventListener("mousemove", _this.onMouseMove, !1), 
-                    window.addEventListener("mouseup", _this.onMouseUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
-                    e.preventDefault()));
+                    0 === e.button && (_this.eventTarget = e.target, _this.pointDown(identifier, e), 
+                    window.addEventListener("mousemove", _this.onMouseMove, !1), window.addEventListener("mouseup", _this.onMouseUp, !1), 
+                    _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault()));
                 }, _this.onMouseMove = function(e) {
-                    _this.pointMove(identifier, e), _this._disablePreventDefault || (e.stopPropagation(), 
-                    e.preventDefault());
+                    e.target === _this.eventTarget && (_this.pointMove(identifier, e), _this._disablePreventDefault || (e.stopPropagation(), 
+                    e.preventDefault()));
                 }, _this.onMouseUp = function(e) {
-                    _this.pointUp(identifier, e), window.removeEventListener("mousemove", _this.onMouseMove, !1), 
+                    e.target === _this.eventTarget && (_this.pointUp(identifier, e), window.removeEventListener("mousemove", _this.onMouseMove, !1), 
                     window.removeEventListener("mouseup", _this.onMouseUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
-                    e.preventDefault());
+                    e.preventDefault()));
                 }, _this;
             }
             return __extends(MouseHandler, _super), MouseHandler.isSupported = function() {
