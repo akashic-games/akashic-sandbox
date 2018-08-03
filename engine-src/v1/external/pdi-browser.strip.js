@@ -668,9 +668,9 @@ require = function e(t, n, r) {
             }, Context2DRenderer.prototype.setCompositeOperation = function(operation) {
                 this.context.globalCompositeOperation = RenderingHelper_1.RenderingHelper.toTextFromCompositeOperation(operation);
             }, Context2DRenderer.prototype.setOpacity = function(opacity) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
+                this.context.globalAlpha = opacity;
             }, Context2DRenderer.prototype.setTransform = function(matrix) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
+                this.context.setTransform.apply(this.context, matrix);
             }, Context2DRenderer;
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;

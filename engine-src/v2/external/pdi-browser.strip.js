@@ -887,9 +887,9 @@ require = function e(t, n, r) {
                 }
                 this.context.globalCompositeOperation = operationText;
             }, Context2DRenderer.prototype.setOpacity = function(opacity) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setOpacity() is not implemented");
+                this.context.globalAlpha = opacity;
             }, Context2DRenderer.prototype.setTransform = function(matrix) {
-                throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setTransform() is not implemented");
+                this.context.setTransform.apply(this.context, matrix);
             }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
             }, Context2DRenderer.prototype.isSupportedShaderProgram = function() {
@@ -1701,7 +1701,7 @@ require = function e(t, n, r) {
                 }
                 return shaderProgram;
             }, WebGLSharedObject.prototype._init = function() {
-                var _a, program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
+                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
                 this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
                 this._fillRectSurfaceTexture = {
                     texture: this._fillRectTexture,
@@ -1742,6 +1742,7 @@ require = function e(t, n, r) {
                 _a);
                 var compositeOperation = this._compositeOps[this._currentCompositeOperation];
                 this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
+                var _a;
             }, WebGLSharedObject.prototype._makeBuffer = function(data) {
                 var buffer = this._context.createBuffer();
                 return this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW), 
