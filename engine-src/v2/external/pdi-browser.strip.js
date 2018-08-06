@@ -1352,8 +1352,6 @@ require = function e(t, n, r) {
             }
             return __extends(WebGLPrimarySurfaceRenderer, _super), WebGLPrimarySurfaceRenderer.prototype.begin = function() {
                 _super.prototype.begin.call(this), this._shared.begin();
-            }, WebGLPrimarySurfaceRenderer.prototype.end = function() {
-                _super.prototype.end.call(this), this._shared.end();
             }, WebGLPrimarySurfaceRenderer;
         }(WebGLRenderer_1.WebGLRenderer);
         exports.WebGLPrimarySurfaceRenderer = WebGLPrimarySurfaceRenderer;
@@ -1435,8 +1433,8 @@ require = function e(t, n, r) {
                     framebuffer: old.framebuffer
                 };
             }, WebGLRenderer.prototype.destroy = function() {
-                this._shared.deleteRenderTarget(this._renderTarget), this._shared = void 0, this._renderTarget = void 0, 
-                this._whiteColor = void 0;
+                this._shared.requestDeleteRenderTarget(this._renderTarget), this._shared = void 0, 
+                this._renderTarget = void 0, this._whiteColor = void 0;
             }, WebGLRenderer.prototype._getImageData = function() {
                 throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_getImageData() is not implemented");
             }, WebGLRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
@@ -1633,7 +1631,10 @@ require = function e(t, n, r) {
                 var tw = 1 / surfaceTexture.textureWidth, th = 1 / surfaceTexture.textureHeight, ox = surfaceTexture.textureOffsetX, oy = surfaceTexture.textureOffsetY, s = tw * (ox + offsetX + width), t = th * (oy + offsetY + height), u = tw * (ox + offsetX), v = th * (oy + offsetY);
                 this._register(this._transformVertex(canvasOffsetX, canvasOffsetY, width, height, state.transformer), [ u, v, s, v, s, t, u, v, s, t, u, t ]);
             }, WebGLSharedObject.prototype.end = function() {
-                this._commit();
+                if (this._commit(), this._deleteRequestedTargets.length > 0) {
+                    for (var i = 0; i < this._deleteRequestedTargets.length; ++i) this.deleteRenderTarget(this._deleteRequestedTargets[i]);
+                    this._deleteRequestedTargets = [];
+                }
             }, WebGLSharedObject.prototype.makeTextureForSurface = function(surface) {
                 this._textureAtlas.makeTextureForSurface(this, surface);
             }, WebGLSharedObject.prototype.disposeTexture = function(texture) {
@@ -1686,6 +1687,8 @@ require = function e(t, n, r) {
                     framebuffer: framebuffer,
                     texture: texture
                 };
+            }, WebGLSharedObject.prototype.requestDeleteRenderTarget = function(renderTaget) {
+                this._deleteRequestedTargets.push(renderTaget);
             }, WebGLSharedObject.prototype.deleteRenderTarget = function(renderTaget) {
                 var context = this._context;
                 this.getCurrentRenderTarget() === renderTaget && this._commit(), context.deleteFramebuffer(renderTaget.framebuffer), 
@@ -1701,7 +1704,7 @@ require = function e(t, n, r) {
                 }
                 return shaderProgram;
             }, WebGLSharedObject.prototype._init = function() {
-                var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
+                var _a, program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
                 this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
                 this._fillRectSurfaceTexture = {
                     texture: this._fillRectTexture,
@@ -1720,7 +1723,8 @@ require = function e(t, n, r) {
                 this._verticesCache = new Float32Array(24 * this._maxSpriteCount), this._numSprites = 0, 
                 this._currentTexture = null, this._currentColor = [ 1, 1, 1, 1 ], this._currentAlpha = 1, 
                 this._currentCompositeOperation = g.CompositeOperation.SourceOver, this._currentShaderProgram = program, 
-                this._defaultShaderProgram = program, this._renderTargetStack = [], this._currentShaderProgram.use();
+                this._defaultShaderProgram = program, this._renderTargetStack = [], this._deleteRequestedTargets = [], 
+                this._currentShaderProgram.use();
                 try {
                     this._currentShaderProgram.set_aVertex(this._vertices), this._currentShaderProgram.set_uColor(this._currentColor), 
                     this._currentShaderProgram.set_uAlpha(this._currentAlpha), this._currentShaderProgram.set_uSampler(0);
@@ -1742,7 +1746,6 @@ require = function e(t, n, r) {
                 _a);
                 var compositeOperation = this._compositeOps[this._currentCompositeOperation];
                 this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
-                var _a;
             }, WebGLSharedObject.prototype._makeBuffer = function(data) {
                 var buffer = this._context.createBuffer();
                 return this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW), 
