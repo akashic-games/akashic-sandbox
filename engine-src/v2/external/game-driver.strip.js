@@ -379,7 +379,8 @@ require = function() {
                 _this.player = param.player, _this.raiseEventTrigger = new g.Trigger(), _this.raiseTickTrigger = new g.Trigger(), 
                 _this.snapshotTrigger = new g.Trigger(), _this.isSnapshotSaver = !!param.isSnapshotSaver, 
                 _this._getCurrentTimeFunc = null, _this._eventFilterFuncs = null, _this._notifyPassedAgeTable = {}, 
-                _this._isNotifyRequestedTargetTime = !1, _this._gameArgs = param.gameArgs, _this._globalGameArgs = param.globalGameArgs, 
+                _this._notifiesTargetTimeReached = !1, _this._isSkipAware = !1, _this._gameArgs = param.gameArgs, 
+                _this._globalGameArgs = param.globalGameArgs, _this.skippingChangedTrigger.add(_this._onSkippingChanged, _this), 
                 _this;
             }
             return __extends(Game, _super), Game.prototype.requestNotifyAgePassed = function(age) {
@@ -387,9 +388,9 @@ require = function() {
             }, Game.prototype.cancelNotifyAgePassed = function(age) {
                 delete this._notifyPassedAgeTable[age];
             }, Game.prototype.requestNotifyTargetTimeReached = function() {
-                this._isNotifyRequestedTargetTime = !0;
+                this._notifiesTargetTimeReached = !0;
             }, Game.prototype.cancelNofityTargetTimeReached = function() {
-                this._isNotifyRequestedTargetTime = !1;
+                this._notifiesTargetTimeReached = !1;
             }, Game.prototype.fireAgePassedIfNeeded = function() {
                 var age = this.age - 1;
                 return !!this._notifyPassedAgeTable[age] && (delete this._notifyPassedAgeTable[age], 
@@ -401,6 +402,10 @@ require = function() {
             }, Game.prototype.setStorageFunc = function(funcs) {
                 this.storage._registerLoad(funcs.storageGetFunc), this.storage._registerWrite(funcs.storagePutFunc), 
                 this.storage.requestValuesForJoinPlayer = funcs.requestValuesForJoinFunc;
+            }, Game.prototype.getIsSkipAware = function() {
+                return this._isSkipAware;
+            }, Game.prototype.setIsSkipAware = function(aware) {
+                this._isSkipAware = aware;
             }, Game.prototype.getCurrentTime = function() {
                 return this._getCurrentTimeFunc();
             }, Game.prototype.raiseEvent = function(event) {
@@ -454,7 +459,9 @@ require = function() {
             }, Game.prototype._leaveGame = function() {}, Game.prototype._terminateGame = function() {
                 this.abortTrigger.fire();
             }, Game.prototype._onRawTargetTimeReached = function(targetTime) {
-                this._isNotifyRequestedTargetTime && (this._isNotifyRequestedTargetTime = !1, this.targetTimeReachedTrigger.fire(targetTime));
+                this._notifiesTargetTimeReached && (this._notifiesTargetTimeReached = !1, this.targetTimeReachedTrigger.fire(targetTime));
+            }, Game.prototype._onSkippingChanged = function(skipping) {
+                this._isSkipAware && this.skippingChanged.fire(skipping);
             }, Game;
         }(g.Game);
         exports.Game = Game;
@@ -755,9 +762,10 @@ require = function() {
                 }), this._eventConverter = new EventConverter_1.EventConverter({
                     game: param.game
                 }), this._tickBuffer = this._tickController.getBuffer(), this._onGotStartPoint_bound = this._onGotStartPoint.bind(this), 
-                this._setLoopRenderMode(loopRenderMode), this._game.setStorageFunc(this._tickController.storageFunc()), 
-                this._game.raiseEventTrigger.add(this._onGameRaiseEvent, this), this._game.raiseTickTrigger.add(this._onGameRaiseTick, this), 
-                this._game._started.add(this._onGameStarted, this), this._game._operationPluginOperated.add(this._onGameOperationPluginOperated, this), 
+                this._setLoopRenderMode(loopRenderMode), this._game.setIsSkipAware(null == conf.skipAwareGame || conf.skipAwareGame), 
+                this._game.setStorageFunc(this._tickController.storageFunc()), this._game.raiseEventTrigger.add(this._onGameRaiseEvent, this), 
+                this._game.raiseTickTrigger.add(this._onGameRaiseTick, this), this._game._started.add(this._onGameStarted, this), 
+                this._game._operationPluginOperated.add(this._onGameOperationPluginOperated, this), 
                 this._tickBuffer.gotNextTickTrigger.add(this._onGotNextFrameTick, this), this._tickBuffer.start(), 
                 this._updateGamePlaybackRate(), this._handleSceneChange();
             }
@@ -777,6 +785,7 @@ require = function() {
                     delayIgnoreThreshold: this._delayIgnoreThreshold,
                     skipTicksAtOnce: this._skipTicksAtOnce,
                     skipThreshold: this._skipThreshold,
+                    skipAwareGame: this._game.getIsSkipAware(),
                     jumpTryThreshold: this._jumpTryThreshold,
                     jumpIgnoreThreshold: this._jumpIgnoreThreshold,
                     playbackRate: this._playbackRate,
@@ -789,7 +798,8 @@ require = function() {
             }, GameLoop.prototype.setLoopConfiguration = function(conf) {
                 null != conf.loopMode && (this._loopMode = conf.loopMode), null != conf.delayIgnoreThreshold && (this._delayIgnoreThreshold = conf.delayIgnoreThreshold), 
                 null != conf.skipTicksAtOnce && (this._skipTicksAtOnce = conf.skipTicksAtOnce), 
-                null != conf.skipThreshold && (this._skipThreshold = conf.skipThreshold), null != conf.jumpTryThreshold && (this._jumpTryThreshold = conf.jumpTryThreshold), 
+                null != conf.skipThreshold && (this._skipThreshold = conf.skipThreshold), null != conf.skipAwareGame && this._game.setIsSkipAware(conf.skipAwareGame), 
+                null != conf.jumpTryThreshold && (this._jumpTryThreshold = conf.jumpTryThreshold), 
                 null != conf.jumpIgnoreThreshold && (this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold), 
                 null != conf.playbackRate && (this._playbackRate = conf.playbackRate, this._clock.changeScaleFactor(this._playbackRate), 
                 this._updateGamePlaybackRate()), null != conf.loopRenderMode && this._setLoopRenderMode(conf.loopRenderMode), 
@@ -1917,11 +1927,10 @@ require = function() {
         exports.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, exports.DEFAULT_POLLING_TICK_THRESHOLD = 1e4;
     }, {} ],
     23: [ function(require, module, exports) {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-    }, {} ],
+        arguments[4][4][0].apply(exports, arguments);
+    }, {
+        dup: 4
+    } ],
     24: [ function(require, module, exports) {
         (function(process, global) {
             /*!
