@@ -150,17 +150,19 @@ window.addEventListener("load", function() {
 			var replayLastTime = null;
 			var replayLastAge = playlog.tickList[1];
 			var ticksWithEvents = playlog.tickList[2];
+			replayStartTime = playlog.startPoints[0].timestamp;
 			loop: for (var i = ticksWithEvents.length - 1; i >= 0; --i) {
 				var tick = ticksWithEvents[i];
 				var pevs = tick[1] || [];
 				for (var j = 0; j < pevs.length; ++j) {
 					if (pevs[j][0] === 2) { // TimestampEvent
-						replayLastTime = (pevs[j][3] /* Timestamp */) + (replayLastAge - tick[0]) * 1000 / playlog.fps;
+						var timestamp = (pevs[j][3] /* Timestamp */);
+						// Timestamp の時刻がゲームの開始時刻より小さかった場合は相対時刻とみなす
+						replayLastTime = (timestamp < replayStartTime ? timestamp + replayStartTime : timestamp) + (replayLastAge - tick[0]) * 1000 / playlog.fps;
 						break loop;
 					}
 				}
 			}
-			replayStartTime = playlog.startPoints[0].timestamp;
 			replayDuration = (replayLastTime == null) ? (replayLastAge * 1000 / playlog.fps) : (replayLastTime - replayStartTime);
 		}
 
