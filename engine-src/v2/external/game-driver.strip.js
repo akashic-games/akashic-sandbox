@@ -734,8 +734,9 @@ require = function() {
                 this._pollingTickThreshold = conf._pollingTickThreshold || constants.DEFAULT_POLLING_TICK_THRESHOLD, 
                 this._playbackRate = conf.playbackRate || 1;
                 var loopRenderMode = null != conf.loopRenderMode ? conf.loopRenderMode : LoopRenderMode_1.default.AfterRawFrame;
-                this._loopRenderMode = null, this._loopMode = conf.loopMode, this._amflow = param.amflow, 
-                this._game = param.game, this._eventBuffer = param.eventBuffer, this._executionMode = param.executionMode, 
+                this._loopRenderMode = null, this._omitInterpolatedTickOnReplay = !!conf.omitInterpolatedTickOnReplay, 
+                this._loopMode = conf.loopMode, this._amflow = param.amflow, this._game = param.game, 
+                this._eventBuffer = param.eventBuffer, this._executionMode = param.executionMode, 
                 this._sceneTickMode = null, this._sceneLocalMode = null, this._targetAge = null != conf.targetAge ? conf.targetAge : null, 
                 this._waitingStartPoint = !1, this._lastRequestedStartPointAge = -1, this._lastRequestedStartPointTime = -1, 
                 this._waitingNextTick = !1, this._skipping = !1, this._lastPollingTickTime = 0, 
@@ -793,6 +794,7 @@ require = function() {
                     targetTimeFunc: this._targetTimeFunc,
                     targetTimeOffset: this._targetTimeOffset,
                     originDate: this._originDate,
+                    omitInterpolatedTickOnReplay: this._omitInterpolatedTickOnReplay,
                     targetAge: this._targetAge
                 };
             }, GameLoop.prototype.setLoopConfiguration = function(conf) {
@@ -805,6 +807,7 @@ require = function() {
                 this._updateGamePlaybackRate()), null != conf.loopRenderMode && this._setLoopRenderMode(conf.loopRenderMode), 
                 null != conf.targetTimeFunc && (this._targetTimeFunc = conf.targetTimeFunc), null != conf.targetTimeOffset && (this._targetTimeOffset = conf.targetTimeOffset), 
                 null != conf.originDate && (this._originDate = conf.originDate), this._realTargetTimeOffset = null != this._originDate ? this._originDate : (this._targetTimeOffset || 0) + this._startedAt, 
+                null != conf.omitInterpolatedTickOnReplay && (this._omitInterpolatedTickOnReplay = conf.omitInterpolatedTickOnReplay), 
                 null != conf.targetAge && (this._targetAge !== conf.targetAge && (this._waitingNextTick = !1), 
                 this._targetAge = conf.targetAge);
             }, GameLoop.prototype.addTickList = function(tickList) {
@@ -854,7 +857,7 @@ require = function() {
                 this._lastRequestedStartPointTime = targetTime, this._amflow.getStartPoint({
                     timestamp: targetTime
                 }, this._onGotStartPoint_bound)), frameGap <= 0) return void (this._skipping && this._stopSkipping());
-                !this._skipping && (frameGap > this._skipThreshold || 0 === this._tickBuffer.currentAge) && this._startSkipping();
+                !this._skipping && (frameGap > this._skipThreshold || 0 === this._tickBuffer.currentAge) && this._tickBuffer.hasNextTick() && this._startSkipping();
                 for (var consumedFrame = 0; consumedFrame < this._skipTicksAtOnce; ++consumedFrame) {
                     if (!this._tickBuffer.hasNextTick()) {
                         this._waitingNextTick || (this._tickBuffer.requestTicks(), this._startWaitingNextTick());
@@ -865,8 +868,14 @@ require = function() {
                         if (!(nextTickTime <= targetTime)) break;
                         nextFrameTime = targetTime;
                     } else if (nextFrameTime < nextTickTime) {
-                        this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
-                        continue;
+                        if (!this._omitInterpolatedTickOnReplay || !this._skipping) {
+                            this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
+                            continue;
+                        }
+                        if (nextFrameTime = nextTickTime, targetTime <= nextFrameTime) {
+                            this._currentTime = Math.floor(targetTime / this._frameTime) * this._frameTime;
+                            break;
+                        }
                     }
                     this._currentTime = nextFrameTime;
                     var tick = this._tickBuffer.consume(), consumedAge = -1, pevs = this._eventBuffer.readLocalEvents();
@@ -886,7 +895,7 @@ require = function() {
                         break;
                     }
                 }
-                this._skipping && frameGap - consumedFrame < 1 && this._stopSkipping();
+                this._skipping && targetTime - this._currentTime < this._frameTime && this._stopSkipping();
             }, GameLoop.prototype._onFrameNormal = function(frameArg) {
                 var sceneChanged = !1, game = this._game;
                 if (this._waitingNextTick) return void (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick());
@@ -900,11 +909,11 @@ require = function() {
                 }, this._onGotStartPoint_bound)), ageGap <= 0) return 0 === ageGap && (this._sceneTickMode !== g.TickGenerationMode.Manual && this._loopMode !== LoopMode_1.default.Replay || 0 !== currentAge || this._tickBuffer.requestTicks(), 
                 this._startWaitingNextTick()), this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick(), 
                 void (this._skipping && this._stopSkipping());
-                !this._skipping && (ageGap > this._skipThreshold || 0 === currentAge) && this._startSkipping();
+                !this._skipping && (ageGap > this._skipThreshold || 0 === currentAge) && this._tickBuffer.hasNextTick() && this._startSkipping();
                 for (var loopCount = !this._skipping && ageGap <= this._delayIgnoreThreshold ? 1 : Math.min(ageGap, this._skipTicksAtOnce), consumedFrame = 0; consumedFrame < loopCount; ++consumedFrame) {
                     var nextFrameTime = this._currentTime + this._frameTime, nextTickTime = this._tickBuffer.readNextTickTime();
                     if (null != nextTickTime && nextFrameTime < nextTickTime) {
-                        if (this._loopMode !== LoopMode_1.default.Realtime) {
+                        if (!(this._loopMode === LoopMode_1.default.Realtime || this._omitInterpolatedTickOnReplay && this._skipping)) {
                             if (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal) {
                                 this._doLocalTick();
                                 continue;
@@ -936,7 +945,7 @@ require = function() {
                         break;
                     }
                 }
-                this._skipping && ageGap - consumedFrame < 1 && this._stopSkipping();
+                this._skipping && targetAge - this._tickBuffer.currentAge < 1 && this._stopSkipping();
             }, GameLoop.prototype._onGotNextFrameTick = function() {
                 this._waitingNextTick && this._loopMode !== LoopMode_1.default.FrameByFrame && this._stopWaitingNextTick();
             }, GameLoop.prototype._onGotStartPoint = function(err, startPoint) {
@@ -996,7 +1005,7 @@ require = function() {
                 this._tickBuffer.requestTicks());
             }, GameLoop.prototype._startWaitingNextTick = function() {
                 this._waitingNextTick = !0, this._clock.rawFrameTrigger.add(this._onPollingTick, this), 
-                this._lastPollingTickTime = Date.now();
+                this._lastPollingTickTime = Date.now(), this._skipping && this._stopSkipping();
             }, GameLoop.prototype._stopWaitingNextTick = function() {
                 this._waitingNextTick = !1, this._clock.rawFrameTrigger.remove(this._onPollingTick, this);
             }, GameLoop;
