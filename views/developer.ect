@@ -60,20 +60,30 @@
 							<input id="show-profiler" type="checkbox" value="" v-on:change="toggleProfiler">
 							プロファイラー情報の表示
 						</label>
+						<br>
 						<label for="show-bg">
 							<input id="show-bg" type="checkbox" value="" v-on:change="toggleBackground">
 							背景表示
 						</label>
-						<label for="toggle-preventDefault">
-							<input id="toggle-preventDefault" type="checkbox" value="" v-model="config.disablePreventDefault" v-on:change="togglePreventDefault">
-							ゲーム画面のCanvas要素上で発生したDOMイベントの伝搬をキャンセルしない(リロードで適用)
-						</label>
+						<br>
 						<label for="show-grid">
 							<input id="show-grid" type="checkbox" value="" v-on:change="toggleGrid">
 							グリッド表示
 						</label>
+						<br>
+						<label for="omit-interpolated-tick">
+							<input id="omit-interpolated-tick" type="checkbox" value="" v-on:change="toggleOmitInterpolatedTick">
+							リプレイ時、タイムスタンプ待ちのティック補間を省略 (v2以降)
+						</label>
+						<br>
+						<label for="toggle-preventDefault">
+							<input id="toggle-preventDefault" type="checkbox" value="" v-model="config.disablePreventDefault" v-on:change="togglePreventDefault">
+							canvas要素上で発生したDOMイベントの伝搬をキャンセルしない(リロードで適用)
+						</label>
+						<br>
 						<a class="pure-button" v-on:click="fitToWindow">fit to window</a>
 						<a class="pure-button" v-on:click="revertSize">default size</a>
+						<br>
 						<a class="pure-button" v-on:click="captureScreen" download="screen.png">スクリーンショット</a>
 					</fieldset>
 				</form>
