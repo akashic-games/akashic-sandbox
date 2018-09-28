@@ -23,6 +23,9 @@ function minify(filepath) {
 		output: {
 			beautify: true,
 			comments: saveLicense
+		},
+		compress: {
+			sequences: false
 		}
 	});
 };
