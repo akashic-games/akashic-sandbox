@@ -697,6 +697,12 @@ function setupDeveloperMenu(param) {
 		saveConfig();
 	}
 
+	var omitInterpolatedTickCheckBox = document.getElementById("omit-interpolated-tick");
+	omitInterpolatedTickCheckBox.disabled = true;
+	function toggleOmitInterpolatedTick() {
+		// v1系は omit-interpolated-tick 非対応
+	}
+
 	// time 更新
 	function updateCurrentTime() {
 		data.currentTime = param.timeKeeper.now();
@@ -1027,7 +1033,8 @@ function setupDeveloperMenu(param) {
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},
-			toggleGrid: toggleGrid
+			toggleGrid: toggleGrid,
+			toggleOmitInterpolatedTick: toggleOmitInterpolatedTick
 		}
 	});
 };

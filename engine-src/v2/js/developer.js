@@ -26,6 +26,9 @@ function setupDeveloperMenu(param) {
 	if (config.showGrid == null) {
 		config.showGrid = false;
 	}
+	if (config.omitInterpolatedTick == null) {
+		config.omitInterpolatedTick = false;
+	}
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
@@ -696,6 +699,25 @@ function setupDeveloperMenu(param) {
 		saveConfig();
 	}
 
+	var omitInterpolatedTickCheckBox = document.getElementById("omit-interpolated-tick");
+	setupOmitInterpolatedTick();
+	function setupOmitInterpolatedTick() {
+		if (config.omitInterpolatedTick) {
+			omitInterpolatedTickCheckBox.checked = true;
+			changeDriverState({ loopConfiguration: { omitInterpolatedTickOnReplay: true } });
+		}
+	}
+	function toggleOmitInterpolatedTick() {
+		if (omitInterpolatedTickCheckBox.checked) {
+			changeDriverState({ loopConfiguration: { omitInterpolatedTickOnReplay: true } });
+			config.omitInterpolatedTick = true;
+		} else {
+			changeDriverState({ loopConfiguration: { omitInterpolatedTickOnReplay: false } });
+			config.omitInterpolatedTick = false;
+		}
+		saveConfig();
+	}
+
 	// time 更新
 	function updateCurrentTime() {
 		data.currentTime = param.timeKeeper.now();
@@ -1026,7 +1048,8 @@ function setupDeveloperMenu(param) {
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},
-			toggleGrid: toggleGrid
+			toggleGrid: toggleGrid,
+			toggleOmitInterpolatedTick: toggleOmitInterpolatedTick
 		}
 	});
 };
