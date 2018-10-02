@@ -28,19 +28,24 @@ require = function e(t, n, r) {
         });
         var AudioManager = function() {
             function AudioManager() {
-                this.audioAssets = [], this._masterVolume = 1;
+                this.audioAssets = [];
+                this._masterVolume = 1;
             }
-            return AudioManager.prototype.registerAudioAsset = function(asset) {
+            AudioManager.prototype.registerAudioAsset = function(asset) {
                 this.audioAssets.indexOf(asset) === -1 && this.audioAssets.push(asset);
-            }, AudioManager.prototype.removeAudioAsset = function(asset) {
+            };
+            AudioManager.prototype.removeAudioAsset = function(asset) {
                 var index = this.audioAssets.indexOf(asset);
                 index === -1 && this.audioAssets.splice(index, 1);
-            }, AudioManager.prototype.setMasterVolume = function(volume) {
+            };
+            AudioManager.prototype.setMasterVolume = function(volume) {
                 this._masterVolume = volume;
                 for (var i = 0; i < this.audioAssets.length; i++) this.audioAssets[i]._lastPlayedPlayer && this.audioAssets[i]._lastPlayedPlayer.notifyMasterVolumeChanged();
-            }, AudioManager.prototype.getMasterVolume = function() {
+            };
+            AudioManager.prototype.getMasterVolume = function() {
                 return this._masterVolume;
-            }, AudioManager;
+            };
+            return AudioManager;
         }();
         exports.AudioManager = AudioManager;
     }, {} ],
@@ -51,42 +56,75 @@ require = function e(t, n, r) {
         });
         var g = require("@akashic/akashic-engine"), InputHandlerLayer_1 = require("./InputHandlerLayer"), ContainerController = function() {
             function ContainerController(resourceFactory) {
-                this.container = null, this.surface = null, this.inputHandlerLayer = null, this.rootView = null, 
-                this.useResizeForScaling = !1, this.pointEventTrigger = new g.Trigger(), this._rendererReq = null, 
-                this._disablePreventDefault = !1, this.resourceFactory = resourceFactory;
+                this.container = null;
+                this.surface = null;
+                this.inputHandlerLayer = null;
+                this.rootView = null;
+                this.useResizeForScaling = !1;
+                this.pointEventTrigger = new g.Trigger();
+                this._rendererReq = null;
+                this._disablePreventDefault = !1;
+                this.resourceFactory = resourceFactory;
             }
-            return ContainerController.prototype.initialize = function(param) {
-                this._rendererReq = param.rendererRequirement, this._disablePreventDefault = !!param.disablePreventDefault, 
+            ContainerController.prototype.initialize = function(param) {
+                this._rendererReq = param.rendererRequirement;
+                this._disablePreventDefault = !!param.disablePreventDefault;
                 this._loadView();
-            }, ContainerController.prototype.setRootView = function(rootView) {
-                rootView !== this.rootView && (this.rootView && (this.unloadView(), this._loadView()), 
-                this.rootView = rootView, this._appendToRootView(rootView));
-            }, ContainerController.prototype.resetView = function(rendererReq) {
-                this.unloadView(), this._rendererReq = rendererReq, this._loadView(), this._appendToRootView(this.rootView);
-            }, ContainerController.prototype.getRenderer = function() {
+            };
+            ContainerController.prototype.setRootView = function(rootView) {
+                if (rootView !== this.rootView) {
+                    if (this.rootView) {
+                        this.unloadView();
+                        this._loadView();
+                    }
+                    this.rootView = rootView;
+                    this._appendToRootView(rootView);
+                }
+            };
+            ContainerController.prototype.resetView = function(rendererReq) {
+                this.unloadView();
+                this._rendererReq = rendererReq;
+                this._loadView();
+                this._appendToRootView(this.rootView);
+            };
+            ContainerController.prototype.getRenderer = function() {
                 if (!this.surface) throw new Error("this container has no surface");
                 return this.surface.renderer();
-            }, ContainerController.prototype.changeScale = function(xScale, yScale) {
-                this.useResizeForScaling ? this.surface.changePhysicalScale(xScale, yScale) : this.surface.changeVisualScale(xScale, yScale), 
+            };
+            ContainerController.prototype.changeScale = function(xScale, yScale) {
+                this.useResizeForScaling ? this.surface.changePhysicalScale(xScale, yScale) : this.surface.changeVisualScale(xScale, yScale);
                 this.inputHandlerLayer._inputHandler.setScale(xScale, yScale);
-            }, ContainerController.prototype.unloadView = function() {
-                if (this.inputHandlerLayer.disablePointerEvent(), this.rootView) for (;this.rootView.firstChild; ) this.rootView.removeChild(this.rootView.firstChild);
-            }, ContainerController.prototype._loadView = function() {
+            };
+            ContainerController.prototype.unloadView = function() {
+                this.inputHandlerLayer.disablePointerEvent();
+                if (this.rootView) for (;this.rootView.firstChild; ) this.rootView.removeChild(this.rootView.firstChild);
+            };
+            ContainerController.prototype._loadView = function() {
                 var _a = this._rendererReq, width = _a.primarySurfaceWidth, height = _a.primarySurfaceHeight, disablePreventDefault = this._disablePreventDefault;
-                this.container = document.createDocumentFragment(), this.inputHandlerLayer ? (this.inputHandlerLayer.setViewSize({
-                    width: width,
-                    height: height
-                }), this.inputHandlerLayer.pointEventTrigger.removeAll(), this.inputHandlerLayer.view.removeChild(this.surface.canvas), 
-                this.surface.destroy()) : this.inputHandlerLayer = new InputHandlerLayer_1.InputHandlerLayer({
+                this.container = document.createDocumentFragment();
+                if (this.inputHandlerLayer) {
+                    this.inputHandlerLayer.setViewSize({
+                        width: width,
+                        height: height
+                    });
+                    this.inputHandlerLayer.pointEventTrigger.removeAll();
+                    this.inputHandlerLayer.view.removeChild(this.surface.canvas);
+                    this.surface.destroy();
+                } else this.inputHandlerLayer = new InputHandlerLayer_1.InputHandlerLayer({
                     width: width,
                     height: height,
                     disablePreventDefault: disablePreventDefault
-                }), this.surface = this.resourceFactory.createPrimarySurface(width, height), this.inputHandlerLayer.view.appendChild(this.surface.getHTMLElement()), 
+                });
+                this.surface = this.resourceFactory.createPrimarySurface(width, height);
+                this.inputHandlerLayer.view.appendChild(this.surface.getHTMLElement());
                 this.container.appendChild(this.inputHandlerLayer.view);
-            }, ContainerController.prototype._appendToRootView = function(rootView) {
-                rootView.appendChild(this.container), this.inputHandlerLayer.enablePointerEvent(), 
+            };
+            ContainerController.prototype._appendToRootView = function(rootView) {
+                rootView.appendChild(this.container);
+                this.inputHandlerLayer.enablePointerEvent();
                 this.inputHandlerLayer.pointEventTrigger.add(this.pointEventTrigger.fire, this.pointEventTrigger);
-            }, ContainerController;
+            };
+            return ContainerController;
         }();
         exports.ContainerController = ContainerController;
     }, {
@@ -100,28 +138,41 @@ require = function e(t, n, r) {
         });
         var g = require("@akashic/akashic-engine"), MouseHandler_1 = require("./handler/MouseHandler"), TouchHandler_1 = require("./handler/TouchHandler"), InputHandlerLayer = function() {
             function InputHandlerLayer(param) {
-                this.view = this._createInputView(param.width, param.height), this._inputHandler = void 0, 
-                this.pointEventTrigger = new g.Trigger(), this._disablePreventDefault = !!param.disablePreventDefault;
+                this.view = this._createInputView(param.width, param.height);
+                this._inputHandler = void 0;
+                this.pointEventTrigger = new g.Trigger();
+                this._disablePreventDefault = !!param.disablePreventDefault;
             }
-            return InputHandlerLayer.prototype.enablePointerEvent = function() {
+            InputHandlerLayer.prototype.enablePointerEvent = function() {
                 var _this = this;
-                TouchHandler_1.TouchHandler.isSupported() ? this._inputHandler = new TouchHandler_1.TouchHandler(this.view, this._disablePreventDefault) : this._inputHandler = new MouseHandler_1.MouseHandler(this.view, this._disablePreventDefault), 
+                TouchHandler_1.TouchHandler.isSupported() ? this._inputHandler = new TouchHandler_1.TouchHandler(this.view, this._disablePreventDefault) : this._inputHandler = new MouseHandler_1.MouseHandler(this.view, this._disablePreventDefault);
                 this._inputHandler.pointTrigger.add(function(e) {
                     _this.pointEventTrigger.fire(e);
-                }), this._inputHandler.start();
-            }, InputHandlerLayer.prototype.disablePointerEvent = function() {
+                });
+                this._inputHandler.start();
+            };
+            InputHandlerLayer.prototype.disablePointerEvent = function() {
                 this._inputHandler && this._inputHandler.stop();
-            }, InputHandlerLayer.prototype.setOffset = function(offset) {
+            };
+            InputHandlerLayer.prototype.setOffset = function(offset) {
                 var inputViewStyle = "position:relative; left:" + offset.x + "px; top:" + offset.y + "px";
                 this._inputHandler.inputView.setAttribute("style", inputViewStyle);
-            }, InputHandlerLayer.prototype.setViewSize = function(size) {
+            };
+            InputHandlerLayer.prototype.setViewSize = function(size) {
                 var view = this.view;
-                view.style.width = size.width + "px", view.style.height = size.height + "px";
-            }, InputHandlerLayer.prototype._createInputView = function(width, height) {
+                view.style.width = size.width + "px";
+                view.style.height = size.height + "px";
+            };
+            InputHandlerLayer.prototype._createInputView = function(width, height) {
                 var view = document.createElement("div");
-                return view.setAttribute("tabindex", "1"), view.className = "input-handler", view.setAttribute("style", "display:inline-block; outline:none;"), 
-                view.style.width = width + "px", view.style.height = height + "px", view;
-            }, InputHandlerLayer;
+                view.setAttribute("tabindex", "1");
+                view.className = "input-handler";
+                view.setAttribute("style", "display:inline-block; outline:none;");
+                view.style.width = width + "px";
+                view.style.height = height + "px";
+                return view;
+            };
+            return InputHandlerLayer;
         }();
         exports.InputHandlerLayer = InputHandlerLayer;
     }, {
@@ -136,23 +187,32 @@ require = function e(t, n, r) {
         });
         var RafLooper_1 = require("./RafLooper"), ResourceFactory_1 = require("./ResourceFactory"), ContainerController_1 = require("./ContainerController"), AudioPluginManager_1 = require("./plugin/AudioPluginManager"), AudioManager_1 = require("./AudioManager"), AudioPluginRegistry_1 = require("./plugin/AudioPluginRegistry"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), Platform = function() {
             function Platform(param) {
-                this.containerView = param.containerView, this.audioPluginManager = new AudioPluginManager_1.AudioPluginManager(), 
-                param.audioPlugins && this.audioPluginManager.tryInstallPlugin(param.audioPlugins), 
-                this.audioPluginManager.tryInstallPlugin(AudioPluginRegistry_1.AudioPluginRegistry.getRegisteredAudioPlugins()), 
-                this._audioManager = new AudioManager_1.AudioManager(), this.amflow = param.amflow, 
-                this._platformEventHandler = null, this._resourceFactory = param.resourceFactory || new ResourceFactory_1.ResourceFactory({
+                this.containerView = param.containerView;
+                this.audioPluginManager = new AudioPluginManager_1.AudioPluginManager();
+                param.audioPlugins && this.audioPluginManager.tryInstallPlugin(param.audioPlugins);
+                this.audioPluginManager.tryInstallPlugin(AudioPluginRegistry_1.AudioPluginRegistry.getRegisteredAudioPlugins());
+                this._audioManager = new AudioManager_1.AudioManager();
+                this.amflow = param.amflow;
+                this._platformEventHandler = null;
+                this._resourceFactory = param.resourceFactory || new ResourceFactory_1.ResourceFactory({
                     audioPluginManager: this.audioPluginManager,
                     platform: this,
                     audioManager: this._audioManager
-                }), this.containerController = new ContainerController_1.ContainerController(this._resourceFactory), 
-                this._rendererReq = null, this._disablePreventDefault = !!param.disablePreventDefault;
+                });
+                this.containerController = new ContainerController_1.ContainerController(this._resourceFactory);
+                this._rendererReq = null;
+                this._disablePreventDefault = !!param.disablePreventDefault;
             }
-            return Platform.prototype.setPlatformEventHandler = function(handler) {
-                this.containerController && (this.containerController.pointEventTrigger.removeAll({
-                    owner: this._platformEventHandler
-                }), this.containerController.pointEventTrigger.add(handler.onPointEvent, handler)), 
+            Platform.prototype.setPlatformEventHandler = function(handler) {
+                if (this.containerController) {
+                    this.containerController.pointEventTrigger.removeAll({
+                        owner: this._platformEventHandler
+                    });
+                    this.containerController.pointEventTrigger.add(handler.onPointEvent, handler);
+                }
                 this._platformEventHandler = handler;
-            }, Platform.prototype.loadGameConfiguration = function(url, callback) {
+            };
+            Platform.prototype.loadGameConfiguration = function(url, callback) {
                 var a = new XHRTextAsset_1.XHRTextAsset("(game.json)", url);
                 a._load({
                     _onAssetLoad: function(asset) {
@@ -162,21 +222,32 @@ require = function e(t, n, r) {
                         callback(error, null);
                     }
                 });
-            }, Platform.prototype.getResourceFactory = function() {
+            };
+            Platform.prototype.getResourceFactory = function() {
                 return this._resourceFactory;
-            }, Platform.prototype.setRendererRequirement = function(requirement) {
-                if (!requirement) return void (this.containerController && this.containerController.unloadView());
-                if (this._rendererReq = requirement, this._resourceFactory._rendererCandidates = this._rendererReq.rendererCandidates, 
-                this.containerController && !this.containerController.inputHandlerLayer) this.containerController.initialize({
-                    rendererRequirement: requirement,
-                    disablePreventDefault: this._disablePreventDefault
-                }), this.containerController.setRootView(this.containerView), this._platformEventHandler && this.containerController.pointEventTrigger.add(this._platformEventHandler.onPointEvent, this._platformEventHandler); else {
-                    var surface = this.getPrimarySurface();
-                    surface && !surface.destroyed() && surface.destroy(), this.containerController.resetView(requirement);
-                }
-            }, Platform.prototype.getPrimarySurface = function() {
+            };
+            Platform.prototype.setRendererRequirement = function(requirement) {
+                if (requirement) {
+                    this._rendererReq = requirement;
+                    this._resourceFactory._rendererCandidates = this._rendererReq.rendererCandidates;
+                    if (this.containerController && !this.containerController.inputHandlerLayer) {
+                        this.containerController.initialize({
+                            rendererRequirement: requirement,
+                            disablePreventDefault: this._disablePreventDefault
+                        });
+                        this.containerController.setRootView(this.containerView);
+                        this._platformEventHandler && this.containerController.pointEventTrigger.add(this._platformEventHandler.onPointEvent, this._platformEventHandler);
+                    } else {
+                        var surface = this.getPrimarySurface();
+                        surface && !surface.destroyed() && surface.destroy();
+                        this.containerController.resetView(requirement);
+                    }
+                } else this.containerController && this.containerController.unloadView();
+            };
+            Platform.prototype.getPrimarySurface = function() {
                 return this.containerController.surface;
-            }, Platform.prototype.getOperationPluginViewInfo = function() {
+            };
+            Platform.prototype.getOperationPluginViewInfo = function() {
                 var _this = this;
                 return {
                     type: "pdi-browser",
@@ -185,17 +256,25 @@ require = function e(t, n, r) {
                         return _this.containerController.inputHandlerLayer._inputHandler.getScale();
                     }
                 };
-            }, Platform.prototype.createLooper = function(fun) {
+            };
+            Platform.prototype.createLooper = function(fun) {
                 return new RafLooper_1.RafLooper(fun);
-            }, Platform.prototype.sendToExternal = function(playId, data) {}, Platform.prototype.registerAudioPlugins = function(plugins) {
+            };
+            Platform.prototype.sendToExternal = function(playId, data) {};
+            Platform.prototype.registerAudioPlugins = function(plugins) {
                 return this.audioPluginManager.tryInstallPlugin(plugins);
-            }, Platform.prototype.setScale = function(xScale, yScale) {
+            };
+            Platform.prototype.setScale = function(xScale, yScale) {
                 this.containerController.changeScale(xScale, yScale);
-            }, Platform.prototype.notifyViewMoved = function() {}, Platform.prototype.setMasterVolume = function(volume) {
+            };
+            Platform.prototype.notifyViewMoved = function() {};
+            Platform.prototype.setMasterVolume = function(volume) {
                 this._audioManager && this._audioManager.setMasterVolume(volume);
-            }, Platform.prototype.getMasterVolume = function() {
+            };
+            Platform.prototype.getMasterVolume = function() {
                 if (this._audioManager) return this._audioManager.getMasterVolume();
-            }, Platform;
+            };
+            return Platform;
         }();
         exports.Platform = Platform;
     }, {
@@ -214,19 +293,30 @@ require = function e(t, n, r) {
         });
         var RafLooper = function() {
             function RafLooper(fun) {
-                this._fun = fun, this._timerId = void 0, this._prev = 0;
+                this._fun = fun;
+                this._timerId = void 0;
+                this._prev = 0;
             }
-            return RafLooper.prototype.start = function() {
+            RafLooper.prototype.start = function() {
                 var _this = this, onAnimationFrame = function(deltaTime) {
-                    null != _this._timerId && (_this._timerId = requestAnimationFrame(onAnimationFrame), 
-                    _this._fun(deltaTime - _this._prev), _this._prev = deltaTime);
+                    if (null != _this._timerId) {
+                        _this._timerId = requestAnimationFrame(onAnimationFrame);
+                        _this._fun(deltaTime - _this._prev);
+                        _this._prev = deltaTime;
+                    }
                 }, onFirstFrame = function(deltaTime) {
-                    _this._timerId = requestAnimationFrame(onAnimationFrame), _this._fun(0), _this._prev = deltaTime;
+                    _this._timerId = requestAnimationFrame(onAnimationFrame);
+                    _this._fun(0);
+                    _this._prev = deltaTime;
                 };
                 this._timerId = requestAnimationFrame(onFirstFrame);
-            }, RafLooper.prototype.stop = function() {
-                cancelAnimationFrame(this._timerId), this._timerId = void 0, this._prev = 0;
-            }, RafLooper;
+            };
+            RafLooper.prototype.stop = function() {
+                cancelAnimationFrame(this._timerId);
+                this._timerId = void 0;
+                this._prev = 0;
+            };
+            return RafLooper;
         }();
         exports.RafLooper = RafLooper;
     }, {} ],
@@ -244,8 +334,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -254,34 +344,50 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), HTMLImageAsset_1 = require("./asset/HTMLImageAsset"), HTMLVideoAsset_1 = require("./asset/HTMLVideoAsset"), XHRTextAsset_1 = require("./asset/XHRTextAsset"), XHRScriptAsset_1 = require("./asset/XHRScriptAsset"), GlyphFactory_1 = require("./canvas/GlyphFactory"), SurfaceFactory_1 = require("./canvas/shims/SurfaceFactory"), ResourceFactory = function(_super) {
             function ResourceFactory(param) {
                 var _this = _super.call(this) || this;
-                return _this._audioPluginManager = param.audioPluginManager, _this._audioManager = param.audioManager, 
-                _this._platform = param.platform, _this._surfaceFactory = new SurfaceFactory_1.SurfaceFactory(), 
-                _this;
+                _this._audioPluginManager = param.audioPluginManager;
+                _this._audioManager = param.audioManager;
+                _this._platform = param.platform;
+                _this._surfaceFactory = new SurfaceFactory_1.SurfaceFactory();
+                return _this;
             }
-            return __extends(ResourceFactory, _super), ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
+            __extends(ResourceFactory, _super);
+            ResourceFactory.prototype.createAudioAsset = function(id, assetPath, duration, system, loop, hint) {
                 var activePlugin = this._audioPluginManager.getActivePlugin(), audioAsset = activePlugin.createAsset(id, assetPath, duration, system, loop, hint);
-                return audioAsset.onDestroyed && (this._audioManager.registerAudioAsset(audioAsset), 
-                audioAsset.onDestroyed.add(this._onAudioAssetDestroyed, this)), audioAsset;
-            }, ResourceFactory.prototype.createAudioPlayer = function(system) {
+                if (audioAsset.onDestroyed) {
+                    this._audioManager.registerAudioAsset(audioAsset);
+                    audioAsset.onDestroyed.add(this._onAudioAssetDestroyed, this);
+                }
+                return audioAsset;
+            };
+            ResourceFactory.prototype.createAudioPlayer = function(system) {
                 var activePlugin = this._audioPluginManager.getActivePlugin();
                 return activePlugin.createPlayer(system, this._audioManager);
-            }, ResourceFactory.prototype.createImageAsset = function(id, assetPath, width, height) {
+            };
+            ResourceFactory.prototype.createImageAsset = function(id, assetPath, width, height) {
                 return new HTMLImageAsset_1.HTMLImageAsset(id, assetPath, width, height);
-            }, ResourceFactory.prototype.createVideoAsset = function(id, assetPath, width, height, system, loop, useRealSize) {
+            };
+            ResourceFactory.prototype.createVideoAsset = function(id, assetPath, width, height, system, loop, useRealSize) {
                 return new HTMLVideoAsset_1.HTMLVideoAsset(id, assetPath, width, height, system, loop, useRealSize);
-            }, ResourceFactory.prototype.createTextAsset = function(id, assetPath) {
+            };
+            ResourceFactory.prototype.createTextAsset = function(id, assetPath) {
                 return new XHRTextAsset_1.XHRTextAsset(id, assetPath);
-            }, ResourceFactory.prototype.createScriptAsset = function(id, assetPath) {
+            };
+            ResourceFactory.prototype.createScriptAsset = function(id, assetPath) {
                 return new XHRScriptAsset_1.XHRScriptAsset(id, assetPath);
-            }, ResourceFactory.prototype.createPrimarySurface = function(width, height) {
+            };
+            ResourceFactory.prototype.createPrimarySurface = function(width, height) {
                 return this._surfaceFactory.createPrimarySurface(width, height, this._rendererCandidates);
-            }, ResourceFactory.prototype.createSurface = function(width, height) {
+            };
+            ResourceFactory.prototype.createSurface = function(width, height) {
                 return this._surfaceFactory.createBackSurface(width, height, this._rendererCandidates);
-            }, ResourceFactory.prototype.createGlyphFactory = function(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
+            };
+            ResourceFactory.prototype.createGlyphFactory = function(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
                 return new GlyphFactory_1.GlyphFactory(fontFamily, fontSize, baseline, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight);
-            }, ResourceFactory.prototype._onAudioAssetDestroyed = function(asset) {
+            };
+            ResourceFactory.prototype._onAudioAssetDestroyed = function(asset) {
                 this._audioManager.removeAudioAsset(asset);
-            }, ResourceFactory;
+            };
+            return ResourceFactory;
         }(g.ResourceFactory);
         exports.ResourceFactory = ResourceFactory;
     }, {
@@ -309,7 +415,8 @@ require = function e(t, n, r) {
             function touchEnabled() {
                 return "ontouchstart" in window;
             }
-            RuntimeInfo.pointerEnabled = pointerEnabled, RuntimeInfo.msPointerEnabled = msPointerEnabled, 
+            RuntimeInfo.pointerEnabled = pointerEnabled;
+            RuntimeInfo.msPointerEnabled = msPointerEnabled;
             RuntimeInfo.touchEnabled = touchEnabled;
         }(RuntimeInfo = exports.RuntimeInfo || (exports.RuntimeInfo = {}));
     }, {} ],
@@ -327,8 +434,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -338,33 +445,48 @@ require = function e(t, n, r) {
             function ImageAssetSurface(width, height, drawable) {
                 return _super.call(this, width, height, drawable) || this;
             }
-            return __extends(ImageAssetSurface, _super), ImageAssetSurface.prototype.renderer = function() {
+            __extends(ImageAssetSurface, _super);
+            ImageAssetSurface.prototype.renderer = function() {
                 throw g.ExceptionFactory.createAssertionError("ImageAssetSurface cannot be rendered.");
-            }, ImageAssetSurface.prototype.isPlaying = function() {
+            };
+            ImageAssetSurface.prototype.isPlaying = function() {
                 return !1;
-            }, ImageAssetSurface;
+            };
+            return ImageAssetSurface;
         }(g.Surface);
         exports.ImageAssetSurface = ImageAssetSurface;
         var HTMLImageAsset = function(_super) {
             function HTMLImageAsset(id, path, width, height) {
                 var _this = _super.call(this, id, path, width, height) || this;
-                return _this.data = void 0, _this._surface = void 0, _this;
+                _this.data = void 0;
+                _this._surface = void 0;
+                return _this;
             }
-            return __extends(HTMLImageAsset, _super), HTMLImageAsset.prototype.destroy = function() {
-                this._surface && !this._surface.destroyed() && this._surface.destroy(), this.data = void 0, 
-                this._surface = void 0, _super.prototype.destroy.call(this);
-            }, HTMLImageAsset.prototype._load = function(loader) {
+            __extends(HTMLImageAsset, _super);
+            HTMLImageAsset.prototype.destroy = function() {
+                this._surface && !this._surface.destroyed() && this._surface.destroy();
+                this.data = void 0;
+                this._surface = void 0;
+                _super.prototype.destroy.call(this);
+            };
+            HTMLImageAsset.prototype._load = function(loader) {
                 var _this = this, image = new Image();
                 image.onerror = function() {
                     loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("HTMLImageAsset unknown loading error"));
-                }, image.onload = function() {
-                    _this.data = image, loader._onAssetLoad(_this);
-                }, image.src = this.path;
-            }, HTMLImageAsset.prototype.asSurface = function() {
+                };
+                image.onload = function() {
+                    _this.data = image;
+                    loader._onAssetLoad(_this);
+                };
+                image.src = this.path;
+            };
+            HTMLImageAsset.prototype.asSurface = function() {
                 if (!this.data) throw g.ExceptionFactory.createAssertionError("ImageAssetImpl#asSurface: not yet loaded.");
-                return this._surface ? this._surface : (this._surface = new ImageAssetSurface(this.width, this.height, this.data), 
-                this._surface);
-            }, HTMLImageAsset;
+                if (this._surface) return this._surface;
+                this._surface = new ImageAssetSurface(this.width, this.height, this.data);
+                return this._surface;
+            };
+            return HTMLImageAsset;
         }(g.ImageAsset);
         exports.HTMLImageAsset = HTMLImageAsset;
     }, {
@@ -384,8 +506,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -395,29 +517,38 @@ require = function e(t, n, r) {
             function VideoAssetSurface(width, height, drawable) {
                 return _super.call(this, width, height, drawable, !0) || this;
             }
-            return __extends(VideoAssetSurface, _super), VideoAssetSurface.prototype.renderer = function() {
+            __extends(VideoAssetSurface, _super);
+            VideoAssetSurface.prototype.renderer = function() {
                 throw g.ExceptionFactory.createAssertionError("VideoAssetSurface cannot be rendered.");
-            }, VideoAssetSurface.prototype.isPlaying = function() {
+            };
+            VideoAssetSurface.prototype.isPlaying = function() {
                 return !1;
-            }, VideoAssetSurface;
+            };
+            return VideoAssetSurface;
         }(g.Surface), HTMLVideoAsset = function(_super) {
             function HTMLVideoAsset(id, assetPath, width, height, system, loop, useRealSize) {
                 var _this = _super.call(this, id, assetPath, width, height, system, loop, useRealSize) || this;
-                return _this._player = new HTMLVideoPlayer_1.HTMLVideoPlayer(), _this._surface = new VideoAssetSurface(width, height, null), 
-                _this;
+                _this._player = new HTMLVideoPlayer_1.HTMLVideoPlayer();
+                _this._surface = new VideoAssetSurface(width, height, null);
+                return _this;
             }
-            return __extends(HTMLVideoAsset, _super), HTMLVideoAsset.prototype.inUse = function() {
+            __extends(HTMLVideoAsset, _super);
+            HTMLVideoAsset.prototype.inUse = function() {
                 return !1;
-            }, HTMLVideoAsset.prototype._load = function(loader) {
+            };
+            HTMLVideoAsset.prototype._load = function(loader) {
                 var _this = this;
                 setTimeout(function() {
                     loader._onAssetLoad(_this);
                 }, 0);
-            }, HTMLVideoAsset.prototype.getPlayer = function() {
+            };
+            HTMLVideoAsset.prototype.getPlayer = function() {
                 return this._player;
-            }, HTMLVideoAsset.prototype.asSurface = function() {
+            };
+            HTMLVideoAsset.prototype.asSurface = function() {
                 return this._surface;
-            }, HTMLVideoAsset;
+            };
+            return HTMLVideoAsset;
         }(g.VideoAsset);
         exports.HTMLVideoAsset = HTMLVideoAsset;
     }, {
@@ -438,8 +569,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -448,11 +579,14 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), HTMLVideoPlayer = function(_super) {
             function HTMLVideoPlayer(loop) {
                 var _this = _super.call(this, loop) || this;
-                return _this.isDummy = !0, _this;
+                _this.isDummy = !0;
+                return _this;
             }
-            return __extends(HTMLVideoPlayer, _super), HTMLVideoPlayer.prototype.play = function(videoAsset) {}, 
-            HTMLVideoPlayer.prototype.stop = function() {}, HTMLVideoPlayer.prototype.changeVolume = function(volume) {}, 
-            HTMLVideoPlayer;
+            __extends(HTMLVideoPlayer, _super);
+            HTMLVideoPlayer.prototype.play = function(videoAsset) {};
+            HTMLVideoPlayer.prototype.stop = function() {};
+            HTMLVideoPlayer.prototype.changeVolume = function(volume) {};
+            return HTMLVideoPlayer;
         }(g.VideoPlayer);
         exports.HTMLVideoPlayer = HTMLVideoPlayer;
     }, {
@@ -472,8 +606,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -482,23 +616,31 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), XHRLoader_1 = require("../utils/XHRLoader"), XHRScriptAsset = function(_super) {
             function XHRScriptAsset(id, path) {
                 var _this = _super.call(this, id, path) || this;
-                return _this.script = void 0, _this;
+                _this.script = void 0;
+                return _this;
             }
-            return __extends(XHRScriptAsset, _super), XHRScriptAsset.prototype._load = function(handler) {
+            __extends(XHRScriptAsset, _super);
+            XHRScriptAsset.prototype._load = function(handler) {
                 var _this = this, loader = new XHRLoader_1.XHRLoader();
                 loader.get(this.path, function(error, responseText) {
-                    return error ? void handler._onAssetError(_this, error) : (_this.script = responseText + "\n", 
-                    void handler._onAssetLoad(_this));
+                    if (error) handler._onAssetError(_this, error); else {
+                        _this.script = responseText + "\n";
+                        handler._onAssetLoad(_this);
+                    }
                 });
-            }, XHRScriptAsset.prototype.execute = function(execEnv) {
+            };
+            XHRScriptAsset.prototype.execute = function(execEnv) {
                 var func = this._wrap();
-                return func(execEnv), execEnv.module.exports;
-            }, XHRScriptAsset.prototype._wrap = function() {
+                func(execEnv);
+                return execEnv.module.exports;
+            };
+            XHRScriptAsset.prototype._wrap = function() {
                 var func = new Function("g", XHRScriptAsset.PRE_SCRIPT + this.script + XHRScriptAsset.POST_SCRIPT);
                 return func;
-            }, XHRScriptAsset.PRE_SCRIPT = "(function(exports, require, module, __filename, __dirname) {", 
-            XHRScriptAsset.POST_SCRIPT = "})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);", 
-            XHRScriptAsset;
+            };
+            XHRScriptAsset.PRE_SCRIPT = "(function(exports, require, module, __filename, __dirname) {";
+            XHRScriptAsset.POST_SCRIPT = "})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);";
+            return XHRScriptAsset;
         }(g.ScriptAsset);
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
@@ -519,8 +661,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -529,15 +671,20 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), XHRLoader_1 = require("../utils/XHRLoader"), XHRTextAsset = function(_super) {
             function XHRTextAsset(id, path) {
                 var _this = _super.call(this, id, path) || this;
-                return _this.data = void 0, _this;
+                _this.data = void 0;
+                return _this;
             }
-            return __extends(XHRTextAsset, _super), XHRTextAsset.prototype._load = function(handler) {
+            __extends(XHRTextAsset, _super);
+            XHRTextAsset.prototype._load = function(handler) {
                 var _this = this, loader = new XHRLoader_1.XHRLoader();
                 loader.get(this.path, function(error, responseText) {
-                    return error ? void handler._onAssetError(_this, error) : (_this.data = responseText, 
-                    void handler._onAssetLoad(_this));
+                    if (error) handler._onAssetError(_this, error); else {
+                        _this.data = responseText;
+                        handler._onAssetLoad(_this);
+                    }
                 });
-            }, XHRTextAsset;
+            };
+            return XHRTextAsset;
         }(g.TextAsset);
         exports.XHRTextAsset = XHRTextAsset;
     }, {
@@ -558,8 +705,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -568,17 +715,31 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), CanvasSurface = function(_super) {
             function CanvasSurface(width, height) {
                 var _this = this, canvas = document.createElement("canvas");
-                return _this = _super.call(this, width, height, canvas) || this, canvas.width = width, 
-                canvas.height = height, _this.canvas = canvas, _this._renderer = void 0, _this;
+                _this = _super.call(this, width, height, canvas) || this;
+                canvas.width = width;
+                canvas.height = height;
+                _this.canvas = canvas;
+                _this._renderer = void 0;
+                return _this;
             }
-            return __extends(CanvasSurface, _super), CanvasSurface.prototype.getHTMLElement = function() {
+            __extends(CanvasSurface, _super);
+            CanvasSurface.prototype.getHTMLElement = function() {
                 return this.canvas;
-            }, CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
+            };
+            CanvasSurface.prototype.changeVisualScale = function(xScale, yScale) {
                 var canvasStyle = this.canvas.style;
-                "transform" in canvasStyle ? (canvasStyle.transformOrigin = "0 0", canvasStyle.transform = "scale(" + xScale + "," + yScale + ")") : "webkitTransform" in canvasStyle ? (canvasStyle.webkitTransformOrigin = "0 0", 
-                canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")") : (canvasStyle.width = Math.floor(xScale * this.width) + "px", 
-                canvasStyle.height = Math.floor(yScale * this.width) + "px");
-            }, CanvasSurface;
+                if ("transform" in canvasStyle) {
+                    canvasStyle.transformOrigin = "0 0";
+                    canvasStyle.transform = "scale(" + xScale + "," + yScale + ")";
+                } else if ("webkitTransform" in canvasStyle) {
+                    canvasStyle.webkitTransformOrigin = "0 0";
+                    canvasStyle.webkitTransform = "scale(" + xScale + "," + yScale + ")";
+                } else {
+                    canvasStyle.width = Math.floor(xScale * this.width) + "px";
+                    canvasStyle.height = Math.floor(yScale * this.width) + "px";
+                }
+            };
+            return CanvasSurface;
         }(g.Surface);
         exports.CanvasSurface = CanvasSurface;
     }, {
@@ -588,11 +749,21 @@ require = function e(t, n, r) {
         "use strict";
         function createGlyphRenderedSurface(code, fontSize, cssFontFamily, baselineHeight, marginW, marginH, needImageData, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
             var scale = fontSize < GlyphFactory._environmentMinimumFontSize ? fontSize / GlyphFactory._environmentMinimumFontSize : 1, surfaceWidth = Math.ceil((fontSize + 2 * marginW) * scale), surfaceHeight = Math.ceil((fontSize + 2 * marginH) * scale), surface = new Context2DSurface_1.Context2DSurface(surfaceWidth, surfaceHeight), canvas = surface.canvas, context = canvas.getContext("2d"), str = 4294901760 & code ? String.fromCharCode((4294901760 & code) >>> 16, 65535 & code) : String.fromCharCode(code), fontWeightValue = fontWeight === g.FontWeight.Bold ? "bold " : "";
-            context.save(), context.font = fontWeightValue + fontSize + "px " + cssFontFamily, 
-            context.textAlign = "left", context.textBaseline = "alphabetic", context.lineJoin = "bevel", 
-            1 !== scale && context.scale(scale, scale), strokeWidth > 0 && (context.lineWidth = strokeWidth, 
-            context.strokeStyle = strokeColor, context.strokeText(str, marginW, marginH + baselineHeight)), 
-            strokeOnly || (context.fillStyle = fontColor, context.fillText(str, marginW, marginH + baselineHeight));
+            context.save();
+            context.font = fontWeightValue + fontSize + "px " + cssFontFamily;
+            context.textAlign = "left";
+            context.textBaseline = "alphabetic";
+            context.lineJoin = "bevel";
+            1 !== scale && context.scale(scale, scale);
+            if (strokeWidth > 0) {
+                context.lineWidth = strokeWidth;
+                context.strokeStyle = strokeColor;
+                context.strokeText(str, marginW, marginH + baselineHeight);
+            }
+            if (!strokeOnly) {
+                context.fillStyle = fontColor;
+                context.fillText(str, marginW, marginH + baselineHeight);
+            }
             var advanceWidth = context.measureText(str).width;
             context.restore();
             var result = {
@@ -605,11 +776,16 @@ require = function e(t, n, r) {
         function calcGlyphArea(imageData) {
             for (var sx = imageData.width, sy = imageData.height, ex = 0, ey = 0, currentPos = 0, y = 0, height = imageData.height; y < height; y = y + 1 | 0) for (var x = 0, width = imageData.width; x < width; x = x + 1 | 0) {
                 var a = imageData.data[currentPos + 3];
-                0 !== a && (x < sx && (sx = x), x > ex && (ex = x), y < sy && (sy = y), y > ey && (ey = y)), 
+                if (0 !== a) {
+                    x < sx && (sx = x);
+                    x > ex && (ex = x);
+                    y < sy && (sy = y);
+                    y > ey && (ey = y);
+                }
                 currentPos += 4;
             }
             var glyphArea = void 0;
-            return glyphArea = sx === imageData.width ? {
+            glyphArea = sx === imageData.width ? {
                 x: 0,
                 y: 0,
                 width: 0,
@@ -620,6 +796,7 @@ require = function e(t, n, r) {
                 width: ex - sx + 1,
                 height: ey - sy + 1
             };
+            return glyphArea;
         }
         function isGlyphAreaEmpty(glyphArea) {
             return 0 === glyphArea.width || 0 === glyphArea.height;
@@ -656,8 +833,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -666,29 +843,48 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), Context2DSurface_1 = require("./context2d/Context2DSurface"), genericFontFamilyNames = [ "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui" ], GlyphFactory = function(_super) {
             function GlyphFactory(fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) {
                 var _this = _super.call(this, fontFamily, fontSize, baselineHeight, fontColor, strokeWidth, strokeColor, strokeOnly, fontWeight) || this;
-                _this._glyphAreas = {}, _this._cssFontFamily = fontFamily2CSSFontFamily(fontFamily);
+                _this._glyphAreas = {};
+                _this._cssFontFamily = fontFamily2CSSFontFamily(fontFamily);
                 var fallbackFontFamilyName = fontFamily2FontFamilyName(g.FontFamily.SansSerif);
-                return _this._cssFontFamily.indexOf(fallbackFontFamilyName) === -1 && (_this._cssFontFamily += "," + fallbackFontFamilyName), 
-                _this._marginW = Math.ceil(.3 * _this.fontSize + _this.strokeWidth / 2), _this._marginH = Math.ceil(.3 * _this.fontSize + _this.strokeWidth / 2), 
-                void 0 === GlyphFactory._environmentMinimumFontSize && (GlyphFactory._environmentMinimumFontSize = _this.measureMinimumFontSize()), 
-                _this;
+                _this._cssFontFamily.indexOf(fallbackFontFamilyName) === -1 && (_this._cssFontFamily += "," + fallbackFontFamilyName);
+                _this._marginW = Math.ceil(.3 * _this.fontSize + _this.strokeWidth / 2);
+                _this._marginH = Math.ceil(.3 * _this.fontSize + _this.strokeWidth / 2);
+                void 0 === GlyphFactory._environmentMinimumFontSize && (GlyphFactory._environmentMinimumFontSize = _this.measureMinimumFontSize());
+                return _this;
             }
-            return __extends(GlyphFactory, _super), GlyphFactory.prototype.create = function(code) {
+            __extends(GlyphFactory, _super);
+            GlyphFactory.prototype.create = function(code) {
                 var result, glyphArea = this._glyphAreas[code];
-                return glyphArea || (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !0, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight), 
-                glyphArea = calcGlyphArea(result.imageData), glyphArea.advanceWidth = result.advanceWidth, 
-                this._glyphAreas[code] = glyphArea), isGlyphAreaEmpty(glyphArea) ? (result && result.surface.destroy(), 
-                new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, void 0, !0)) : (result || (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !1, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight)), 
-                new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, !0));
-            }, GlyphFactory.prototype.measureMinimumFontSize = function() {
+                if (!glyphArea) {
+                    result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !0, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight);
+                    glyphArea = calcGlyphArea(result.imageData);
+                    glyphArea.advanceWidth = result.advanceWidth;
+                    this._glyphAreas[code] = glyphArea;
+                }
+                if (isGlyphAreaEmpty(glyphArea)) {
+                    result && result.surface.destroy();
+                    return new g.Glyph(code, 0, 0, 0, 0, 0, 0, glyphArea.advanceWidth, void 0, !0);
+                }
+                result || (result = createGlyphRenderedSurface(code, this.fontSize, this._cssFontFamily, this.baselineHeight, this._marginW, this._marginH, !1, this.fontColor, this.strokeWidth, this.strokeColor, this.strokeOnly, this.fontWeight));
+                return new g.Glyph(code, glyphArea.x, glyphArea.y, glyphArea.width, glyphArea.height, glyphArea.x - this._marginW, glyphArea.y - this._marginH, glyphArea.advanceWidth, result.surface, !0);
+            };
+            GlyphFactory.prototype.measureMinimumFontSize = function() {
                 var fontSize = 1, str = "M", canvas = document.createElement("canvas"), context = canvas.getContext("2d");
-                context.textAlign = "left", context.textBaseline = "alphabetic", context.lineJoin = "bevel";
+                context.textAlign = "left";
+                context.textBaseline = "alphabetic";
+                context.lineJoin = "bevel";
                 var preWidth;
                 context.font = fontSize + "px sans-serif";
                 var width = context.measureText(str).width;
-                do preWidth = width, fontSize += 1, context.font = fontSize + "px sans-serif", width = context.measureText(str).width; while (preWidth === width || fontSize > 50);
+                do {
+                    preWidth = width;
+                    fontSize += 1;
+                    context.font = fontSize + "px sans-serif";
+                    width = context.measureText(str).width;
+                } while (preWidth === width || fontSize > 50);
                 return fontSize;
-            }, GlyphFactory;
+            };
+            return GlyphFactory;
         }(g.GlyphFactory);
         exports.GlyphFactory = GlyphFactory;
     }, {
@@ -714,10 +910,12 @@ require = function e(t, n, r) {
             }
             function usedWebGL(rendererCandidates) {
                 var used = !1;
-                return rendererCandidates && 0 < rendererCandidates.length && (used = "webgl" === rendererCandidates[0]), 
-                used;
+                rendererCandidates && 0 < rendererCandidates.length && (used = "webgl" === rendererCandidates[0]);
+                return used;
             }
-            RenderingHelper.toPowerOfTwo = toPowerOfTwo, RenderingHelper.clamp = clamp, RenderingHelper.usedWebGL = usedWebGL;
+            RenderingHelper.toPowerOfTwo = toPowerOfTwo;
+            RenderingHelper.clamp = clamp;
+            RenderingHelper.usedWebGL = usedWebGL;
         }(RenderingHelper = exports.RenderingHelper || (exports.RenderingHelper = {}));
     }, {} ],
     16: [ function(require, module, exports) {
@@ -734,8 +932,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -744,17 +942,24 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), Context2DRenderer = function(_super) {
             function Context2DRenderer(surface) {
                 var _this = _super.call(this) || this;
-                return _this.surface = surface, _this.context = surface.context(), _this;
+                _this.surface = surface;
+                _this.context = surface.context();
+                return _this;
             }
-            return __extends(Context2DRenderer, _super), Context2DRenderer.prototype.clear = function() {
+            __extends(Context2DRenderer, _super);
+            Context2DRenderer.prototype.clear = function() {
                 this.context.clearRect(0, 0, this.surface.width, this.surface.height);
-            }, Context2DRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+            };
+            Context2DRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
                 this.context.drawImage(surface._drawable, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, width, height);
-            }, Context2DRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+            };
+            Context2DRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
                 for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
-            }, Context2DRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
+            };
+            Context2DRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {
                 var fontFamilyValue, textAlignValue, textBaselineValue, context = this.context;
-                switch (context.save(), fontFamily) {
+                context.save();
+                switch (fontFamily) {
                   case g.FontFamily.Monospace:
                     fontFamilyValue = "monospace";
                     break;
@@ -766,7 +971,8 @@ require = function e(t, n, r) {
                   default:
                     fontFamilyValue = "sans-serif";
                 }
-                switch (context.font = fontSize + "px " + fontFamilyValue, textAlign) {
+                context.font = fontSize + "px " + fontFamilyValue;
+                switch (textAlign) {
                   case g.TextAlign.Right:
                     textAlignValue = "right";
                     break;
@@ -778,7 +984,8 @@ require = function e(t, n, r) {
                   default:
                     textAlignValue = "left";
                 }
-                switch (context.textAlign = textAlignValue, textBaseline) {
+                context.textAlign = textAlignValue;
+                switch (textBaseline) {
                   case g.TextBaseline.Top:
                     textBaselineValue = "top";
                     break;
@@ -794,24 +1001,41 @@ require = function e(t, n, r) {
                   default:
                     textBaselineValue = "alphabetic";
                 }
-                context.textBaseline = textBaselineValue, context.lineJoin = "bevel", strokeWidth > 0 && (context.lineWidth = strokeWidth, 
-                context.strokeStyle = strokeColor, "undefined" == typeof maxWidth ? context.strokeText(text, x, y) : context.strokeText(text, x, y, maxWidth)), 
-                strokeOnly || (context.fillStyle = textColor, "undefined" == typeof maxWidth ? context.fillText(text, x, y) : context.fillText(text, x, y, maxWidth)), 
+                context.textBaseline = textBaselineValue;
+                context.lineJoin = "bevel";
+                if (strokeWidth > 0) {
+                    context.lineWidth = strokeWidth;
+                    context.strokeStyle = strokeColor;
+                    "undefined" == typeof maxWidth ? context.strokeText(text, x, y) : context.strokeText(text, x, y, maxWidth);
+                }
+                if (!strokeOnly) {
+                    context.fillStyle = textColor;
+                    "undefined" == typeof maxWidth ? context.fillText(text, x, y) : context.fillText(text, x, y, maxWidth);
+                }
                 context.restore();
-            }, Context2DRenderer.prototype.translate = function(x, y) {
+            };
+            Context2DRenderer.prototype.translate = function(x, y) {
                 this.context.translate(x, y);
-            }, Context2DRenderer.prototype.transform = function(matrix) {
+            };
+            Context2DRenderer.prototype.transform = function(matrix) {
                 this.context.transform.apply(this.context, matrix);
-            }, Context2DRenderer.prototype.opacity = function(opacity) {
+            };
+            Context2DRenderer.prototype.opacity = function(opacity) {
                 this.context.globalAlpha *= opacity;
-            }, Context2DRenderer.prototype.save = function() {
+            };
+            Context2DRenderer.prototype.save = function() {
                 this.context.save();
-            }, Context2DRenderer.prototype.restore = function() {
+            };
+            Context2DRenderer.prototype.restore = function() {
                 this.context.restore();
-            }, Context2DRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+            };
+            Context2DRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
                 var _fillStyle = this.context.fillStyle;
-                this.context.fillStyle = cssColor, this.context.fillRect(x, y, width, height), this.context.fillStyle = _fillStyle;
-            }, Context2DRenderer.prototype.setCompositeOperation = function(operation) {
+                this.context.fillStyle = cssColor;
+                this.context.fillRect(x, y, width, height);
+                this.context.fillStyle = _fillStyle;
+            };
+            Context2DRenderer.prototype.setCompositeOperation = function(operation) {
                 var operationText;
                 switch (operation) {
                   case g.CompositeOperation.SourceAtop:
@@ -858,20 +1082,30 @@ require = function e(t, n, r) {
                     operationText = "source-over";
                 }
                 this.context.globalCompositeOperation = operationText;
-            }, Context2DRenderer.prototype.setOpacity = function(opacity) {
+            };
+            Context2DRenderer.prototype.setOpacity = function(opacity) {
                 this.context.globalAlpha = opacity;
-            }, Context2DRenderer.prototype.setTransform = function(matrix) {
+            };
+            Context2DRenderer.prototype.setTransform = function(matrix) {
                 this.context.setTransform.apply(this.context, matrix);
-            }, Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
+            };
+            Context2DRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 throw g.ExceptionFactory.createAssertionError("Context2DRenderer#setShaderProgram() is not implemented");
-            }, Context2DRenderer.prototype.isSupportedShaderProgram = function() {
+            };
+            Context2DRenderer.prototype.isSupportedShaderProgram = function() {
                 return !1;
-            }, Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
+            };
+            Context2DRenderer.prototype._getImageData = function(sx, sy, sw, sh) {
                 return this.context.getImageData(sx, sy, sw, sh);
-            }, Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
-                void 0 === dirtyX && (dirtyX = 0), void 0 === dirtyY && (dirtyY = 0), void 0 === dirtyWidth && (dirtyWidth = imageData.width), 
-                void 0 === dirtyHeight && (dirtyHeight = imageData.height), this.context.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
-            }, Context2DRenderer;
+            };
+            Context2DRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+                void 0 === dirtyX && (dirtyX = 0);
+                void 0 === dirtyY && (dirtyY = 0);
+                void 0 === dirtyWidth && (dirtyWidth = imageData.width);
+                void 0 === dirtyHeight && (dirtyHeight = imageData.height);
+                this.context.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+            };
+            return Context2DRenderer;
         }(g.Renderer);
         exports.Context2DRenderer = Context2DRenderer;
     }, {
@@ -891,8 +1125,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -902,17 +1136,24 @@ require = function e(t, n, r) {
             function Context2DSurface() {
                 return null !== _super && _super.apply(this, arguments) || this;
             }
-            return __extends(Context2DSurface, _super), Context2DSurface.prototype.context = function() {
-                return this._context || (this._context = this.canvas.getContext("2d")), this._context;
-            }, Context2DSurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this)), 
-                this._renderer;
-            }, Context2DSurface.prototype.changePhysicalScale = function(xScale, yScale) {
-                this.canvas.width = this.width * xScale, this.canvas.height = this.height * yScale, 
+            __extends(Context2DSurface, _super);
+            Context2DSurface.prototype.context = function() {
+                this._context || (this._context = this.canvas.getContext("2d"));
+                return this._context;
+            };
+            Context2DSurface.prototype.renderer = function() {
+                this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this));
+                return this._renderer;
+            };
+            Context2DSurface.prototype.changePhysicalScale = function(xScale, yScale) {
+                this.canvas.width = this.width * xScale;
+                this.canvas.height = this.height * yScale;
                 this._context.scale(xScale, yScale);
-            }, Context2DSurface.prototype.isPlaying = function() {
+            };
+            Context2DSurface.prototype.isPlaying = function() {
                 return !1;
-            }, Context2DSurface;
+            };
+            return Context2DSurface;
         }(CanvasSurface_1.CanvasSurface);
         exports.Context2DSurface = Context2DSurface;
     }, {
@@ -926,12 +1167,17 @@ require = function e(t, n, r) {
         });
         var RenderingHelper_1 = require("../RenderingHelper"), Context2DSurface_1 = require("../context2d/Context2DSurface"), WebGLSharedObject_1 = require("../webgl/WebGLSharedObject"), SurfaceFactory = function() {
             function SurfaceFactory() {}
-            return SurfaceFactory.prototype.createPrimarySurface = function(width, height, rendererCandidates) {
-                return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? (this._shared || (this._shared = new WebGLSharedObject_1.WebGLSharedObject(width, height)), 
-                this._shared.getPrimarySurface()) : new Context2DSurface_1.Context2DSurface(width, height);
-            }, SurfaceFactory.prototype.createBackSurface = function(width, height, rendererCandidates) {
+            SurfaceFactory.prototype.createPrimarySurface = function(width, height, rendererCandidates) {
+                if (RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates)) {
+                    this._shared || (this._shared = new WebGLSharedObject_1.WebGLSharedObject(width, height));
+                    return this._shared.getPrimarySurface();
+                }
+                return new Context2DSurface_1.Context2DSurface(width, height);
+            };
+            SurfaceFactory.prototype.createBackSurface = function(width, height, rendererCandidates) {
                 return RenderingHelper_1.RenderingHelper.usedWebGL(rendererCandidates) ? this._shared.createBackSurface(width, height) : new Context2DSurface_1.Context2DSurface(width, height);
-            }, SurfaceFactory;
+            };
+            return SurfaceFactory;
         }();
         exports.SurfaceFactory = SurfaceFactory;
     }, {
@@ -948,22 +1194,44 @@ require = function e(t, n, r) {
             function AffineTransformer(rhs) {
                 rhs ? this.matrix = new Float32Array(rhs.matrix) : this.matrix = new Float32Array([ 1, 0, 0, 1, 0, 0 ]);
             }
-            return AffineTransformer.prototype.scale = function(x, y) {
+            AffineTransformer.prototype.scale = function(x, y) {
                 var m = this.matrix;
-                return m[0] *= x, m[1] *= x, m[2] *= y, m[3] *= y, this;
-            }, AffineTransformer.prototype.translate = function(x, y) {
+                m[0] *= x;
+                m[1] *= x;
+                m[2] *= y;
+                m[3] *= y;
+                return this;
+            };
+            AffineTransformer.prototype.translate = function(x, y) {
                 var m = this.matrix;
-                return m[4] += m[0] * x + m[2] * y, m[5] += m[1] * x + m[3] * y, this;
-            }, AffineTransformer.prototype.transform = function(matrix) {
+                m[4] += m[0] * x + m[2] * y;
+                m[5] += m[1] * x + m[3] * y;
+                return this;
+            };
+            AffineTransformer.prototype.transform = function(matrix) {
                 var m = this.matrix, a = matrix[0] * m[0] + matrix[1] * m[2], b = matrix[0] * m[1] + matrix[1] * m[3], c = matrix[2] * m[0] + matrix[3] * m[2], d = matrix[2] * m[1] + matrix[3] * m[3], e = matrix[4] * m[0] + matrix[5] * m[2] + m[4], f = matrix[4] * m[1] + matrix[5] * m[3] + m[5];
-                return m[0] = a, m[1] = b, m[2] = c, m[3] = d, m[4] = e, m[5] = f, this;
-            }, AffineTransformer.prototype.setTransform = function(matrix) {
+                m[0] = a;
+                m[1] = b;
+                m[2] = c;
+                m[3] = d;
+                m[4] = e;
+                m[5] = f;
+                return this;
+            };
+            AffineTransformer.prototype.setTransform = function(matrix) {
                 var m = this.matrix;
-                m[0] = matrix[0], m[1] = matrix[1], m[2] = matrix[2], m[3] = matrix[3], m[4] = matrix[4], 
+                m[0] = matrix[0];
+                m[1] = matrix[1];
+                m[2] = matrix[2];
+                m[3] = matrix[3];
+                m[4] = matrix[4];
                 m[5] = matrix[5];
-            }, AffineTransformer.prototype.copyFrom = function(rhs) {
-                return this.matrix.set(rhs.matrix), this;
-            }, AffineTransformer;
+            };
+            AffineTransformer.prototype.copyFrom = function(rhs) {
+                this.matrix.set(rhs.matrix);
+                return this;
+            };
+            return AffineTransformer;
         }();
         exports.AffineTransformer = AffineTransformer;
     }, {} ],
@@ -974,16 +1242,26 @@ require = function e(t, n, r) {
         });
         var g = require("@akashic/akashic-engine"), AffineTransformer_1 = require("./AffineTransformer"), RenderingState = function() {
             function RenderingState(rhs) {
-                rhs ? (this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
-                this.transformer = new AffineTransformer_1.AffineTransformer(rhs.transformer), this.shaderProgram = rhs.shaderProgram) : (this.globalAlpha = 1, 
-                this.globalCompositeOperation = g.CompositeOperation.SourceOver, this.transformer = new AffineTransformer_1.AffineTransformer(), 
-                this.shaderProgram = null);
+                if (rhs) {
+                    this.globalAlpha = rhs.globalAlpha;
+                    this.globalCompositeOperation = rhs.globalCompositeOperation;
+                    this.transformer = new AffineTransformer_1.AffineTransformer(rhs.transformer);
+                    this.shaderProgram = rhs.shaderProgram;
+                } else {
+                    this.globalAlpha = 1;
+                    this.globalCompositeOperation = g.CompositeOperation.SourceOver;
+                    this.transformer = new AffineTransformer_1.AffineTransformer();
+                    this.shaderProgram = null;
+                }
             }
-            return RenderingState.prototype.copyFrom = function(rhs) {
-                return this.globalAlpha = rhs.globalAlpha, this.globalCompositeOperation = rhs.globalCompositeOperation, 
-                this.transformer.copyFrom(rhs.transformer), this.shaderProgram = rhs.shaderProgram, 
-                this;
-            }, RenderingState;
+            RenderingState.prototype.copyFrom = function(rhs) {
+                this.globalAlpha = rhs.globalAlpha;
+                this.globalCompositeOperation = rhs.globalCompositeOperation;
+                this.transformer.copyFrom(rhs.transformer);
+                this.shaderProgram = rhs.shaderProgram;
+                return this;
+            };
+            return RenderingState;
         }();
         exports.RenderingState = RenderingState;
     }, {
@@ -1004,8 +1282,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1015,13 +1293,18 @@ require = function e(t, n, r) {
             function WebGLBackSurface() {
                 return null !== _super && _super.apply(this, arguments) || this;
             }
-            return __extends(WebGLBackSurface, _super), WebGLBackSurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new WebGLBackSurfaceRenderer_1.WebGLBackSurfaceRenderer(this, this._shared)), 
-                this._renderer;
-            }, WebGLBackSurface.prototype.destroy = function() {
-                this._renderer && this._renderer.destroy(), this._renderer = void 0, this._drawable = void 0, 
+            __extends(WebGLBackSurface, _super);
+            WebGLBackSurface.prototype.renderer = function() {
+                this._renderer || (this._renderer = new WebGLBackSurfaceRenderer_1.WebGLBackSurfaceRenderer(this, this._shared));
+                return this._renderer;
+            };
+            WebGLBackSurface.prototype.destroy = function() {
+                this._renderer && this._renderer.destroy();
+                this._renderer = void 0;
+                this._drawable = void 0;
                 _super.prototype.destroy.call(this);
-            }, WebGLBackSurface;
+            };
+            return WebGLBackSurface;
         }(WebGLPrimarySurface_1.WebGLPrimarySurface);
         exports.WebGLBackSurface = WebGLBackSurface;
     }, {
@@ -1042,8 +1325,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1052,22 +1335,32 @@ require = function e(t, n, r) {
         var WebGLRenderer_1 = require("./WebGLRenderer"), RenderingState_1 = require("./RenderingState"), WebGLBackSurfaceRenderer = function(_super) {
             function WebGLBackSurfaceRenderer(surface, shared) {
                 var _this = _super.call(this, shared, shared.createRenderTarget(surface.width, surface.height)) || this;
-                return surface._drawable = {
+                surface._drawable = {
                     texture: _this._renderTarget.texture,
                     textureOffsetX: 0,
                     textureOffsetY: 0,
                     textureWidth: surface.width,
                     textureHeight: surface.height
-                }, _this;
+                };
+                return _this;
             }
-            return __extends(WebGLBackSurfaceRenderer, _super), WebGLBackSurfaceRenderer.prototype.begin = function() {
-                _super.prototype.begin.call(this), this.save();
+            __extends(WebGLBackSurfaceRenderer, _super);
+            WebGLBackSurfaceRenderer.prototype.begin = function() {
+                _super.prototype.begin.call(this);
+                this.save();
                 var rs = new RenderingState_1.RenderingState(this.currentState()), matrix = rs.transformer.matrix;
-                matrix[1] *= -1, matrix[3] *= -1, matrix[5] = -matrix[5] + this._renderTarget.height, 
-                this.currentState().copyFrom(rs), this._shared.pushRenderTarget(this._renderTarget);
-            }, WebGLBackSurfaceRenderer.prototype.end = function() {
-                this.restore(), this._shared.popRenderTarget(), _super.prototype.end.call(this);
-            }, WebGLBackSurfaceRenderer;
+                matrix[1] *= -1;
+                matrix[3] *= -1;
+                matrix[5] = -matrix[5] + this._renderTarget.height;
+                this.currentState().copyFrom(rs);
+                this._shared.pushRenderTarget(this._renderTarget);
+            };
+            WebGLBackSurfaceRenderer.prototype.end = function() {
+                this.restore();
+                this._shared.popRenderTarget();
+                _super.prototype.end.call(this);
+            };
+            return WebGLBackSurfaceRenderer;
         }(WebGLRenderer_1.WebGLRenderer);
         exports.WebGLBackSurfaceRenderer = WebGLBackSurfaceRenderer;
     }, {
@@ -1083,9 +1376,11 @@ require = function e(t, n, r) {
         !function(WebGLColor) {
             function get(color) {
                 var rgba = "string" == typeof color ? WebGLColor._toColor(color) : [ color[0], color[1], color[2], color[3] ];
-                return rgba[3] = RenderingHelper_1.RenderingHelper.clamp(rgba[3]), rgba[0] = RenderingHelper_1.RenderingHelper.clamp(rgba[0]) * rgba[3], 
-                rgba[1] = RenderingHelper_1.RenderingHelper.clamp(rgba[1]) * rgba[3], rgba[2] = RenderingHelper_1.RenderingHelper.clamp(rgba[2]) * rgba[3], 
-                rgba;
+                rgba[3] = RenderingHelper_1.RenderingHelper.clamp(rgba[3]);
+                rgba[0] = RenderingHelper_1.RenderingHelper.clamp(rgba[0]) * rgba[3];
+                rgba[1] = RenderingHelper_1.RenderingHelper.clamp(rgba[1]) * rgba[3];
+                rgba[2] = RenderingHelper_1.RenderingHelper.clamp(rgba[2]) * rgba[3];
+                return rgba;
             }
             function _hsl2rgb(hsl) {
                 var h = hsl[0] % 360, s = hsl[1], l = hsl[2] > 50 ? 100 - hsl[2] : hsl[2], a = hsl[3], max = l + l * s, min = l - l * s;
@@ -1250,7 +1545,10 @@ require = function e(t, n, r) {
                 WHITESMOKE: [ 245 / 255, 245 / 255, 245 / 255, 1 ],
                 YELLOW: [ 1, 1, 0, 1 ],
                 YELLOWGREEN: [ 154 / 255, 205 / 255, 50 / 255, 1 ]
-            }, WebGLColor.get = get, WebGLColor._hsl2rgb = _hsl2rgb, WebGLColor._toColor = _toColor;
+            };
+            WebGLColor.get = get;
+            WebGLColor._hsl2rgb = _hsl2rgb;
+            WebGLColor._toColor = _toColor;
         }(WebGLColor = exports.WebGLColor || (exports.WebGLColor = {}));
     }, {
         "../RenderingHelper": 15
@@ -1269,8 +1567,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1279,17 +1577,25 @@ require = function e(t, n, r) {
         var CanvasSurface_1 = require("../CanvasSurface"), WebGLPrimarySurfaceRenderer_1 = require("./WebGLPrimarySurfaceRenderer"), WebGLPrimarySurface = function(_super) {
             function WebGLPrimarySurface(shared, width, height) {
                 var _this = _super.call(this, width, height) || this;
-                return _this.canvas.style.position = "absolute", _this._shared = shared, _this;
+                _this.canvas.style.position = "absolute";
+                _this._shared = shared;
+                return _this;
             }
-            return __extends(WebGLPrimarySurface, _super), WebGLPrimarySurface.prototype.renderer = function() {
-                return this._renderer || (this._renderer = new WebGLPrimarySurfaceRenderer_1.WebGLPrimarySurfaceRenderer(this._shared, this._shared.getPrimaryRenderTarget(this.width, this.height))), 
-                this._renderer;
-            }, WebGLPrimarySurface.prototype.changePhysicalScale = function(xScale, yScale) {
+            __extends(WebGLPrimarySurface, _super);
+            WebGLPrimarySurface.prototype.renderer = function() {
+                this._renderer || (this._renderer = new WebGLPrimarySurfaceRenderer_1.WebGLPrimarySurfaceRenderer(this._shared, this._shared.getPrimaryRenderTarget(this.width, this.height)));
+                return this._renderer;
+            };
+            WebGLPrimarySurface.prototype.changePhysicalScale = function(xScale, yScale) {
                 var width = Math.ceil(this.width * xScale), height = Math.ceil(this.height * yScale);
-                this.canvas.width = width, this.canvas.height = height, this.renderer().changeViewportSize(width, height);
-            }, WebGLPrimarySurface.prototype.isPlaying = function() {
+                this.canvas.width = width;
+                this.canvas.height = height;
+                this.renderer().changeViewportSize(width, height);
+            };
+            WebGLPrimarySurface.prototype.isPlaying = function() {
                 return !1;
-            }, WebGLPrimarySurface;
+            };
+            return WebGLPrimarySurface;
         }(CanvasSurface_1.CanvasSurface);
         exports.WebGLPrimarySurface = WebGLPrimarySurface;
     }, {
@@ -1310,8 +1616,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1320,11 +1626,15 @@ require = function e(t, n, r) {
         var WebGLRenderer_1 = require("./WebGLRenderer"), WebGLPrimarySurfaceRenderer = function(_super) {
             function WebGLPrimarySurfaceRenderer(shared, renderTarget) {
                 var _this = _super.call(this, shared, renderTarget) || this;
-                return _this._shared.pushRenderTarget(_this._renderTarget), _this;
+                _this._shared.pushRenderTarget(_this._renderTarget);
+                return _this;
             }
-            return __extends(WebGLPrimarySurfaceRenderer, _super), WebGLPrimarySurfaceRenderer.prototype.begin = function() {
-                _super.prototype.begin.call(this), this._shared.begin();
-            }, WebGLPrimarySurfaceRenderer;
+            __extends(WebGLPrimarySurfaceRenderer, _super);
+            WebGLPrimarySurfaceRenderer.prototype.begin = function() {
+                _super.prototype.begin.call(this);
+                this._shared.begin();
+            };
+            return WebGLPrimarySurfaceRenderer;
         }(WebGLRenderer_1.WebGLRenderer);
         exports.WebGLPrimarySurfaceRenderer = WebGLPrimarySurfaceRenderer;
     }, {
@@ -1344,8 +1654,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1354,47 +1664,69 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), WebGLColor_1 = require("./WebGLColor"), RenderingState_1 = require("./RenderingState"), WebGLRenderer = function(_super) {
             function WebGLRenderer(shared, renderTarget) {
                 var _this = _super.call(this) || this;
-                return _this._stateStack = [], _this._stateStackPointer = 0, _this._capacity = 0, 
-                _this._reallocation(WebGLRenderer.DEFAULT_CAPACITY), _this._whiteColor = [ 1, 1, 1, 1 ], 
-                _this._shared = shared, _this._renderTarget = renderTarget, _this;
+                _this._stateStack = [];
+                _this._stateStackPointer = 0;
+                _this._capacity = 0;
+                _this._reallocation(WebGLRenderer.DEFAULT_CAPACITY);
+                _this._whiteColor = [ 1, 1, 1, 1 ];
+                _this._shared = shared;
+                _this._renderTarget = renderTarget;
+                return _this;
             }
-            return __extends(WebGLRenderer, _super), WebGLRenderer.prototype.clear = function() {
+            __extends(WebGLRenderer, _super);
+            WebGLRenderer.prototype.clear = function() {
                 this._shared.clear();
-            }, WebGLRenderer.prototype.end = function() {
+            };
+            WebGLRenderer.prototype.end = function() {
                 this._shared.end();
-            }, WebGLRenderer.prototype.save = function() {
+            };
+            WebGLRenderer.prototype.save = function() {
                 this._pushState();
-            }, WebGLRenderer.prototype.restore = function() {
+            };
+            WebGLRenderer.prototype.restore = function() {
                 this._popState();
-            }, WebGLRenderer.prototype.translate = function(x, y) {
+            };
+            WebGLRenderer.prototype.translate = function(x, y) {
                 this.currentState().transformer.translate(x, y);
-            }, WebGLRenderer.prototype.transform = function(matrix) {
+            };
+            WebGLRenderer.prototype.transform = function(matrix) {
                 this.currentState().transformer.transform(matrix);
-            }, WebGLRenderer.prototype.opacity = function(opacity) {
+            };
+            WebGLRenderer.prototype.opacity = function(opacity) {
                 this.currentState().globalAlpha *= opacity;
-            }, WebGLRenderer.prototype.setCompositeOperation = function(operation) {
+            };
+            WebGLRenderer.prototype.setCompositeOperation = function(operation) {
                 this.currentState().globalCompositeOperation = operation;
-            }, WebGLRenderer.prototype.currentState = function() {
+            };
+            WebGLRenderer.prototype.currentState = function() {
                 return this._stateStack[this._stateStackPointer];
-            }, WebGLRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
+            };
+            WebGLRenderer.prototype.fillRect = function(x, y, width, height, cssColor) {
                 this._shared.draw(this.currentState(), this._shared.getFillRectSurfaceTexture(), 0, 0, width, height, x, y, WebGLColor_1.WebGLColor.get(cssColor));
-            }, WebGLRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
+            };
+            WebGLRenderer.prototype.drawSprites = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, count) {
                 for (var i = 0; i < count; ++i) this.drawImage(surface, offsetX[i], offsetY[i], width[i], height[i], canvasOffsetX[i], canvasOffsetY[i]);
-            }, WebGLRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
+            };
+            WebGLRenderer.prototype.drawImage = function(surface, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY) {
                 if (!surface._drawable) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: no drawable surface.");
-                if (surface._drawable.texture instanceof WebGLTexture || this._shared.makeTextureForSurface(surface), 
-                !surface._drawable.texture) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: could not create a texture.");
+                surface._drawable.texture instanceof WebGLTexture || this._shared.makeTextureForSurface(surface);
+                if (!surface._drawable.texture) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#drawImage: could not create a texture.");
                 this._shared.draw(this.currentState(), surface._drawable, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, this._whiteColor);
-            }, WebGLRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {}, 
+            };
+            WebGLRenderer.prototype.drawSystemText = function(text, x, y, maxWidth, fontSize, textAlign, textBaseline, textColor, fontFamily, strokeWidth, strokeColor, strokeOnly) {};
             WebGLRenderer.prototype.setTransform = function(matrix) {
                 this.currentState().transformer.setTransform(matrix);
-            }, WebGLRenderer.prototype.setOpacity = function(opacity) {
+            };
+            WebGLRenderer.prototype.setOpacity = function(opacity) {
                 this.currentState().globalAlpha = opacity;
-            }, WebGLRenderer.prototype.setShaderProgram = function(shaderProgram) {
+            };
+            WebGLRenderer.prototype.setShaderProgram = function(shaderProgram) {
                 this.currentState().shaderProgram = this._shared.initializeShaderProgram(shaderProgram);
-            }, WebGLRenderer.prototype.isSupportedShaderProgram = function() {
+            };
+            WebGLRenderer.prototype.isSupportedShaderProgram = function() {
                 return !0;
-            }, WebGLRenderer.prototype.changeViewportSize = function(width, height) {
+            };
+            WebGLRenderer.prototype.changeViewportSize = function(width, height) {
                 var old = this._renderTarget;
                 this._renderTarget = {
                     width: old.width,
@@ -1404,29 +1736,42 @@ require = function e(t, n, r) {
                     texture: old.texture,
                     framebuffer: old.framebuffer
                 };
-            }, WebGLRenderer.prototype.destroy = function() {
-                this._shared.requestDeleteRenderTarget(this._renderTarget), this._shared = void 0, 
-                this._renderTarget = void 0, this._whiteColor = void 0;
-            }, WebGLRenderer.prototype._getImageData = function() {
+            };
+            WebGLRenderer.prototype.destroy = function() {
+                this._shared.requestDeleteRenderTarget(this._renderTarget);
+                this._shared = void 0;
+                this._renderTarget = void 0;
+                this._whiteColor = void 0;
+            };
+            WebGLRenderer.prototype._getImageData = function() {
                 throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_getImageData() is not implemented");
-            }, WebGLRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+            };
+            WebGLRenderer.prototype._putImageData = function(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
                 throw g.ExceptionFactory.createAssertionError("WebGLRenderer#_putImageData() is not implemented");
-            }, WebGLRenderer.prototype._pushState = function() {
+            };
+            WebGLRenderer.prototype._pushState = function() {
                 var old = this.currentState();
-                ++this._stateStackPointer, this._isOverCapacity() && this._reallocation(this._stateStackPointer + 1), 
+                ++this._stateStackPointer;
+                this._isOverCapacity() && this._reallocation(this._stateStackPointer + 1);
                 this.currentState().copyFrom(old);
-            }, WebGLRenderer.prototype._popState = function() {
+            };
+            WebGLRenderer.prototype._popState = function() {
                 if (!(this._stateStackPointer > 0)) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#restore: state stack under-flow.");
-                this.currentState().shaderProgram = null, --this._stateStackPointer;
-            }, WebGLRenderer.prototype._isOverCapacity = function() {
+                this.currentState().shaderProgram = null;
+                --this._stateStackPointer;
+            };
+            WebGLRenderer.prototype._isOverCapacity = function() {
                 return this._capacity <= this._stateStackPointer;
-            }, WebGLRenderer.prototype._reallocation = function(newCapacity) {
+            };
+            WebGLRenderer.prototype._reallocation = function(newCapacity) {
                 var oldCapacity = this._capacity;
                 if (oldCapacity < newCapacity) {
                     newCapacity < 2 * oldCapacity ? this._capacity *= 2 : this._capacity = newCapacity;
                     for (var i = oldCapacity; i < this._capacity; ++i) this._stateStack.push(new RenderingState_1.RenderingState());
                 }
-            }, WebGLRenderer.DEFAULT_CAPACITY = 16, WebGLRenderer;
+            };
+            WebGLRenderer.DEFAULT_CAPACITY = 16;
+            return WebGLRenderer;
         }(g.Renderer);
         exports.WebGLRenderer = WebGLRenderer;
     }, {
@@ -1442,10 +1787,15 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), WebGLShaderProgram = function() {
             function WebGLShaderProgram(context, fSrc, uniforms) {
                 var vSrc = WebGLShaderProgram._DEFAULT_VERTEX_SHADER, fSrc = fSrc || WebGLShaderProgram._DEFAULT_FRAGMENT_SHADER, program = WebGLShaderProgram._makeShaderProgram(context, vSrc, fSrc);
-                this.program = program, this._context = context, this._aVertex = context.getAttribLocation(this.program, "aVertex"), 
-                this._uColor = context.getUniformLocation(this.program, "uColor"), this._uAlpha = context.getUniformLocation(this.program, "uAlpha"), 
-                this._uSampler = context.getUniformLocation(this.program, "uSampler"), this._uniforms = uniforms, 
-                this._uniformCaches = [], this._uniformSetterTable = {
+                this.program = program;
+                this._context = context;
+                this._aVertex = context.getAttribLocation(this.program, "aVertex");
+                this._uColor = context.getUniformLocation(this.program, "uColor");
+                this._uAlpha = context.getUniformLocation(this.program, "uAlpha");
+                this._uSampler = context.getUniformLocation(this.program, "uSampler");
+                this._uniforms = uniforms;
+                this._uniformCaches = [];
+                this._uniformSetterTable = {
                     float: this._uniform1f.bind(this),
                     int: this._uniform1i.bind(this),
                     float_v: this._uniform1fv.bind(this),
@@ -1461,39 +1811,56 @@ require = function e(t, n, r) {
                     mat4: this._uniformMatrix4fv.bind(this)
                 };
             }
-            return WebGLShaderProgram._makeShader = function(gl, typ, src) {
+            WebGLShaderProgram._makeShader = function(gl, typ, src) {
                 var shader = gl.createShader(typ);
-                if (gl.shaderSource(shader, src), gl.compileShader(shader), !gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                gl.shaderSource(shader, src);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
                     var msg = gl.getShaderInfoLog(shader);
-                    throw gl.deleteShader(shader), new Error(msg);
+                    gl.deleteShader(shader);
+                    throw new Error(msg);
                 }
                 return shader;
-            }, WebGLShaderProgram._makeShaderProgram = function(gl, vSrc, fSrc) {
+            };
+            WebGLShaderProgram._makeShaderProgram = function(gl, vSrc, fSrc) {
                 var program = gl.createProgram(), vShader = WebGLShaderProgram._makeShader(gl, gl.VERTEX_SHADER, vSrc);
-                gl.attachShader(program, vShader), gl.deleteShader(vShader);
+                gl.attachShader(program, vShader);
+                gl.deleteShader(vShader);
                 var fShader = WebGLShaderProgram._makeShader(gl, gl.FRAGMENT_SHADER, fSrc);
-                if (gl.attachShader(program, fShader), gl.deleteShader(fShader), gl.linkProgram(program), 
-                !gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                gl.attachShader(program, fShader);
+                gl.deleteShader(fShader);
+                gl.linkProgram(program);
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
                     var msg = gl.getProgramInfoLog(program);
-                    throw gl.deleteProgram(program), new Error(msg);
+                    gl.deleteProgram(program);
+                    throw new Error(msg);
                 }
                 return program;
-            }, WebGLShaderProgram.prototype.set_aVertex = function(buffer) {
-                this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.enableVertexAttribArray(this._aVertex), 
+            };
+            WebGLShaderProgram.prototype.set_aVertex = function(buffer) {
+                this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer);
+                this._context.enableVertexAttribArray(this._aVertex);
                 this._context.vertexAttribPointer(this._aVertex, 4, this._context.FLOAT, !1, 0, 0);
-            }, WebGLShaderProgram.prototype.set_uColor = function(rgba) {
+            };
+            WebGLShaderProgram.prototype.set_uColor = function(rgba) {
                 this._context.uniform4f(this._uColor, rgba[0], rgba[1], rgba[2], rgba[3]);
-            }, WebGLShaderProgram.prototype.set_uAlpha = function(alpha) {
+            };
+            WebGLShaderProgram.prototype.set_uAlpha = function(alpha) {
                 this._context.uniform1f(this._uAlpha, alpha);
-            }, WebGLShaderProgram.prototype.set_uSampler = function(value) {
+            };
+            WebGLShaderProgram.prototype.set_uSampler = function(value) {
                 this._context.uniform1i(this._uSampler, value);
-            }, WebGLShaderProgram.prototype.updateUniforms = function() {
+            };
+            WebGLShaderProgram.prototype.updateUniforms = function() {
                 for (var i = 0; i < this._uniformCaches.length; ++i) {
                     var cache = this._uniformCaches[i], value = this._uniforms[cache.name].value;
-                    (cache.isArray || value !== cache.beforeValue) && (cache.update(cache.loc, value), 
-                    cache.beforeValue = value);
+                    if (cache.isArray || value !== cache.beforeValue) {
+                        cache.update(cache.loc, value);
+                        cache.beforeValue = value;
+                    }
                 }
-            }, WebGLShaderProgram.prototype.initializeUniforms = function() {
+            };
+            WebGLShaderProgram.prototype.initializeUniforms = function() {
                 var _this = this, uniformCaches = [], uniforms = this._uniforms;
                 null != uniforms && Object.keys(uniforms).forEach(function(k) {
                     var type = uniforms[k].type, isArray = Array.isArray(uniforms[k].value);
@@ -1507,42 +1874,60 @@ require = function e(t, n, r) {
                         isArray: isArray,
                         loc: _this._context.getUniformLocation(_this.program, k)
                     });
-                }), this._uniformCaches = uniformCaches;
-            }, WebGLShaderProgram.prototype.use = function() {
+                });
+                this._uniformCaches = uniformCaches;
+            };
+            WebGLShaderProgram.prototype.use = function() {
                 this._context.useProgram(this.program);
-            }, WebGLShaderProgram.prototype.unuse = function() {
+            };
+            WebGLShaderProgram.prototype.unuse = function() {
                 this._context.useProgram(null);
-            }, WebGLShaderProgram.prototype.destroy = function() {
+            };
+            WebGLShaderProgram.prototype.destroy = function() {
                 this._context.deleteProgram(this.program);
-            }, WebGLShaderProgram.prototype._uniform1f = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform1f = function(loc, v) {
                 this._context.uniform1f(loc, v);
-            }, WebGLShaderProgram.prototype._uniform1i = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform1i = function(loc, v) {
                 this._context.uniform1i(loc, v);
-            }, WebGLShaderProgram.prototype._uniform1fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform1fv = function(loc, v) {
                 this._context.uniform1fv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform1iv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform1iv = function(loc, v) {
                 this._context.uniform1iv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform2fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform2fv = function(loc, v) {
                 this._context.uniform2fv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform3fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform3fv = function(loc, v) {
                 this._context.uniform3fv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform4fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform4fv = function(loc, v) {
                 this._context.uniform4fv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform2iv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform2iv = function(loc, v) {
                 this._context.uniform2iv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform3iv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform3iv = function(loc, v) {
                 this._context.uniform3iv(loc, v);
-            }, WebGLShaderProgram.prototype._uniform4iv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniform4iv = function(loc, v) {
                 this._context.uniform4iv(loc, v);
-            }, WebGLShaderProgram.prototype._uniformMatrix2fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniformMatrix2fv = function(loc, v) {
                 this._context.uniformMatrix2fv(loc, !1, v);
-            }, WebGLShaderProgram.prototype._uniformMatrix3fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniformMatrix3fv = function(loc, v) {
                 this._context.uniformMatrix3fv(loc, !1, v);
-            }, WebGLShaderProgram.prototype._uniformMatrix4fv = function(loc, v) {
+            };
+            WebGLShaderProgram.prototype._uniformMatrix4fv = function(loc, v) {
                 this._context.uniformMatrix4fv(loc, !1, v);
-            }, WebGLShaderProgram._DEFAULT_VERTEX_SHADER = "#version 100\nprecision mediump float;\nattribute vec4 aVertex;\nvarying vec2 vTexCoord;\nvarying vec4 vColor;\nuniform vec4 uColor;\nuniform float uAlpha;\nvoid main() {    gl_Position = vec4(aVertex.xy, 0.0, 1.0);    vTexCoord = aVertex.zw;    vColor = uColor * uAlpha;}", 
-            WebGLShaderProgram._DEFAULT_FRAGMENT_SHADER = "#version 100\nprecision mediump float;\nvarying vec2 vTexCoord;\nvarying vec4 vColor;\nuniform sampler2D uSampler;\nvoid main() {    gl_FragColor = texture2D(uSampler, vTexCoord) * vColor;}", 
-            WebGLShaderProgram;
+            };
+            WebGLShaderProgram._DEFAULT_VERTEX_SHADER = "#version 100\nprecision mediump float;\nattribute vec4 aVertex;\nvarying vec2 vTexCoord;\nvarying vec4 vColor;\nuniform vec4 uColor;\nuniform float uAlpha;\nvoid main() {    gl_Position = vec4(aVertex.xy, 0.0, 1.0);    vTexCoord = aVertex.zw;    vColor = uColor * uAlpha;}";
+            WebGLShaderProgram._DEFAULT_FRAGMENT_SHADER = "#version 100\nprecision mediump float;\nvarying vec2 vTexCoord;\nvarying vec4 vColor;\nuniform sampler2D uSampler;\nvoid main() {    gl_FragColor = texture2D(uSampler, vTexCoord) * vColor;}";
+            return WebGLShaderProgram;
         }();
         exports.WebGLShaderProgram = WebGLShaderProgram;
     }, {
@@ -1560,98 +1945,152 @@ require = function e(t, n, r) {
                     preserveDrawingBuffer: !0
                 });
                 if (!context) throw g.ExceptionFactory.createAssertionError("WebGLSharedObject#constructor: could not initialize WebGLRenderingContext");
-                this._surface = surface, this._context = context, this._init();
+                this._surface = surface;
+                this._context = context;
+                this._init();
             }
-            return WebGLSharedObject.prototype.getFillRectSurfaceTexture = function() {
+            WebGLSharedObject.prototype.getFillRectSurfaceTexture = function() {
                 return this._fillRectSurfaceTexture;
-            }, WebGLSharedObject.prototype.getPrimarySurface = function() {
+            };
+            WebGLSharedObject.prototype.getPrimarySurface = function() {
                 return this._surface;
-            }, WebGLSharedObject.prototype.createBackSurface = function(width, height) {
+            };
+            WebGLSharedObject.prototype.createBackSurface = function(width, height) {
                 return new WebGLBackSurface_1.WebGLBackSurface(this, width, height);
-            }, WebGLSharedObject.prototype.pushRenderTarget = function(renderTarget) {
-                this._commit(), this._renderTargetStack.push(renderTarget), this._context.bindFramebuffer(this._context.FRAMEBUFFER, renderTarget.framebuffer), 
+            };
+            WebGLSharedObject.prototype.pushRenderTarget = function(renderTarget) {
+                this._commit();
+                this._renderTargetStack.push(renderTarget);
+                this._context.bindFramebuffer(this._context.FRAMEBUFFER, renderTarget.framebuffer);
                 this._context.viewport(0, 0, renderTarget.viewportWidth, renderTarget.viewportHeight);
-            }, WebGLSharedObject.prototype.popRenderTarget = function() {
-                this._commit(), this._renderTargetStack.pop();
+            };
+            WebGLSharedObject.prototype.popRenderTarget = function() {
+                this._commit();
+                this._renderTargetStack.pop();
                 var renderTarget = this.getCurrentRenderTarget();
-                this._context.bindFramebuffer(this._context.FRAMEBUFFER, renderTarget.framebuffer), 
+                this._context.bindFramebuffer(this._context.FRAMEBUFFER, renderTarget.framebuffer);
                 this._context.viewport(0, 0, renderTarget.viewportWidth, renderTarget.viewportHeight);
-            }, WebGLSharedObject.prototype.getCurrentRenderTarget = function() {
+            };
+            WebGLSharedObject.prototype.getCurrentRenderTarget = function() {
                 return this._renderTargetStack[this._renderTargetStack.length - 1];
-            }, WebGLSharedObject.prototype.begin = function() {
-                this.clear(), this._currentShaderProgram.use(), this._currentShaderProgram.set_aVertex(this._vertices), 
-                this._currentShaderProgram.set_uColor(this._currentColor), this._currentShaderProgram.set_uAlpha(this._currentAlpha), 
-                this._currentShaderProgram.set_uSampler(0), this._currentShaderProgram.updateUniforms();
-            }, WebGLSharedObject.prototype.clear = function() {
+            };
+            WebGLSharedObject.prototype.begin = function() {
+                this.clear();
+                this._currentShaderProgram.use();
+                this._currentShaderProgram.set_aVertex(this._vertices);
+                this._currentShaderProgram.set_uColor(this._currentColor);
+                this._currentShaderProgram.set_uAlpha(this._currentAlpha);
+                this._currentShaderProgram.set_uSampler(0);
+                this._currentShaderProgram.updateUniforms();
+            };
+            WebGLSharedObject.prototype.clear = function() {
                 this._context.clear(this._context.COLOR_BUFFER_BIT);
-            }, WebGLSharedObject.prototype.draw = function(state, surfaceTexture, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, color) {
+            };
+            WebGLSharedObject.prototype.draw = function(state, surfaceTexture, offsetX, offsetY, width, height, canvasOffsetX, canvasOffsetY, color) {
                 this._numSprites >= this._maxSpriteCount && this._commit();
                 var shaderProgram;
-                if (shaderProgram = surfaceTexture === this._fillRectSurfaceTexture || null == state.shaderProgram || null == state.shaderProgram._program ? this._defaultShaderProgram : state.shaderProgram._program, 
-                this._currentShaderProgram !== shaderProgram && (this._commit(), this._currentShaderProgram = shaderProgram, 
-                this._currentShaderProgram.use(), this._currentShaderProgram.updateUniforms(), this._currentCompositeOperation = null, 
-                this._currentAlpha = null, this._currentColor = [], this._currentTexture = null), 
-                this._currentTexture !== surfaceTexture.texture && (this._currentTexture = surfaceTexture.texture, 
-                this._commit(), this._context.bindTexture(this._context.TEXTURE_2D, surfaceTexture.texture)), 
-                this._currentColor[0] === color[0] && this._currentColor[1] === color[1] && this._currentColor[2] === color[2] && this._currentColor[3] === color[3] || (this._currentColor = color, 
-                this._commit(), this._currentShaderProgram.set_uColor(color)), this._currentAlpha !== state.globalAlpha && (this._currentAlpha = state.globalAlpha, 
-                this._commit(), this._currentShaderProgram.set_uAlpha(state.globalAlpha)), this._currentCompositeOperation !== state.globalCompositeOperation) {
-                    this._currentCompositeOperation = state.globalCompositeOperation, this._commit();
+                shaderProgram = surfaceTexture === this._fillRectSurfaceTexture || null == state.shaderProgram || null == state.shaderProgram._program ? this._defaultShaderProgram : state.shaderProgram._program;
+                if (this._currentShaderProgram !== shaderProgram) {
+                    this._commit();
+                    this._currentShaderProgram = shaderProgram;
+                    this._currentShaderProgram.use();
+                    this._currentShaderProgram.updateUniforms();
+                    this._currentCompositeOperation = null;
+                    this._currentAlpha = null;
+                    this._currentColor = [];
+                    this._currentTexture = null;
+                }
+                if (this._currentTexture !== surfaceTexture.texture) {
+                    this._currentTexture = surfaceTexture.texture;
+                    this._commit();
+                    this._context.bindTexture(this._context.TEXTURE_2D, surfaceTexture.texture);
+                }
+                if (this._currentColor[0] !== color[0] || this._currentColor[1] !== color[1] || this._currentColor[2] !== color[2] || this._currentColor[3] !== color[3]) {
+                    this._currentColor = color;
+                    this._commit();
+                    this._currentShaderProgram.set_uColor(color);
+                }
+                if (this._currentAlpha !== state.globalAlpha) {
+                    this._currentAlpha = state.globalAlpha;
+                    this._commit();
+                    this._currentShaderProgram.set_uAlpha(state.globalAlpha);
+                }
+                if (this._currentCompositeOperation !== state.globalCompositeOperation) {
+                    this._currentCompositeOperation = state.globalCompositeOperation;
+                    this._commit();
                     var compositeOperation = this._compositeOps[this._currentCompositeOperation];
                     this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
                 }
                 var tw = 1 / surfaceTexture.textureWidth, th = 1 / surfaceTexture.textureHeight, ox = surfaceTexture.textureOffsetX, oy = surfaceTexture.textureOffsetY, s = tw * (ox + offsetX + width), t = th * (oy + offsetY + height), u = tw * (ox + offsetX), v = th * (oy + offsetY);
                 this._register(this._transformVertex(canvasOffsetX, canvasOffsetY, width, height, state.transformer), [ u, v, s, v, s, t, u, v, s, t, u, t ]);
-            }, WebGLSharedObject.prototype.end = function() {
-                if (this._commit(), this._deleteRequestedTargets.length > 0) {
+            };
+            WebGLSharedObject.prototype.end = function() {
+                this._commit();
+                if (this._deleteRequestedTargets.length > 0) {
                     for (var i = 0; i < this._deleteRequestedTargets.length; ++i) this.deleteRenderTarget(this._deleteRequestedTargets[i]);
                     this._deleteRequestedTargets = [];
                 }
-            }, WebGLSharedObject.prototype.makeTextureForSurface = function(surface) {
+            };
+            WebGLSharedObject.prototype.makeTextureForSurface = function(surface) {
                 this._textureAtlas.makeTextureForSurface(this, surface);
-            }, WebGLSharedObject.prototype.disposeTexture = function(texture) {
+            };
+            WebGLSharedObject.prototype.disposeTexture = function(texture) {
                 this._currentTexture === texture && this._commit();
-            }, WebGLSharedObject.prototype.assignTexture = function(image, x, y, texture) {
-                if (this._context.bindTexture(this._context.TEXTURE_2D, texture), image instanceof HTMLVideoElement) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#assignTexture: HTMLVideoElement is not supported.");
-                this._context.texSubImage2D(this._context.TEXTURE_2D, 0, x, y, this._context.RGBA, this._context.UNSIGNED_BYTE, image), 
+            };
+            WebGLSharedObject.prototype.assignTexture = function(image, x, y, texture) {
+                this._context.bindTexture(this._context.TEXTURE_2D, texture);
+                if (image instanceof HTMLVideoElement) throw g.ExceptionFactory.createAssertionError("WebGLRenderer#assignTexture: HTMLVideoElement is not supported.");
+                this._context.texSubImage2D(this._context.TEXTURE_2D, 0, x, y, this._context.RGBA, this._context.UNSIGNED_BYTE, image);
                 this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture);
-            }, WebGLSharedObject.prototype.clearTexture = function(texturePixels, width, height, texture) {
-                this._context.bindTexture(this._context.TEXTURE_2D, texture), this._context.texSubImage2D(this._context.TEXTURE_2D, 0, 0, 0, width, height, this._context.RGBA, this._context.UNSIGNED_BYTE, texturePixels), 
+            };
+            WebGLSharedObject.prototype.clearTexture = function(texturePixels, width, height, texture) {
+                this._context.bindTexture(this._context.TEXTURE_2D, texture);
+                this._context.texSubImage2D(this._context.TEXTURE_2D, 0, 0, 0, width, height, this._context.RGBA, this._context.UNSIGNED_BYTE, texturePixels);
                 this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture);
-            }, WebGLSharedObject.prototype.makeTextureRaw = function(width, height, pixels) {
+            };
+            WebGLSharedObject.prototype.makeTextureRaw = function(width, height, pixels) {
                 void 0 === pixels && (pixels = null);
                 var texture = this._context.createTexture();
-                return this._context.bindTexture(this._context.TEXTURE_2D, texture), this._context.pixelStorei(this._context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_S, this._context.CLAMP_TO_EDGE), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_T, this._context.CLAMP_TO_EDGE), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MAG_FILTER, this._context.NEAREST), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MIN_FILTER, this._context.NEAREST), 
-                this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, width, height, 0, this._context.RGBA, this._context.UNSIGNED_BYTE, pixels), 
-                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture), texture;
-            }, WebGLSharedObject.prototype.makeTexture = function(data) {
+                this._context.bindTexture(this._context.TEXTURE_2D, texture);
+                this._context.pixelStorei(this._context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_S, this._context.CLAMP_TO_EDGE);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_T, this._context.CLAMP_TO_EDGE);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MAG_FILTER, this._context.NEAREST);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MIN_FILTER, this._context.NEAREST);
+                this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, width, height, 0, this._context.RGBA, this._context.UNSIGNED_BYTE, pixels);
+                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture);
+                return texture;
+            };
+            WebGLSharedObject.prototype.makeTexture = function(data) {
                 var texture = this._context.createTexture();
-                return this._context.bindTexture(this._context.TEXTURE_2D, texture), this._context.pixelStorei(this._context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_S, this._context.CLAMP_TO_EDGE), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_T, this._context.CLAMP_TO_EDGE), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MAG_FILTER, this._context.NEAREST), 
-                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MIN_FILTER, this._context.NEAREST), 
-                data instanceof HTMLImageElement ? this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data) : data instanceof HTMLCanvasElement ? this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data) : data instanceof ImageData && this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data), 
-                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture), texture;
-            }, WebGLSharedObject.prototype.getPrimaryRenderTarget = function(width, height) {
+                this._context.bindTexture(this._context.TEXTURE_2D, texture);
+                this._context.pixelStorei(this._context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_S, this._context.CLAMP_TO_EDGE);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_WRAP_T, this._context.CLAMP_TO_EDGE);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MAG_FILTER, this._context.NEAREST);
+                this._context.texParameteri(this._context.TEXTURE_2D, this._context.TEXTURE_MIN_FILTER, this._context.NEAREST);
+                data instanceof HTMLImageElement ? this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data) : data instanceof HTMLCanvasElement ? this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data) : data instanceof ImageData && this._context.texImage2D(this._context.TEXTURE_2D, 0, this._context.RGBA, this._context.RGBA, this._context.UNSIGNED_BYTE, data);
+                this._context.bindTexture(this._context.TEXTURE_2D, this._currentTexture);
+                return texture;
+            };
+            WebGLSharedObject.prototype.getPrimaryRenderTarget = function(width, height) {
                 return this._renderTarget;
-            }, WebGLSharedObject.prototype.createRenderTarget = function(width, height) {
+            };
+            WebGLSharedObject.prototype.createRenderTarget = function(width, height) {
                 var context = this._context, framebuffer = context.createFramebuffer();
                 context.bindFramebuffer(context.FRAMEBUFFER, framebuffer);
                 var texture = context.createTexture();
-                context.bindTexture(context.TEXTURE_2D, texture), context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR), 
-                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR), 
-                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE), 
-                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE), 
-                context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, width, height, 0, context.RGBA, context.UNSIGNED_BYTE, null), 
-                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, texture, 0), 
+                context.bindTexture(context.TEXTURE_2D, texture);
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR);
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR);
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+                context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+                context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, width, height, 0, context.RGBA, context.UNSIGNED_BYTE, null);
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, texture, 0);
                 context.bindTexture(context.TEXTURE_2D, this._currentTexture);
                 var renderTaget = this.getCurrentRenderTarget();
-                return context.bindFramebuffer(context.FRAMEBUFFER, renderTaget.framebuffer), {
+                context.bindFramebuffer(context.FRAMEBUFFER, renderTaget.framebuffer);
+                return {
                     width: width,
                     height: height,
                     viewportWidth: width,
@@ -1659,53 +2098,74 @@ require = function e(t, n, r) {
                     framebuffer: framebuffer,
                     texture: texture
                 };
-            }, WebGLSharedObject.prototype.requestDeleteRenderTarget = function(renderTaget) {
+            };
+            WebGLSharedObject.prototype.requestDeleteRenderTarget = function(renderTaget) {
                 this._deleteRequestedTargets.push(renderTaget);
-            }, WebGLSharedObject.prototype.deleteRenderTarget = function(renderTaget) {
+            };
+            WebGLSharedObject.prototype.deleteRenderTarget = function(renderTaget) {
                 var context = this._context;
-                this.getCurrentRenderTarget() === renderTaget && this._commit(), context.deleteFramebuffer(renderTaget.framebuffer), 
+                this.getCurrentRenderTarget() === renderTaget && this._commit();
+                context.deleteFramebuffer(renderTaget.framebuffer);
                 context.deleteTexture(renderTaget.texture);
-            }, WebGLSharedObject.prototype.getContext = function() {
+            };
+            WebGLSharedObject.prototype.getContext = function() {
                 return this._context;
-            }, WebGLSharedObject.prototype.getDefaultShaderProgram = function() {
+            };
+            WebGLSharedObject.prototype.getDefaultShaderProgram = function() {
                 return this._defaultShaderProgram;
-            }, WebGLSharedObject.prototype.initializeShaderProgram = function(shaderProgram) {
+            };
+            WebGLSharedObject.prototype.initializeShaderProgram = function(shaderProgram) {
                 if (shaderProgram && !shaderProgram._program) {
                     var program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context, shaderProgram.fragmentShader, shaderProgram.uniforms);
-                    program.initializeUniforms(), shaderProgram._program = program;
+                    program.initializeUniforms();
+                    shaderProgram._program = program;
                 }
                 return shaderProgram;
-            }, WebGLSharedObject.prototype._init = function() {
+            };
+            WebGLSharedObject.prototype._init = function() {
                 var _a, program = new WebGLShaderProgram_1.WebGLShaderProgram(this._context);
-                this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas(), this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ])), 
+                this._textureAtlas = new WebGLTextureAtlas_1.WebGLTextureAtlas();
+                this._fillRectTexture = this.makeTextureRaw(1, 1, new Uint8Array([ 255, 255, 255, 255 ]));
                 this._fillRectSurfaceTexture = {
                     texture: this._fillRectTexture,
                     textureWidth: 1,
                     textureHeight: 1,
                     textureOffsetX: 0,
                     textureOffsetY: 0
-                }, this._renderTarget = {
+                };
+                this._renderTarget = {
                     width: this._surface.width,
                     height: this._surface.height,
                     viewportWidth: this._surface.width,
                     viewportHeight: this._surface.height,
                     framebuffer: null,
                     texture: null
-                }, this._maxSpriteCount = 1024, this._vertices = this._makeBuffer(24 * this._maxSpriteCount * 4), 
-                this._verticesCache = new Float32Array(24 * this._maxSpriteCount), this._numSprites = 0, 
-                this._currentTexture = null, this._currentColor = [ 1, 1, 1, 1 ], this._currentAlpha = 1, 
-                this._currentCompositeOperation = g.CompositeOperation.SourceOver, this._currentShaderProgram = program, 
-                this._defaultShaderProgram = program, this._renderTargetStack = [], this._deleteRequestedTargets = [], 
+                };
+                this._maxSpriteCount = 1024;
+                this._vertices = this._makeBuffer(24 * this._maxSpriteCount * 4);
+                this._verticesCache = new Float32Array(24 * this._maxSpriteCount);
+                this._numSprites = 0;
+                this._currentTexture = null;
+                this._currentColor = [ 1, 1, 1, 1 ];
+                this._currentAlpha = 1;
+                this._currentCompositeOperation = g.CompositeOperation.SourceOver;
+                this._currentShaderProgram = program;
+                this._defaultShaderProgram = program;
+                this._renderTargetStack = [];
+                this._deleteRequestedTargets = [];
                 this._currentShaderProgram.use();
                 try {
-                    this._currentShaderProgram.set_aVertex(this._vertices), this._currentShaderProgram.set_uColor(this._currentColor), 
-                    this._currentShaderProgram.set_uAlpha(this._currentAlpha), this._currentShaderProgram.set_uSampler(0);
+                    this._currentShaderProgram.set_aVertex(this._vertices);
+                    this._currentShaderProgram.set_uColor(this._currentColor);
+                    this._currentShaderProgram.set_uAlpha(this._currentAlpha);
+                    this._currentShaderProgram.set_uSampler(0);
                 } finally {
                     this._currentShaderProgram.unuse();
                 }
-                this._context.enable(this._context.BLEND), this._context.activeTexture(this._context.TEXTURE0), 
-                this._context.bindTexture(this._context.TEXTURE_2D, this._fillRectTexture), this._compositeOps = (_a = {}, 
-                _a[g.CompositeOperation.SourceAtop] = [ this._context.DST_ALPHA, this._context.ONE_MINUS_SRC_ALPHA ], 
+                this._context.enable(this._context.BLEND);
+                this._context.activeTexture(this._context.TEXTURE0);
+                this._context.bindTexture(this._context.TEXTURE_2D, this._fillRectTexture);
+                this._compositeOps = (_a = {}, _a[g.CompositeOperation.SourceAtop] = [ this._context.DST_ALPHA, this._context.ONE_MINUS_SRC_ALPHA ], 
                 _a[g.CompositeOperation.ExperimentalSourceIn] = [ this._context.DST_ALPHA, this._context.ZERO ], 
                 _a[g.CompositeOperation.ExperimentalSourceOut] = [ this._context.ONE_MINUS_DST_ALPHA, this._context.ZERO ], 
                 _a[g.CompositeOperation.SourceOver] = [ this._context.ONE, this._context.ONE_MINUS_SRC_ALPHA ], 
@@ -1718,24 +2178,36 @@ require = function e(t, n, r) {
                 _a);
                 var compositeOperation = this._compositeOps[this._currentCompositeOperation];
                 this._context.blendFunc(compositeOperation[0], compositeOperation[1]);
-            }, WebGLSharedObject.prototype._makeBuffer = function(data) {
+            };
+            WebGLSharedObject.prototype._makeBuffer = function(data) {
                 var buffer = this._context.createBuffer();
-                return this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer), this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW), 
-                buffer;
-            }, WebGLSharedObject.prototype._transformVertex = function(x, y, w, h, transformer) {
+                this._context.bindBuffer(this._context.ARRAY_BUFFER, buffer);
+                this._context.bufferData(this._context.ARRAY_BUFFER, data, this._context.DYNAMIC_DRAW);
+                return buffer;
+            };
+            WebGLSharedObject.prototype._transformVertex = function(x, y, w, h, transformer) {
                 var renderTaget = this.getCurrentRenderTarget(), cw = 2 / renderTaget.width, ch = -2 / renderTaget.height, m = transformer.matrix, a = cw * w * m[0], b = ch * w * m[1], c = cw * h * m[2], d = ch * h * m[3], e = cw * (x * m[0] + y * m[2] + m[4]) - 1, f = ch * (x * m[1] + y * m[3] + m[5]) + 1;
                 return [ e, f, a + e, b + f, a + c + e, b + d + f, e, f, a + c + e, b + d + f, c + e, d + f ];
-            }, WebGLSharedObject.prototype._register = function(vertex, texCoord) {
+            };
+            WebGLSharedObject.prototype._register = function(vertex, texCoord) {
                 var offset = 6 * this._numSprites;
                 ++this._numSprites;
-                for (var i = 0; i < 6; ++i) this._verticesCache[4 * (i + offset) + 0] = vertex[2 * i + 0], 
-                this._verticesCache[4 * (i + offset) + 1] = vertex[2 * i + 1], this._verticesCache[4 * (i + offset) + 2] = texCoord[2 * i + 0], 
-                this._verticesCache[4 * (i + offset) + 3] = texCoord[2 * i + 1];
-            }, WebGLSharedObject.prototype._commit = function() {
-                this._numSprites > 0 && (this._context.bindBuffer(this._context.ARRAY_BUFFER, this._vertices), 
-                this._context.bufferSubData(this._context.ARRAY_BUFFER, 0, this._verticesCache.subarray(0, 24 * this._numSprites)), 
-                this._context.drawArrays(this._context.TRIANGLES, 0, 6 * this._numSprites), this._numSprites = 0);
-            }, WebGLSharedObject;
+                for (var i = 0; i < 6; ++i) {
+                    this._verticesCache[4 * (i + offset) + 0] = vertex[2 * i + 0];
+                    this._verticesCache[4 * (i + offset) + 1] = vertex[2 * i + 1];
+                    this._verticesCache[4 * (i + offset) + 2] = texCoord[2 * i + 0];
+                    this._verticesCache[4 * (i + offset) + 3] = texCoord[2 * i + 1];
+                }
+            };
+            WebGLSharedObject.prototype._commit = function() {
+                if (this._numSprites > 0) {
+                    this._context.bindBuffer(this._context.ARRAY_BUFFER, this._vertices);
+                    this._context.bufferSubData(this._context.ARRAY_BUFFER, 0, this._verticesCache.subarray(0, 24 * this._numSprites));
+                    this._context.drawArrays(this._context.TRIANGLES, 0, 6 * this._numSprites);
+                    this._numSprites = 0;
+                }
+            };
+            return WebGLSharedObject;
         }();
         exports.WebGLSharedObject = WebGLSharedObject;
     }, {
@@ -1752,13 +2224,17 @@ require = function e(t, n, r) {
         });
         var WebGLTextureMap_1 = require("./WebGLTextureMap"), RenderingHelper_1 = require("../RenderingHelper"), WebGLTextureAtlas = function() {
             function WebGLTextureAtlas() {
-                this._maps = [], this._insertPos = 0, this.emptyTexturePixels = new Uint8Array(WebGLTextureAtlas.TEXTURE_SIZE * WebGLTextureAtlas.TEXTURE_SIZE * 4);
+                this._maps = [];
+                this._insertPos = 0;
+                this.emptyTexturePixels = new Uint8Array(WebGLTextureAtlas.TEXTURE_SIZE * WebGLTextureAtlas.TEXTURE_SIZE * 4);
             }
-            return WebGLTextureAtlas.prototype.clear = function() {
+            WebGLTextureAtlas.prototype.clear = function() {
                 for (var i = 0; i < this._maps.length; ++i) this._maps[i].dispose();
-            }, WebGLTextureAtlas.prototype.showOccupancy = function() {
+            };
+            WebGLTextureAtlas.prototype.showOccupancy = function() {
                 for (var i = 0; i < this._maps.length; ++i) console.log("occupancy[" + i + "]: " + this._maps[i].occupancy());
-            }, WebGLTextureAtlas.prototype.makeTextureForSurface = function(shared, surface) {
+            };
+            WebGLTextureAtlas.prototype.makeTextureForSurface = function(shared, surface) {
                 var image = surface._drawable;
                 if (image && !image.texture) {
                     var width = image.width, height = image.height;
@@ -1766,29 +2242,53 @@ require = function e(t, n, r) {
                         var w = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.width), h = RenderingHelper_1.RenderingHelper.toPowerOfTwo(image.height);
                         if (w !== image.width || h !== image.height) {
                             var canvas = document.createElement("canvas");
-                            canvas.width = w, canvas.height = h;
+                            canvas.width = w;
+                            canvas.height = h;
                             var canvasContext = canvas.getContext("2d");
-                            canvasContext.globalCompositeOperation = "copy", canvasContext.drawImage(image, 0, 0), 
+                            canvasContext.globalCompositeOperation = "copy";
+                            canvasContext.drawImage(image, 0, 0);
                             image = canvasContext.getImageData(0, 0, w, h);
                         }
-                        return surface._drawable.texture = shared.makeTexture(image), surface._drawable.textureOffsetX = 0, 
-                        surface._drawable.textureOffsetY = 0, surface._drawable.textureWidth = w, void (surface._drawable.textureHeight = h);
-                    }
-                    this._assign(shared, surface, this._maps);
+                        surface._drawable.texture = shared.makeTexture(image);
+                        surface._drawable.textureOffsetX = 0;
+                        surface._drawable.textureOffsetY = 0;
+                        surface._drawable.textureWidth = w;
+                        surface._drawable.textureHeight = h;
+                    } else this._assign(shared, surface, this._maps);
                 }
-            }, WebGLTextureAtlas.prototype._assign = function(shared, surface, maps) {
-                for (var map, i = 0; i < maps.length; ++i) if (map = maps[(i + this._insertPos) % maps.length].insert(surface)) return this._register(shared, map, surface._drawable), 
-                void (this._insertPos = i);
-                map = null, maps.length >= WebGLTextureAtlas.TEXTURE_COUNT && (map = maps.shift(), 
-                shared.disposeTexture(map.texture), map.dispose(), shared.clearTexture(this.emptyTexturePixels, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE, map.texture)), 
-                map || (map = new WebGLTextureMap_1.WebGLTextureMap(shared.makeTextureRaw(WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE), 0, 0, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE)), 
-                maps.push(map), map = map.insert(surface), this._register(shared, map, surface._drawable);
-            }, WebGLTextureAtlas.prototype._register = function(shared, map, image) {
-                image.texture = map.texture, image.textureOffsetX = map.offsetX, image.textureOffsetY = map.offsetY, 
-                image.textureWidth = WebGLTextureAtlas.TEXTURE_SIZE, image.textureHeight = WebGLTextureAtlas.TEXTURE_SIZE, 
+            };
+            WebGLTextureAtlas.prototype._assign = function(shared, surface, maps) {
+                for (var map, i = 0; i < maps.length; ++i) {
+                    map = maps[(i + this._insertPos) % maps.length].insert(surface);
+                    if (map) {
+                        this._register(shared, map, surface._drawable);
+                        this._insertPos = i;
+                        return;
+                    }
+                }
+                map = null;
+                if (maps.length >= WebGLTextureAtlas.TEXTURE_COUNT) {
+                    map = maps.shift();
+                    shared.disposeTexture(map.texture);
+                    map.dispose();
+                    shared.clearTexture(this.emptyTexturePixels, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE, map.texture);
+                }
+                map || (map = new WebGLTextureMap_1.WebGLTextureMap(shared.makeTextureRaw(WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE), 0, 0, WebGLTextureAtlas.TEXTURE_SIZE, WebGLTextureAtlas.TEXTURE_SIZE));
+                maps.push(map);
+                map = map.insert(surface);
+                this._register(shared, map, surface._drawable);
+            };
+            WebGLTextureAtlas.prototype._register = function(shared, map, image) {
+                image.texture = map.texture;
+                image.textureOffsetX = map.offsetX;
+                image.textureOffsetY = map.offsetY;
+                image.textureWidth = WebGLTextureAtlas.TEXTURE_SIZE;
+                image.textureHeight = WebGLTextureAtlas.TEXTURE_SIZE;
                 shared.assignTexture(image, map.offsetX, map.offsetY, map.texture);
-            }, WebGLTextureAtlas.TEXTURE_SIZE = 1024, WebGLTextureAtlas.TEXTURE_COUNT = 16, 
-            WebGLTextureAtlas;
+            };
+            WebGLTextureAtlas.TEXTURE_SIZE = 1024;
+            WebGLTextureAtlas.TEXTURE_COUNT = 16;
+            return WebGLTextureAtlas;
         }();
         exports.WebGLTextureAtlas = WebGLTextureAtlas;
     }, {
@@ -1802,23 +2302,40 @@ require = function e(t, n, r) {
         });
         var WebGLTextureMap = function() {
             function WebGLTextureMap(texture, offsetX, offsetY, width, height) {
-                this.texture = texture, this.offsetX = offsetX, this.offsetY = offsetY, this._width = width, 
+                this.texture = texture;
+                this.offsetX = offsetX;
+                this.offsetY = offsetY;
+                this._width = width;
                 this._height = height;
             }
-            return WebGLTextureMap.prototype.dispose = function() {
-                this._left && (this._left.dispose(), this._left = null), this._right && (this._right.dispose(), 
-                this._right = null), this._surface && (this._surface._drawable && (this._surface._drawable.texture = null), 
-                this._surface = null);
-            }, WebGLTextureMap.prototype.capacity = function() {
+            WebGLTextureMap.prototype.dispose = function() {
+                if (this._left) {
+                    this._left.dispose();
+                    this._left = null;
+                }
+                if (this._right) {
+                    this._right.dispose();
+                    this._right = null;
+                }
+                if (this._surface) {
+                    this._surface._drawable && (this._surface._drawable.texture = null);
+                    this._surface = null;
+                }
+            };
+            WebGLTextureMap.prototype.capacity = function() {
                 return this._width * this._height;
-            }, WebGLTextureMap.prototype.area = function() {
+            };
+            WebGLTextureMap.prototype.area = function() {
                 if (!this._surface) return 0;
                 var image = this._surface._drawable, a = image.width * image.height;
-                return this._left && (a += this._left.area()), this._right && (a += this._right.area()), 
-                a;
-            }, WebGLTextureMap.prototype.occupancy = function() {
+                this._left && (a += this._left.area());
+                this._right && (a += this._right.area());
+                return a;
+            };
+            WebGLTextureMap.prototype.occupancy = function() {
                 return this.area() / this.capacity();
-            }, WebGLTextureMap.prototype.insert = function(surface) {
+            };
+            WebGLTextureMap.prototype.insert = function(surface) {
                 var image = surface._drawable, width = image.width + WebGLTextureMap.TEXTURE_MARGIN, height = image.height + WebGLTextureMap.TEXTURE_MARGIN;
                 if (this._surface) {
                     if (this._left) {
@@ -1833,11 +2350,18 @@ require = function e(t, n, r) {
                 }
                 if (this._width < width || this._height < height) return null;
                 var remainWidth = this._width - width, remainHeight = this._height - height;
-                return remainWidth <= remainHeight ? (this._left = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, height), 
-                this._right = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, this._width, remainHeight)) : (this._left = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, width, remainHeight), 
-                this._right = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, this._height)), 
-                this._surface = surface, this;
-            }, WebGLTextureMap.TEXTURE_MARGIN = 1, WebGLTextureMap;
+                if (remainWidth <= remainHeight) {
+                    this._left = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, height);
+                    this._right = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, this._width, remainHeight);
+                } else {
+                    this._left = new WebGLTextureMap(this.texture, this.offsetX, this.offsetY + height, width, remainHeight);
+                    this._right = new WebGLTextureMap(this.texture, this.offsetX + width, this.offsetY, remainWidth, this._height);
+                }
+                this._surface = surface;
+                return this;
+            };
+            WebGLTextureMap.TEXTURE_MARGIN = 1;
+            return WebGLTextureMap;
         }();
         exports.WebGLTextureMap = WebGLTextureMap;
     }, {} ],
@@ -1850,46 +2374,65 @@ require = function e(t, n, r) {
         function() {
             function InputAbstractHandler(inputView, disablePreventDefault) {
                 if (Object.getPrototypeOf && Object.getPrototypeOf(this) === InputAbstractHandler.prototype) throw new Error("InputAbstractHandler is abstract and should not be directly instantiated");
-                this.inputView = inputView, this.pointerEventLock = {}, this._xScale = 1, this._yScale = 1, 
-                this._disablePreventDefault = !!disablePreventDefault, this.pointTrigger = new g.Trigger();
+                this.inputView = inputView;
+                this.pointerEventLock = {};
+                this._xScale = 1;
+                this._yScale = 1;
+                this._disablePreventDefault = !!disablePreventDefault;
+                this.pointTrigger = new g.Trigger();
             }
-            return InputAbstractHandler.isSupported = function() {
+            InputAbstractHandler.isSupported = function() {
                 return !1;
-            }, InputAbstractHandler.prototype.start = function() {
+            };
+            InputAbstractHandler.prototype.start = function() {
                 throw new Error("This method is abstract");
-            }, InputAbstractHandler.prototype.stop = function() {
+            };
+            InputAbstractHandler.prototype.stop = function() {
                 throw new Error("This method is abstract");
-            }, InputAbstractHandler.prototype.setScale = function(xScale, yScale) {
-                void 0 === yScale && (yScale = xScale), this._xScale = xScale, this._yScale = yScale;
-            }, InputAbstractHandler.prototype.pointDown = function(identifier, pagePosition) {
+            };
+            InputAbstractHandler.prototype.setScale = function(xScale, yScale) {
+                void 0 === yScale && (yScale = xScale);
+                this._xScale = xScale;
+                this._yScale = yScale;
+            };
+            InputAbstractHandler.prototype.pointDown = function(identifier, pagePosition) {
                 this.pointTrigger.fire({
                     type: 0,
                     identifier: identifier,
                     offset: this.getOffsetFromEvent(pagePosition)
-                }), this.pointerEventLock[identifier] = !0;
-            }, InputAbstractHandler.prototype.pointMove = function(identifier, pagePosition) {
+                });
+                this.pointerEventLock[identifier] = !0;
+            };
+            InputAbstractHandler.prototype.pointMove = function(identifier, pagePosition) {
                 this.pointerEventLock.hasOwnProperty(identifier + "") && this.pointTrigger.fire({
                     type: 1,
                     identifier: identifier,
                     offset: this.getOffsetFromEvent(pagePosition)
                 });
-            }, InputAbstractHandler.prototype.pointUp = function(identifier, pagePosition) {
-                this.pointerEventLock.hasOwnProperty(identifier + "") && (this.pointTrigger.fire({
-                    type: 2,
-                    identifier: identifier,
-                    offset: this.getOffsetFromEvent(pagePosition)
-                }), delete this.pointerEventLock[identifier]);
-            }, InputAbstractHandler.prototype.getOffsetFromEvent = function(e) {
+            };
+            InputAbstractHandler.prototype.pointUp = function(identifier, pagePosition) {
+                if (this.pointerEventLock.hasOwnProperty(identifier + "")) {
+                    this.pointTrigger.fire({
+                        type: 2,
+                        identifier: identifier,
+                        offset: this.getOffsetFromEvent(pagePosition)
+                    });
+                    delete this.pointerEventLock[identifier];
+                }
+            };
+            InputAbstractHandler.prototype.getOffsetFromEvent = function(e) {
                 return {
                     x: e.offsetX,
                     y: e.offsetY
                 };
-            }, InputAbstractHandler.prototype.getScale = function() {
+            };
+            InputAbstractHandler.prototype.getScale = function() {
                 return {
                     x: this._xScale,
                     y: this._yScale
                 };
-            }, InputAbstractHandler;
+            };
+            return InputAbstractHandler;
         }());
         exports.InputAbstractHandler = InputAbstractHandler;
     }, {
@@ -1910,8 +2453,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1920,26 +2463,51 @@ require = function e(t, n, r) {
         var InputAbstractHandler_1 = require("./InputAbstractHandler"), MouseHandler = function(_super) {
             function MouseHandler(inputView, disablePreventDefault) {
                 var _this = _super.call(this, inputView, disablePreventDefault) || this, identifier = 1;
-                return _this.onMouseDown = function(e) {
-                    0 === e.button && (_this.eventTarget = e.target, _this.pointDown(identifier, e), 
-                    window.addEventListener("mousemove", _this.onMouseMove, !1), window.addEventListener("mouseup", _this.onMouseUp, !1), 
-                    _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault()));
-                }, _this.onMouseMove = function(e) {
-                    e.target === _this.eventTarget && (_this.pointMove(identifier, e), _this._disablePreventDefault || (e.stopPropagation(), 
-                    e.preventDefault()));
-                }, _this.onMouseUp = function(e) {
-                    e.target === _this.eventTarget && (_this.pointUp(identifier, e), window.removeEventListener("mousemove", _this.onMouseMove, !1), 
-                    window.removeEventListener("mouseup", _this.onMouseUp, !1), _this._disablePreventDefault || (e.stopPropagation(), 
-                    e.preventDefault()));
-                }, _this;
+                _this.onMouseDown = function(e) {
+                    if (0 === e.button) {
+                        _this.eventTarget = e.target;
+                        _this.pointDown(identifier, e);
+                        window.addEventListener("mousemove", _this.onMouseMove, !1);
+                        window.addEventListener("mouseup", _this.onMouseUp, !1);
+                        if (!_this._disablePreventDefault) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }
+                };
+                _this.onMouseMove = function(e) {
+                    if (e.target === _this.eventTarget) {
+                        _this.pointMove(identifier, e);
+                        if (!_this._disablePreventDefault) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }
+                };
+                _this.onMouseUp = function(e) {
+                    if (e.target === _this.eventTarget) {
+                        _this.pointUp(identifier, e);
+                        window.removeEventListener("mousemove", _this.onMouseMove, !1);
+                        window.removeEventListener("mouseup", _this.onMouseUp, !1);
+                        if (!_this._disablePreventDefault) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }
+                };
+                return _this;
             }
-            return __extends(MouseHandler, _super), MouseHandler.isSupported = function() {
+            __extends(MouseHandler, _super);
+            MouseHandler.isSupported = function() {
                 return !0;
-            }, MouseHandler.prototype.start = function() {
+            };
+            MouseHandler.prototype.start = function() {
                 this.inputView.addEventListener("mousedown", this.onMouseDown, !1);
-            }, MouseHandler.prototype.stop = function() {
+            };
+            MouseHandler.prototype.stop = function() {
                 this.inputView.removeEventListener("mousedown", this.onMouseDown, !1);
-            }, MouseHandler;
+            };
+            return MouseHandler;
         }(InputAbstractHandler_1.InputAbstractHandler);
         exports.MouseHandler = MouseHandler;
     }, {
@@ -1959,8 +2527,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1969,41 +2537,62 @@ require = function e(t, n, r) {
         var MouseHandler_1 = require("./MouseHandler"), RuntimeInfo_1 = require("../RuntimeInfo"), TouchHandler = function(_super) {
             function TouchHandler(inputView, disablePreventDefault) {
                 var _this = _super.call(this, inputView, disablePreventDefault) || this;
-                return _this.onTouchDown = function(e) {
+                _this.onTouchDown = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
                         _this.pointDown(touch.identifier, _this.convertToPagePosition(touch));
                     }
-                    _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
-                }, _this.onTouchMove = function(e) {
+                    if (!_this._disablePreventDefault) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                };
+                _this.onTouchMove = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
                         _this.pointMove(touch.identifier, _this.convertToPagePosition(touch));
                     }
-                    _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
-                }, _this.onTouchUp = function(e) {
+                    if (!_this._disablePreventDefault) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                };
+                _this.onTouchUp = function(e) {
                     for (var touches = e.changedTouches, i = 0, len = touches.length; i < len; i++) {
                         var touch = touches[i];
                         _this.pointUp(touch.identifier, _this.convertToPagePosition(touch));
                     }
-                    _this._disablePreventDefault || (e.stopPropagation(), e.preventDefault());
-                }, _this;
+                    if (!_this._disablePreventDefault) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                };
+                return _this;
             }
-            return __extends(TouchHandler, _super), TouchHandler.isSupported = function() {
+            __extends(TouchHandler, _super);
+            TouchHandler.isSupported = function() {
                 return RuntimeInfo_1.RuntimeInfo.touchEnabled();
-            }, TouchHandler.prototype.start = function() {
-                _super.prototype.start.call(this), this.inputView.addEventListener("touchstart", this.onTouchDown), 
-                this.inputView.addEventListener("touchmove", this.onTouchMove), this.inputView.addEventListener("touchend", this.onTouchUp);
-            }, TouchHandler.prototype.stop = function() {
-                _super.prototype.stop.call(this), this.inputView.removeEventListener("touchstart", this.onTouchDown), 
-                this.inputView.removeEventListener("touchmove", this.onTouchMove), this.inputView.removeEventListener("touchend", this.onTouchUp);
-            }, TouchHandler.prototype.convertToPagePosition = function(e) {
+            };
+            TouchHandler.prototype.start = function() {
+                _super.prototype.start.call(this);
+                this.inputView.addEventListener("touchstart", this.onTouchDown);
+                this.inputView.addEventListener("touchmove", this.onTouchMove);
+                this.inputView.addEventListener("touchend", this.onTouchUp);
+            };
+            TouchHandler.prototype.stop = function() {
+                _super.prototype.stop.call(this);
+                this.inputView.removeEventListener("touchstart", this.onTouchDown);
+                this.inputView.removeEventListener("touchmove", this.onTouchMove);
+                this.inputView.removeEventListener("touchend", this.onTouchUp);
+            };
+            TouchHandler.prototype.convertToPagePosition = function(e) {
                 var bounding = this.inputView.getBoundingClientRect(), scale = this.getScale();
                 return {
                     offsetX: (e.pageX - Math.round(window.pageXOffset + bounding.left)) / scale.x,
                     offsetY: (e.pageY - Math.round(window.pageYOffset + bounding.top)) / scale.y
                 };
-            }, TouchHandler;
+            };
+            return TouchHandler;
         }(MouseHandler_1.MouseHandler);
         exports.TouchHandler = TouchHandler;
     }, {
@@ -2019,17 +2608,24 @@ require = function e(t, n, r) {
             function AudioPluginManager() {
                 this._activePlugin = void 0;
             }
-            return AudioPluginManager.prototype.getActivePlugin = function() {
+            AudioPluginManager.prototype.getActivePlugin = function() {
                 return void 0 === this._activePlugin ? null : this._activePlugin;
-            }, AudioPluginManager.prototype.tryInstallPlugin = function(plugins) {
+            };
+            AudioPluginManager.prototype.tryInstallPlugin = function(plugins) {
                 var PluginConstructor = this.findFirstAvailablePlugin(plugins);
-                return !!PluginConstructor && (this._activePlugin = new PluginConstructor(), !0);
-            }, AudioPluginManager.prototype.findFirstAvailablePlugin = function(plugins) {
+                if (PluginConstructor) {
+                    this._activePlugin = new PluginConstructor();
+                    return !0;
+                }
+                return !1;
+            };
+            AudioPluginManager.prototype.findFirstAvailablePlugin = function(plugins) {
                 for (var i = 0, len = plugins.length; i < len; i++) {
                     var plugin = plugins[i];
                     if (plugin.isSupported()) return plugin;
                 }
-            }, AudioPluginManager;
+            };
+            return AudioPluginManager;
         }();
         exports.AudioPluginManager = AudioPluginManager;
     }, {} ],
@@ -2065,8 +2661,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -2076,53 +2672,82 @@ require = function e(t, n, r) {
             function HTMLAudioAsset() {
                 return null !== _super && _super.apply(this, arguments) || this;
             }
-            return __extends(HTMLAudioAsset, _super), HTMLAudioAsset.prototype._load = function(loader) {
+            __extends(HTMLAudioAsset, _super);
+            HTMLAudioAsset.prototype._load = function(loader) {
                 var _this = this;
-                if (null == this.path) return this.data = null, void setTimeout(function() {
-                    return loader._onAssetLoad(_this);
-                }, 0);
-                var audio = new Audio(), startLoadingAudio = function(path, handlers) {
-                    audio.autoplay = !1, audio.preload = "none", audio.src = path, _this._attachAll(audio, handlers), 
-                    audio.preload = "auto", setAudioLoadInterval(audio, handlers), audio.load();
-                }, handlers = {
-                    success: function() {
-                        _this._detachAll(audio, handlers), _this.data = audio, loader._onAssetLoad(_this), 
-                        window.clearInterval(_this._intervalId);
-                    },
-                    error: function() {
-                        _this._detachAll(audio, handlers), _this.data = audio, loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("HTMLAudioAsset loading error")), 
-                        window.clearInterval(_this._intervalId);
-                    }
-                }, setAudioLoadInterval = function(audio, handlers) {
-                    _this._intervalCount = 0, _this._intervalId = window.setInterval(function() {
-                        4 === audio.readyState ? handlers.success() : (++_this._intervalCount, 600 === _this._intervalCount && handlers.error());
-                    }, 100);
-                };
-                if (".aac" === this.path.slice(-4) && HTMLAudioAsset.supportedFormats.indexOf("mp4") !== -1) {
-                    var altHandlers = {
-                        success: handlers.success,
+                if (null != this.path) {
+                    var audio = new Audio(), startLoadingAudio = function(path, handlers) {
+                        audio.autoplay = !1;
+                        audio.preload = "none";
+                        audio.src = path;
+                        _this._attachAll(audio, handlers);
+                        audio.preload = "auto";
+                        setAudioLoadInterval(audio, handlers);
+                        audio.load();
+                    }, handlers = {
+                        success: function() {
+                            _this._detachAll(audio, handlers);
+                            _this.data = audio;
+                            loader._onAssetLoad(_this);
+                            window.clearInterval(_this._intervalId);
+                        },
                         error: function() {
-                            _this._detachAll(audio, altHandlers), window.clearInterval(_this._intervalId);
-                            var altPath = _this.path.slice(0, _this.path.length - 4) + ".mp4";
-                            startLoadingAudio(altPath, handlers);
+                            _this._detachAll(audio, handlers);
+                            _this.data = audio;
+                            loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("HTMLAudioAsset loading error"));
+                            window.clearInterval(_this._intervalId);
                         }
+                    }, setAudioLoadInterval = function(audio, handlers) {
+                        _this._intervalCount = 0;
+                        _this._intervalId = window.setInterval(function() {
+                            if (4 === audio.readyState) handlers.success(); else {
+                                ++_this._intervalCount;
+                                600 === _this._intervalCount && handlers.error();
+                            }
+                        }, 100);
                     };
-                    return void startLoadingAudio(this.path, altHandlers);
+                    if (".aac" !== this.path.slice(-4) || HTMLAudioAsset.supportedFormats.indexOf("mp4") === -1) startLoadingAudio(this.path, handlers); else {
+                        var altHandlers = {
+                            success: handlers.success,
+                            error: function() {
+                                _this._detachAll(audio, altHandlers);
+                                window.clearInterval(_this._intervalId);
+                                var altPath = _this.path.slice(0, _this.path.length - 4) + ".mp4";
+                                startLoadingAudio(altPath, handlers);
+                            }
+                        };
+                        startLoadingAudio(this.path, altHandlers);
+                    }
+                } else {
+                    this.data = null;
+                    setTimeout(function() {
+                        return loader._onAssetLoad(_this);
+                    }, 0);
                 }
-                startLoadingAudio(this.path, handlers);
-            }, HTMLAudioAsset.prototype.cloneElement = function() {
+            };
+            HTMLAudioAsset.prototype.cloneElement = function() {
                 return this.data ? new Audio(this.data.src) : null;
-            }, HTMLAudioAsset.prototype._assetPathFilter = function(path) {
+            };
+            HTMLAudioAsset.prototype._assetPathFilter = function(path) {
                 return HTMLAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : HTMLAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : null;
-            }, HTMLAudioAsset.prototype._attachAll = function(audio, handlers) {
-                handlers.success && audio.addEventListener("canplaythrough", handlers.success, !1), 
-                handlers.error && (audio.addEventListener("stalled", handlers.error, !1), audio.addEventListener("error", handlers.error, !1), 
-                audio.addEventListener("abort", handlers.error, !1));
-            }, HTMLAudioAsset.prototype._detachAll = function(audio, handlers) {
-                handlers.success && audio.removeEventListener("canplaythrough", handlers.success, !1), 
-                handlers.error && (audio.removeEventListener("stalled", handlers.error, !1), audio.removeEventListener("error", handlers.error, !1), 
-                audio.removeEventListener("abort", handlers.error, !1));
-            }, HTMLAudioAsset;
+            };
+            HTMLAudioAsset.prototype._attachAll = function(audio, handlers) {
+                handlers.success && audio.addEventListener("canplaythrough", handlers.success, !1);
+                if (handlers.error) {
+                    audio.addEventListener("stalled", handlers.error, !1);
+                    audio.addEventListener("error", handlers.error, !1);
+                    audio.addEventListener("abort", handlers.error, !1);
+                }
+            };
+            HTMLAudioAsset.prototype._detachAll = function(audio, handlers) {
+                handlers.success && audio.removeEventListener("canplaythrough", handlers.success, !1);
+                if (handlers.error) {
+                    audio.removeEventListener("stalled", handlers.error, !1);
+                    audio.removeEventListener("error", handlers.error, !1);
+                    audio.removeEventListener("abort", handlers.error, !1);
+                }
+            };
+            return HTMLAudioAsset;
         }(g.AudioAsset);
         exports.HTMLAudioAsset = HTMLAudioAsset;
     }, {
@@ -2131,20 +2756,25 @@ require = function e(t, n, r) {
     37: [ function(require, module, exports) {
         "use strict";
         function resumeHandler() {
-            playSuspendedAudioElements(), clearUserInteractListener();
+            playSuspendedAudioElements();
+            clearUserInteractListener();
         }
         function setUserInteractListener() {
-            document.addEventListener("keydown", resumeHandler, !0), document.addEventListener("mousedown", resumeHandler, !0), 
+            document.addEventListener("keydown", resumeHandler, !0);
+            document.addEventListener("mousedown", resumeHandler, !0);
             document.addEventListener("touchend", resumeHandler, !0);
         }
         function clearUserInteractListener() {
-            document.removeEventListener("keydown", resumeHandler), document.removeEventListener("mousedown", resumeHandler), 
+            document.removeEventListener("keydown", resumeHandler);
+            document.removeEventListener("mousedown", resumeHandler);
             document.removeEventListener("touchend", resumeHandler);
         }
         function playSuspendedAudioElements() {
-            state = 2, suspendedAudioElements.forEach(function(audio) {
+            state = 2;
+            suspendedAudioElements.forEach(function(audio) {
                 return audio.play();
-            }), suspendedAudioElements = [];
+            });
+            suspendedAudioElements = [];
         }
         var HTMLAudioAutoplayHelper, state = 0, suspendedAudioElements = [];
         !function(HTMLAudioAutoplayHelper) {
@@ -2157,12 +2787,16 @@ require = function e(t, n, r) {
                         break;
 
                       case 2:                    }
-                    state = 2, clearTimeout(timer);
+                    state = 2;
+                    clearTimeout(timer);
                 }
                 function suspendedHandler() {
-                    switch (audio.removeEventListener("play", playHandler), state) {
+                    audio.removeEventListener("play", playHandler);
+                    switch (state) {
                       case 0:
-                        suspendedAudioElements.push(audio), state = 1, setUserInteractListener();
+                        suspendedAudioElements.push(audio);
+                        state = 1;
+                        setUserInteractListener();
                         break;
 
                       case 1:
@@ -2186,7 +2820,8 @@ require = function e(t, n, r) {
                   case 2:                }
             }
             HTMLAudioAutoplayHelper.setupChromeMEIWorkaround = setupChromeMEIWorkaround;
-        }(HTMLAudioAutoplayHelper || (HTMLAudioAutoplayHelper = {})), module.exports = HTMLAudioAutoplayHelper;
+        }(HTMLAudioAutoplayHelper || (HTMLAudioAutoplayHelper = {}));
+        module.exports = HTMLAudioAutoplayHelper;
     }, {} ],
     38: [ function(require, module, exports) {
         "use strict";
@@ -2202,8 +2837,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -2212,41 +2847,78 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), autoPlayHelper = require("./HTMLAudioAutoplayHelper"), HTMLAudioPlayer = function(_super) {
             function HTMLAudioPlayer(system, manager) {
                 var _this = _super.call(this, system) || this;
-                return _this._manager = manager, _this._endedEventHandler = function() {
+                _this._manager = manager;
+                _this._endedEventHandler = function() {
                     _this._onAudioEnded();
-                }, _this._onPlayEventHandler = function() {
+                };
+                _this._onPlayEventHandler = function() {
                     _this._onPlayEvent();
-                }, _this._dummyDurationWaitTimer = null, _this;
+                };
+                _this._dummyDurationWaitTimer = null;
+                return _this;
             }
-            return __extends(HTMLAudioPlayer, _super), HTMLAudioPlayer.prototype.play = function(asset) {
+            __extends(HTMLAudioPlayer, _super);
+            HTMLAudioPlayer.prototype.play = function(asset) {
                 this.currentAudio && this.stop();
                 var audio = asset.cloneElement();
-                audio ? (autoPlayHelper.setupChromeMEIWorkaround(audio), audio.volume = this._calculateVolume(), 
-                audio.play().catch(function(err) {}), audio.loop = asset.loop, audio.addEventListener("ended", this._endedEventHandler, !1), 
-                audio.addEventListener("play", this._onPlayEventHandler, !1), this._isWaitingPlayEvent = !0, 
-                this._audioInstance = audio) : this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration), 
+                if (audio) {
+                    autoPlayHelper.setupChromeMEIWorkaround(audio);
+                    audio.volume = this._calculateVolume();
+                    audio.play().catch(function(err) {});
+                    audio.loop = asset.loop;
+                    audio.addEventListener("ended", this._endedEventHandler, !1);
+                    audio.addEventListener("play", this._onPlayEventHandler, !1);
+                    this._isWaitingPlayEvent = !0;
+                    this._audioInstance = audio;
+                } else this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration);
                 _super.prototype.play.call(this, asset);
-            }, HTMLAudioPlayer.prototype.stop = function() {
-                this.currentAudio && (this._clearEndedEventHandler(), this._audioInstance && (this._isWaitingPlayEvent ? this._isStopRequested = !0 : (this._audioInstance.pause(), 
-                this._audioInstance = null)), _super.prototype.stop.call(this));
-            }, HTMLAudioPlayer.prototype.changeVolume = function(volume) {
-                _super.prototype.changeVolume.call(this, volume), this._audioInstance && (this._audioInstance.volume = this._calculateVolume());
-            }, HTMLAudioPlayer.prototype._changeMuted = function(muted) {
-                _super.prototype._changeMuted.call(this, muted), this._audioInstance && (this._audioInstance.volume = this._calculateVolume());
-            }, HTMLAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
+            };
+            HTMLAudioPlayer.prototype.stop = function() {
+                if (this.currentAudio) {
+                    this._clearEndedEventHandler();
+                    if (this._audioInstance) if (this._isWaitingPlayEvent) this._isStopRequested = !0; else {
+                        this._audioInstance.pause();
+                        this._audioInstance = null;
+                    }
+                    _super.prototype.stop.call(this);
+                }
+            };
+            HTMLAudioPlayer.prototype.changeVolume = function(volume) {
+                _super.prototype.changeVolume.call(this, volume);
                 this._audioInstance && (this._audioInstance.volume = this._calculateVolume());
-            }, HTMLAudioPlayer.prototype._onAudioEnded = function() {
-                this._clearEndedEventHandler(), _super.prototype.stop.call(this);
-            }, HTMLAudioPlayer.prototype._clearEndedEventHandler = function() {
-                this._audioInstance && this._audioInstance.removeEventListener("ended", this._endedEventHandler, !1), 
-                null != this._dummyDurationWaitTimer && (clearTimeout(this._dummyDurationWaitTimer), 
-                this._dummyDurationWaitTimer = null);
-            }, HTMLAudioPlayer.prototype._onPlayEvent = function() {
-                this._isWaitingPlayEvent && (this._isWaitingPlayEvent = !1, this._isStopRequested && (this._isStopRequested = !1, 
-                this._audioInstance.pause(), this._audioInstance = null));
-            }, HTMLAudioPlayer.prototype._calculateVolume = function() {
+            };
+            HTMLAudioPlayer.prototype._changeMuted = function(muted) {
+                _super.prototype._changeMuted.call(this, muted);
+                this._audioInstance && (this._audioInstance.volume = this._calculateVolume());
+            };
+            HTMLAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
+                this._audioInstance && (this._audioInstance.volume = this._calculateVolume());
+            };
+            HTMLAudioPlayer.prototype._onAudioEnded = function() {
+                this._clearEndedEventHandler();
+                _super.prototype.stop.call(this);
+            };
+            HTMLAudioPlayer.prototype._clearEndedEventHandler = function() {
+                this._audioInstance && this._audioInstance.removeEventListener("ended", this._endedEventHandler, !1);
+                if (null != this._dummyDurationWaitTimer) {
+                    clearTimeout(this._dummyDurationWaitTimer);
+                    this._dummyDurationWaitTimer = null;
+                }
+            };
+            HTMLAudioPlayer.prototype._onPlayEvent = function() {
+                if (this._isWaitingPlayEvent) {
+                    this._isWaitingPlayEvent = !1;
+                    if (this._isStopRequested) {
+                        this._isStopRequested = !1;
+                        this._audioInstance.pause();
+                        this._audioInstance = null;
+                    }
+                }
+            };
+            HTMLAudioPlayer.prototype._calculateVolume = function() {
                 return this._muted ? 0 : this.volume * this._system.volume * this._manager.getMasterVolume();
-            }, HTMLAudioPlayer;
+            };
+            return HTMLAudioPlayer;
         }(g.AudioPlayer);
         exports.HTMLAudioPlayer = HTMLAudioPlayer;
     }, {
@@ -2260,28 +2932,34 @@ require = function e(t, n, r) {
         });
         var HTMLAudioAsset_1 = require("./HTMLAudioAsset"), HTMLAudioPlayer_1 = require("./HTMLAudioPlayer"), HTMLAudioPlugin = function() {
             function HTMLAudioPlugin() {
-                this._supportedFormats = this._detectSupportedFormats(), HTMLAudioAsset_1.HTMLAudioAsset.supportedFormats = this.supportedFormats;
+                this._supportedFormats = this._detectSupportedFormats();
+                HTMLAudioAsset_1.HTMLAudioAsset.supportedFormats = this.supportedFormats;
             }
-            return HTMLAudioPlugin.isSupported = function() {
+            HTMLAudioPlugin.isSupported = function() {
                 var audioElement = document.createElement("audio"), result = !1;
                 try {
                     result = void 0 !== audioElement.canPlayType;
                 } catch (e) {}
                 return result;
-            }, Object.defineProperty(HTMLAudioPlugin.prototype, "supportedFormats", {
+            };
+            Object.defineProperty(HTMLAudioPlugin.prototype, "supportedFormats", {
                 get: function() {
                     return this._supportedFormats;
                 },
                 set: function(supportedFormats) {
-                    this._supportedFormats = supportedFormats, HTMLAudioAsset_1.HTMLAudioAsset.supportedFormats = supportedFormats;
+                    this._supportedFormats = supportedFormats;
+                    HTMLAudioAsset_1.HTMLAudioAsset.supportedFormats = supportedFormats;
                 },
                 enumerable: !0,
                 configurable: !0
-            }), HTMLAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
+            });
+            HTMLAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
                 return new HTMLAudioAsset_1.HTMLAudioAsset(id, assetPath, duration, system, loop, hint);
-            }, HTMLAudioPlugin.prototype.createPlayer = function(system, manager) {
+            };
+            HTMLAudioPlugin.prototype.createPlayer = function(system, manager) {
                 return new HTMLAudioPlayer_1.HTMLAudioPlayer(system, manager);
-            }, HTMLAudioPlugin.prototype._detectSupportedFormats = function() {
+            };
+            HTMLAudioPlugin.prototype._detectSupportedFormats = function() {
                 if (navigator.userAgent.indexOf("Edge/") !== -1) return [ "aac" ];
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
@@ -2291,7 +2969,8 @@ require = function e(t, n, r) {
                     }
                 } catch (e) {}
                 return supportedFormats;
-            }, HTMLAudioPlugin;
+            };
+            return HTMLAudioPlugin;
         }();
         exports.HTMLAudioPlugin = HTMLAudioPlugin;
     }, {
@@ -2312,8 +2991,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -2323,32 +3002,42 @@ require = function e(t, n, r) {
             function WebAudioAsset() {
                 return null !== _super && _super.apply(this, arguments) || this;
             }
-            return __extends(WebAudioAsset, _super), WebAudioAsset.prototype._load = function(loader) {
+            __extends(WebAudioAsset, _super);
+            WebAudioAsset.prototype._load = function(loader) {
                 var _this = this;
-                if (null == this.path) return this.data = null, void setTimeout(function() {
-                    return loader._onAssetLoad(_this);
-                }, 0);
-                var successHandler = function(decodedAudio) {
-                    _this.data = decodedAudio, loader._onAssetLoad(_this);
-                }, errorHandler = function() {
-                    loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("WebAudioAsset unknown loading error"));
-                }, onLoadArrayBufferHandler = function(response) {
-                    var audioContext = helper.getAudioContext();
-                    audioContext.decodeAudioData(response, successHandler, errorHandler);
-                }, xhrLoader = new XHRLoader_1.XHRLoader(), loadArrayBuffer = function(path, onSuccess, onFailed) {
-                    xhrLoader.getArrayBuffer(path, function(error, response) {
-                        error ? onFailed(error) : onSuccess(response);
+                if (null != this.path) {
+                    var successHandler = function(decodedAudio) {
+                        _this.data = decodedAudio;
+                        loader._onAssetLoad(_this);
+                    }, errorHandler = function() {
+                        loader._onAssetError(_this, g.ExceptionFactory.createAssetLoadError("WebAudioAsset unknown loading error"));
+                    }, onLoadArrayBufferHandler = function(response) {
+                        var audioContext = helper.getAudioContext();
+                        audioContext.decodeAudioData(response, successHandler, errorHandler);
+                    }, xhrLoader = new XHRLoader_1.XHRLoader(), loadArrayBuffer = function(path, onSuccess, onFailed) {
+                        xhrLoader.getArrayBuffer(path, function(error, response) {
+                            error ? onFailed(error) : onSuccess(response);
+                        });
+                    };
+                    ".aac" !== this.path.slice(-4) ? loadArrayBuffer(this.path, onLoadArrayBufferHandler, errorHandler) : loadArrayBuffer(this.path, onLoadArrayBufferHandler, function(error) {
+                        var altPath = _this.path.slice(0, _this.path.length - 4) + ".mp4";
+                        loadArrayBuffer(altPath, function(response) {
+                            _this.path = altPath;
+                            onLoadArrayBufferHandler(response);
+                        }, errorHandler);
                     });
-                };
-                return ".aac" === this.path.slice(-4) ? void loadArrayBuffer(this.path, onLoadArrayBufferHandler, function(error) {
-                    var altPath = _this.path.slice(0, _this.path.length - 4) + ".mp4";
-                    loadArrayBuffer(altPath, function(response) {
-                        _this.path = altPath, onLoadArrayBufferHandler(response);
-                    }, errorHandler);
-                }) : void loadArrayBuffer(this.path, onLoadArrayBufferHandler, errorHandler);
-            }, WebAudioAsset.prototype._assetPathFilter = function(path) {
+                } else {
+                    this.data = null;
+                    setTimeout(function() {
+                        return loader._onAssetLoad(_this);
+                    }, 0);
+                }
+            };
+            WebAudioAsset.prototype._assetPathFilter = function(path) {
                 return WebAudioAsset.supportedFormats.indexOf("ogg") !== -1 ? g.PathUtil.addExtname(path, "ogg") : WebAudioAsset.supportedFormats.indexOf("aac") !== -1 ? g.PathUtil.addExtname(path, "aac") : null;
-            }, WebAudioAsset.supportedFormats = [], WebAudioAsset;
+            };
+            WebAudioAsset.supportedFormats = [];
+            return WebAudioAsset;
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
     }, {
@@ -2360,14 +3049,17 @@ require = function e(t, n, r) {
         "use strict";
         function resumeHandler() {
             var context = helper.getAudioContext();
-            context.resume(), clearUserInteractListener();
+            context.resume();
+            clearUserInteractListener();
         }
         function setUserInteractListener() {
-            document.addEventListener("keydown", resumeHandler, !0), document.addEventListener("mousedown", resumeHandler, !0), 
+            document.addEventListener("keydown", resumeHandler, !0);
+            document.addEventListener("mousedown", resumeHandler, !0);
             document.addEventListener("touchend", resumeHandler, !0);
         }
         function clearUserInteractListener() {
-            document.removeEventListener("keydown", resumeHandler), document.removeEventListener("mousedown", resumeHandler), 
+            document.removeEventListener("keydown", resumeHandler);
+            document.removeEventListener("mousedown", resumeHandler);
             document.removeEventListener("touchend", resumeHandler);
         }
         var WebAudioAutoplayHelper, helper = require("./WebAudioHelper");
@@ -2376,13 +3068,18 @@ require = function e(t, n, r) {
                 var context = helper.getAudioContext();
                 if (!context || "function" != typeof context.resume) {
                     var gain = helper.createGainNode(context), osc = context.createOscillator();
-                    osc.type = "sawtooth", osc.frequency.value = 440, osc.connect(gain), osc.start(0);
+                    osc.type = "sawtooth";
+                    osc.frequency.value = 440;
+                    osc.connect(gain);
+                    osc.start(0);
                     var contextState = context.state;
-                    osc.disconnect(), "running" !== contextState && setUserInteractListener();
+                    osc.disconnect();
+                    "running" !== contextState && setUserInteractListener();
                 }
             }
             WebAudioAutoplayHelper.setupChromeMEIWorkaround = setupChromeMEIWorkaround;
-        }(WebAudioAutoplayHelper || (WebAudioAutoplayHelper = {})), module.exports = WebAudioAutoplayHelper;
+        }(WebAudioAutoplayHelper || (WebAudioAutoplayHelper = {}));
+        module.exports = WebAudioAutoplayHelper;
     }, {
         "./WebAudioHelper": 42
     } ],
@@ -2391,25 +3088,34 @@ require = function e(t, n, r) {
         var WebAudioHelper, AudioContext = window.AudioContext || window.webkitAudioContext, singleContext = null;
         !function(WebAudioHelper) {
             function getAudioContext() {
-                return singleContext || (singleContext = new AudioContext(), WebAudioHelper._workAroundSafari()), 
-                singleContext;
+                if (!singleContext) {
+                    singleContext = new AudioContext();
+                    WebAudioHelper._workAroundSafari();
+                }
+                return singleContext;
             }
             function createGainNode(context) {
                 return context.createGain ? context.createGain() : context.createGainNode();
             }
             function createBufferNode(context) {
                 var sourceNode = context.createBufferSource();
-                return sourceNode.start ? sourceNode : (sourceNode.start = sourceNode.noteOn, sourceNode.stop = sourceNode.noteOff, 
-                sourceNode);
+                if (sourceNode.start) return sourceNode;
+                sourceNode.start = sourceNode.noteOn;
+                sourceNode.stop = sourceNode.noteOff;
+                return sourceNode;
             }
             function _workAroundSafari() {
                 document.addEventListener("touchstart", function touchInitializeHandler() {
-                    document.removeEventListener("touchstart", touchInitializeHandler), singleContext.createBufferSource().start(0);
+                    document.removeEventListener("touchstart", touchInitializeHandler);
+                    singleContext.createBufferSource().start(0);
                 }, !0);
             }
-            WebAudioHelper.getAudioContext = getAudioContext, WebAudioHelper.createGainNode = createGainNode, 
-            WebAudioHelper.createBufferNode = createBufferNode, WebAudioHelper._workAroundSafari = _workAroundSafari;
-        }(WebAudioHelper || (WebAudioHelper = {})), module.exports = WebAudioHelper;
+            WebAudioHelper.getAudioContext = getAudioContext;
+            WebAudioHelper.createGainNode = createGainNode;
+            WebAudioHelper.createBufferNode = createBufferNode;
+            WebAudioHelper._workAroundSafari = _workAroundSafari;
+        }(WebAudioHelper || (WebAudioHelper = {}));
+        module.exports = WebAudioHelper;
     }, {} ],
     43: [ function(require, module, exports) {
         "use strict";
@@ -2425,8 +3131,8 @@ require = function e(t, n, r) {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -2435,37 +3141,65 @@ require = function e(t, n, r) {
         var g = require("@akashic/akashic-engine"), helper = require("./WebAudioHelper"), WebAudioPlayer = function(_super) {
             function WebAudioPlayer(system, manager) {
                 var _this = _super.call(this, system) || this;
-                return _this._audioContext = helper.getAudioContext(), _this._manager = manager, 
-                _this._gainNode = helper.createGainNode(_this._audioContext), _this._gainNode.connect(_this._audioContext.destination), 
-                _this._sourceNode = void 0, _this._dummyDurationWaitTimer = null, _this._endedEventHandler = function() {
+                _this._audioContext = helper.getAudioContext();
+                _this._manager = manager;
+                _this._gainNode = helper.createGainNode(_this._audioContext);
+                _this._gainNode.connect(_this._audioContext.destination);
+                _this._sourceNode = void 0;
+                _this._dummyDurationWaitTimer = null;
+                _this._endedEventHandler = function() {
                     _this._onAudioEnded();
-                }, _this;
+                };
+                return _this;
             }
-            return __extends(WebAudioPlayer, _super), WebAudioPlayer.prototype.changeVolume = function(volume) {
-                _super.prototype.changeVolume.call(this, volume), this._gainNode.gain.value = this._calculateVolume();
-            }, WebAudioPlayer.prototype._changeMuted = function(muted) {
-                _super.prototype._changeMuted.call(this, muted), this._gainNode.gain.value = this._calculateVolume();
-            }, WebAudioPlayer.prototype.play = function(asset) {
-                if (this.currentAudio && this.stop(), asset.data) {
+            __extends(WebAudioPlayer, _super);
+            WebAudioPlayer.prototype.changeVolume = function(volume) {
+                _super.prototype.changeVolume.call(this, volume);
+                this._gainNode.gain.value = this._calculateVolume();
+            };
+            WebAudioPlayer.prototype._changeMuted = function(muted) {
+                _super.prototype._changeMuted.call(this, muted);
+                this._gainNode.gain.value = this._calculateVolume();
+            };
+            WebAudioPlayer.prototype.play = function(asset) {
+                this.currentAudio && this.stop();
+                if (asset.data) {
                     var bufferNode = helper.createBufferNode(this._audioContext);
-                    bufferNode.loop = asset.loop, bufferNode.buffer = asset.data, this._gainNode.gain.value = this._calculateVolume(), 
-                    bufferNode.connect(this._gainNode), this._sourceNode = bufferNode, this._sourceNode.onended = this._endedEventHandler, 
+                    bufferNode.loop = asset.loop;
+                    bufferNode.buffer = asset.data;
+                    this._gainNode.gain.value = this._calculateVolume();
+                    bufferNode.connect(this._gainNode);
+                    this._sourceNode = bufferNode;
+                    this._sourceNode.onended = this._endedEventHandler;
                     this._sourceNode.start(0);
                 } else this._dummyDurationWaitTimer = setTimeout(this._endedEventHandler, asset.duration);
                 _super.prototype.play.call(this, asset);
-            }, WebAudioPlayer.prototype.stop = function() {
-                this.currentAudio && (this._clearEndedEventHandler(), this._sourceNode && this._sourceNode.stop(0), 
-                _super.prototype.stop.call(this));
-            }, WebAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
+            };
+            WebAudioPlayer.prototype.stop = function() {
+                if (this.currentAudio) {
+                    this._clearEndedEventHandler();
+                    this._sourceNode && this._sourceNode.stop(0);
+                    _super.prototype.stop.call(this);
+                }
+            };
+            WebAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
                 this._gainNode.gain.value = this._calculateVolume();
-            }, WebAudioPlayer.prototype._onAudioEnded = function() {
-                this._clearEndedEventHandler(), _super.prototype.stop.call(this);
-            }, WebAudioPlayer.prototype._clearEndedEventHandler = function() {
-                this._sourceNode && (this._sourceNode.onended = null), null != this._dummyDurationWaitTimer && (clearTimeout(this._dummyDurationWaitTimer), 
-                this._dummyDurationWaitTimer = null);
-            }, WebAudioPlayer.prototype._calculateVolume = function() {
+            };
+            WebAudioPlayer.prototype._onAudioEnded = function() {
+                this._clearEndedEventHandler();
+                _super.prototype.stop.call(this);
+            };
+            WebAudioPlayer.prototype._clearEndedEventHandler = function() {
+                this._sourceNode && (this._sourceNode.onended = null);
+                if (null != this._dummyDurationWaitTimer) {
+                    clearTimeout(this._dummyDurationWaitTimer);
+                    this._dummyDurationWaitTimer = null;
+                }
+            };
+            WebAudioPlayer.prototype._calculateVolume = function() {
                 return this._muted ? 0 : this.volume * this._system.volume * this._manager.getMasterVolume();
-            }, WebAudioPlayer;
+            };
+            return WebAudioPlayer;
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
     }, {
@@ -2479,24 +3213,30 @@ require = function e(t, n, r) {
         });
         var WebAudioAsset_1 = require("./WebAudioAsset"), WebAudioPlayer_1 = require("./WebAudioPlayer"), autoPlayHelper = require("./WebAudioAutoplayHelper"), WebAudioPlugin = function() {
             function WebAudioPlugin() {
-                this.supportedFormats = this._detectSupportedFormats(), autoPlayHelper.setupChromeMEIWorkaround();
+                this.supportedFormats = this._detectSupportedFormats();
+                autoPlayHelper.setupChromeMEIWorkaround();
             }
-            return WebAudioPlugin.isSupported = function() {
+            WebAudioPlugin.isSupported = function() {
                 return "AudioContext" in window || "webkitAudioContext" in window;
-            }, Object.defineProperty(WebAudioPlugin.prototype, "supportedFormats", {
+            };
+            Object.defineProperty(WebAudioPlugin.prototype, "supportedFormats", {
                 get: function() {
                     return this._supportedFormats;
                 },
                 set: function(supportedFormats) {
-                    this._supportedFormats = supportedFormats, WebAudioAsset_1.WebAudioAsset.supportedFormats = supportedFormats;
+                    this._supportedFormats = supportedFormats;
+                    WebAudioAsset_1.WebAudioAsset.supportedFormats = supportedFormats;
                 },
                 enumerable: !0,
                 configurable: !0
-            }), WebAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
+            });
+            WebAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
                 return new WebAudioAsset_1.WebAudioAsset(id, assetPath, duration, system, loop, hint);
-            }, WebAudioPlugin.prototype.createPlayer = function(system, manager) {
+            };
+            WebAudioPlugin.prototype.createPlayer = function(system, manager) {
                 return new WebAudioPlayer_1.WebAudioPlayer(system, manager);
-            }, WebAudioPlugin.prototype._detectSupportedFormats = function() {
+            };
+            WebAudioPlugin.prototype._detectSupportedFormats = function() {
                 if (navigator.userAgent.indexOf("Edge/") !== -1) return [ "aac" ];
                 var audioElement = document.createElement("audio"), supportedFormats = [];
                 try {
@@ -2506,7 +3246,8 @@ require = function e(t, n, r) {
                     }
                 } catch (e) {}
                 return supportedFormats;
-            }, WebAudioPlugin;
+            };
+            return WebAudioPlugin;
         }();
         exports.WebAudioPlugin = WebAudioPlugin;
     }, {
@@ -2521,32 +3262,41 @@ require = function e(t, n, r) {
         });
         var g = require("@akashic/akashic-engine"), XHRLoader = function() {
             function XHRLoader(options) {
-                void 0 === options && (options = {}), this.timeout = options.timeout || 15e3;
+                void 0 === options && (options = {});
+                this.timeout = options.timeout || 15e3;
             }
-            return XHRLoader.prototype.get = function(url, callback) {
+            XHRLoader.prototype.get = function(url, callback) {
                 this._getRequestObject({
                     url: url,
                     responseType: "text"
                 }, callback);
-            }, XHRLoader.prototype.getArrayBuffer = function(url, callback) {
+            };
+            XHRLoader.prototype.getArrayBuffer = function(url, callback) {
                 this._getRequestObject({
                     url: url,
                     responseType: "arraybuffer"
                 }, callback);
-            }, XHRLoader.prototype._getRequestObject = function(requestObject, callback) {
+            };
+            XHRLoader.prototype._getRequestObject = function(requestObject, callback) {
                 var request = new XMLHttpRequest();
-                request.open("GET", requestObject.url, !0), request.responseType = requestObject.responseType, 
-                request.timeout = this.timeout, request.addEventListener("timeout", function() {
+                request.open("GET", requestObject.url, !0);
+                request.responseType = requestObject.responseType;
+                request.timeout = this.timeout;
+                request.addEventListener("timeout", function() {
                     callback(g.ExceptionFactory.createAssetLoadError("loading timeout"));
-                }, !1), request.addEventListener("load", function() {
+                }, !1);
+                request.addEventListener("load", function() {
                     if (request.status >= 200 && request.status < 300) {
                         var response = "text" === requestObject.responseType ? request.responseText : request.response;
                         callback(null, response);
                     } else callback(g.ExceptionFactory.createAssetLoadError("loading error. status: " + request.status));
-                }, !1), request.addEventListener("error", function() {
+                }, !1);
+                request.addEventListener("error", function() {
                     callback(g.ExceptionFactory.createAssetLoadError("loading error. status: " + request.status));
-                }, !1), request.send();
-            }, XHRLoader;
+                }, !1);
+                request.send();
+            };
+            return XHRLoader;
         }();
         exports.XHRLoader = XHRLoader;
     }, {
