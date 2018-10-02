@@ -31,39 +31,76 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), Clock = function() {
             function Clock(param) {
-                this.fps = param.fps, this.scaleFactor = param.scaleFactor || 1, this.frameTrigger = new g.Trigger(), 
-                this.rawFrameTrigger = new g.Trigger(), this._platform = param.platform, this._maxFramePerOnce = param.maxFramePerOnce, 
-                this._deltaTimeBrokenThreshold = param.deltaTimeBrokenThreshold || Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD, 
-                param.frameHandler && this.frameTrigger.add(param.frameHandler, param.frameHandlerOwner), 
-                this.running = !1, this._totalDeltaTime = 0, this._onLooperCall_bound = this._onLooperCall.bind(this), 
-                this._looper = this._platform.createLooper(this._onLooperCall_bound), this._waitTime = 0, 
-                this._waitTimeDoubled = 0, this._waitTimeMax = 0, this._skipFrameWaitTime = 0, this._realMaxFramePerOnce = 0;
+                this.fps = param.fps;
+                this.scaleFactor = param.scaleFactor || 1;
+                this.frameTrigger = new g.Trigger();
+                this.rawFrameTrigger = new g.Trigger();
+                this._platform = param.platform;
+                this._maxFramePerOnce = param.maxFramePerOnce;
+                this._deltaTimeBrokenThreshold = param.deltaTimeBrokenThreshold || Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD;
+                param.frameHandler && this.frameTrigger.add(param.frameHandler, param.frameHandlerOwner);
+                this.running = !1;
+                this._totalDeltaTime = 0;
+                this._onLooperCall_bound = this._onLooperCall.bind(this);
+                this._looper = this._platform.createLooper(this._onLooperCall_bound);
+                this._waitTime = 0;
+                this._waitTimeDoubled = 0;
+                this._waitTimeMax = 0;
+                this._skipFrameWaitTime = 0;
+                this._realMaxFramePerOnce = 0;
             }
-            return Clock.prototype.start = function() {
-                this.running || (this._totalDeltaTime = 0, this._updateWaitTimes(this.fps, this.scaleFactor), 
-                this._looper.start(), this.running = !0);
-            }, Clock.prototype.stop = function() {
-                this.running && (this._looper.stop(), this.running = !1);
-            }, Clock.prototype.changeScaleFactor = function(scaleFactor) {
-                this.running ? (this.stop(), this.scaleFactor = scaleFactor, this.start()) : this.scaleFactor = scaleFactor;
-            }, Clock.prototype._onLooperCall = function(deltaTime) {
+            Clock.prototype.start = function() {
+                if (!this.running) {
+                    this._totalDeltaTime = 0;
+                    this._updateWaitTimes(this.fps, this.scaleFactor);
+                    this._looper.start();
+                    this.running = !0;
+                }
+            };
+            Clock.prototype.stop = function() {
+                if (this.running) {
+                    this._looper.stop();
+                    this.running = !1;
+                }
+            };
+            Clock.prototype.changeScaleFactor = function(scaleFactor) {
+                if (this.running) {
+                    this.stop();
+                    this.scaleFactor = scaleFactor;
+                    this.start();
+                } else this.scaleFactor = scaleFactor;
+            };
+            Clock.prototype._onLooperCall = function(deltaTime) {
                 if (deltaTime <= 0) return this._waitTime - this._totalDeltaTime;
                 deltaTime > this._deltaTimeBrokenThreshold && (deltaTime = this._waitTime);
                 var totalDeltaTime = this._totalDeltaTime;
-                if (totalDeltaTime += deltaTime, totalDeltaTime <= this._skipFrameWaitTime) return this._totalDeltaTime = totalDeltaTime, 
-                this._waitTime - totalDeltaTime;
+                totalDeltaTime += deltaTime;
+                if (totalDeltaTime <= this._skipFrameWaitTime) {
+                    this._totalDeltaTime = totalDeltaTime;
+                    return this._waitTime - totalDeltaTime;
+                }
                 for (var frameCount = totalDeltaTime < this._waitTimeDoubled ? 1 : totalDeltaTime > this._waitTimeMax ? this._realMaxFramePerOnce : totalDeltaTime / this._waitTime | 0, fc = frameCount, arg = {
                     interrupt: !1
-                }; fc > 0 && this.running && !arg.interrupt; ) --fc, this.frameTrigger.fire(arg);
-                return totalDeltaTime -= (frameCount - fc) * this._waitTime, this.rawFrameTrigger.fire(), 
-                this._totalDeltaTime = totalDeltaTime, this._waitTime - totalDeltaTime;
-            }, Clock.prototype._updateWaitTimes = function(fps, scaleFactor) {
+                }; fc > 0 && this.running && !arg.interrupt; ) {
+                    --fc;
+                    this.frameTrigger.fire(arg);
+                }
+                totalDeltaTime -= (frameCount - fc) * this._waitTime;
+                this.rawFrameTrigger.fire();
+                this._totalDeltaTime = totalDeltaTime;
+                return this._waitTime - totalDeltaTime;
+            };
+            Clock.prototype._updateWaitTimes = function(fps, scaleFactor) {
                 var realFps = fps * scaleFactor;
-                this._waitTime = 1e3 / realFps, this._waitTimeDoubled = Math.max(2e3 / realFps | 0, 1), 
-                this._waitTimeMax = Math.max(scaleFactor * (1e3 * this._maxFramePerOnce / realFps) | 0, 1), 
-                this._skipFrameWaitTime = this._waitTime * Clock.ANTICIPATE_RATE | 0, this._realMaxFramePerOnce = this._maxFramePerOnce * scaleFactor;
-            }, Clock.ANTICIPATE_RATE = .8, Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD = 150, 
-            Clock;
+                this._waitTime = 1e3 / realFps;
+                this._waitTimeDoubled = Math.max(2e3 / realFps | 0, 1);
+                this._waitTimeMax = Math.max(scaleFactor * (1e3 * this._maxFramePerOnce / realFps) | 0, 1);
+                this._skipFrameWaitTime = this._waitTime * Clock.ANTICIPATE_RATE | 0;
+                this._realMaxFramePerOnce = this._maxFramePerOnce * scaleFactor;
+            };
+            Clock.ANTICIPATE_RATE = .8;
+            Clock.DEFAULT_DELTA_TIME_BROKEN_THRESHOLD = 150;
+            return Clock;
         }();
         exports.Clock = Clock;
     }, {
@@ -76,14 +113,25 @@ require = function() {
         });
         var g = (require("@akashic/akashic-pdi"), require("@akashic/akashic-engine")), PointEventResolver_1 = require("./PointEventResolver"), EventBuffer = function() {
             function EventBuffer(param) {
-                this._amflow = param.amflow, this._isLocalReceiver = !0, this._isReceiver = !1, 
-                this._isSender = !1, this._isDiscarder = !1, this._defaultEventPriority = 0, this._buffer = null, 
-                this._joinLeaveBuffer = null, this._localBuffer = null, this._filters = null, this._unfilteredLocalEvents = [], 
-                this._unfilteredEvents = [], this._unfilteredJoinLeaves = [], this._pointEventResolver = new PointEventResolver_1.PointEventResolver({
+                this._amflow = param.amflow;
+                this._isLocalReceiver = !0;
+                this._isReceiver = !1;
+                this._isSender = !1;
+                this._isDiscarder = !1;
+                this._defaultEventPriority = 0;
+                this._buffer = null;
+                this._joinLeaveBuffer = null;
+                this._localBuffer = null;
+                this._filters = null;
+                this._unfilteredLocalEvents = [];
+                this._unfilteredEvents = [];
+                this._unfilteredJoinLeaves = [];
+                this._pointEventResolver = new PointEventResolver_1.PointEventResolver({
                     game: param.game
-                }), this._onEvent_bound = this.onEvent.bind(this);
+                });
+                this._onEvent_bound = this.onEvent.bind(this);
             }
-            return EventBuffer.isEventLocal = function(pev) {
+            EventBuffer.isEventLocal = function(pev) {
                 switch (pev[0]) {
                   case 0:
                     return pev[5];
@@ -112,13 +160,18 @@ require = function() {
                   default:
                     throw g.ExceptionFactory.createAssertionError("EventBuffer.isEventLocal");
                 }
-            }, EventBuffer.prototype.setMode = function(param) {
-                null != param.isLocalReceiver && (this._isLocalReceiver = param.isLocalReceiver), 
-                null != param.isReceiver && this._isReceiver !== param.isReceiver && (this._isReceiver = param.isReceiver, 
-                param.isReceiver ? this._amflow.onEvent(this._onEvent_bound) : this._amflow.offEvent(this._onEvent_bound)), 
-                null != param.isSender && (this._isSender = param.isSender), null != param.isDiscarder && (this._isDiscarder = param.isDiscarder), 
+            };
+            EventBuffer.prototype.setMode = function(param) {
+                null != param.isLocalReceiver && (this._isLocalReceiver = param.isLocalReceiver);
+                if (null != param.isReceiver && this._isReceiver !== param.isReceiver) {
+                    this._isReceiver = param.isReceiver;
+                    param.isReceiver ? this._amflow.onEvent(this._onEvent_bound) : this._amflow.offEvent(this._onEvent_bound);
+                }
+                null != param.isSender && (this._isSender = param.isSender);
+                null != param.isDiscarder && (this._isDiscarder = param.isDiscarder);
                 null != param.defaultEventPriority && (this._defaultEventPriority = param.defaultEventPriority);
-            }, EventBuffer.prototype.getMode = function() {
+            };
+            EventBuffer.prototype.getMode = function() {
                 return {
                     isLocalReceiver: this._isLocalReceiver,
                     isReceiver: this._isReceiver,
@@ -126,11 +179,17 @@ require = function() {
                     isDiscarder: this._isDiscarder,
                     defaultEventPriority: this._defaultEventPriority
                 };
-            }, EventBuffer.prototype.onEvent = function(pev) {
-                return EventBuffer.isEventLocal(pev) ? void (this._isLocalReceiver && !this._isDiscarder && this._unfilteredLocalEvents.push(pev)) : (this._isReceiver && !this._isDiscarder && (0 === pev[0] || 1 === pev[0] ? this._unfilteredJoinLeaves.push(pev) : this._unfilteredEvents.push(pev)), 
-                void (this._isSender && (null == pev[1] && (pev[1] = this._defaultEventPriority), 
-                this._amflow.sendEvent(pev))));
-            }, EventBuffer.prototype.onPointEvent = function(e) {
+            };
+            EventBuffer.prototype.onEvent = function(pev) {
+                if (EventBuffer.isEventLocal(pev)) this._isLocalReceiver && !this._isDiscarder && this._unfilteredLocalEvents.push(pev); else {
+                    this._isReceiver && !this._isDiscarder && (0 === pev[0] || 1 === pev[0] ? this._unfilteredJoinLeaves.push(pev) : this._unfilteredEvents.push(pev));
+                    if (this._isSender) {
+                        null == pev[1] && (pev[1] = this._defaultEventPriority);
+                        this._amflow.sendEvent(pev);
+                    }
+                }
+            };
+            EventBuffer.prototype.onPointEvent = function(e) {
                 var pev;
                 switch (e.type) {
                   case 0:
@@ -145,64 +204,94 @@ require = function() {
                     pev = this._pointEventResolver.pointUp(e);
                 }
                 pev && this.onEvent(pev);
-            }, EventBuffer.prototype.addEventDirect = function(pev) {
+            };
+            EventBuffer.prototype.addEventDirect = function(pev) {
                 if (EventBuffer.isEventLocal(pev)) {
                     if (!this._isLocalReceiver || this._isDiscarder) return;
-                    return void (this._localBuffer ? this._localBuffer.push(pev) : this._localBuffer = [ pev ]);
+                    this._localBuffer ? this._localBuffer.push(pev) : this._localBuffer = [ pev ];
+                } else {
+                    this._isReceiver && !this._isDiscarder && (0 === pev[0] || 1 === pev[0] ? this._joinLeaveBuffer ? this._joinLeaveBuffer.push(pev) : this._joinLeaveBuffer = [ pev ] : this._buffer ? this._buffer.push(pev) : this._buffer = [ pev ]);
+                    if (this._isSender) {
+                        null == pev[1] && (pev[1] = this._defaultEventPriority);
+                        this._amflow.sendEvent(pev);
+                    }
                 }
-                this._isReceiver && !this._isDiscarder && (0 === pev[0] || 1 === pev[0] ? this._joinLeaveBuffer ? this._joinLeaveBuffer.push(pev) : this._joinLeaveBuffer = [ pev ] : this._buffer ? this._buffer.push(pev) : this._buffer = [ pev ]), 
-                this._isSender && (null == pev[1] && (pev[1] = this._defaultEventPriority), this._amflow.sendEvent(pev));
-            }, EventBuffer.prototype.readEvents = function() {
+            };
+            EventBuffer.prototype.readEvents = function() {
                 var ret = this._buffer;
-                return this._buffer = null, ret;
-            }, EventBuffer.prototype.readJoinLeaves = function() {
+                this._buffer = null;
+                return ret;
+            };
+            EventBuffer.prototype.readJoinLeaves = function() {
                 var ret = this._joinLeaveBuffer;
-                return this._joinLeaveBuffer = null, ret;
-            }, EventBuffer.prototype.readLocalEvents = function() {
+                this._joinLeaveBuffer = null;
+                return ret;
+            };
+            EventBuffer.prototype.readLocalEvents = function() {
                 var ret = this._localBuffer;
-                return this._localBuffer = null, ret;
-            }, EventBuffer.prototype.addFilter = function(filter, handleEmpty) {
-                this._filters || (this._filters = []), this._filters.push({
+                this._localBuffer = null;
+                return ret;
+            };
+            EventBuffer.prototype.addFilter = function(filter, handleEmpty) {
+                this._filters || (this._filters = []);
+                this._filters.push({
                     func: filter,
                     handleEmpty: !!handleEmpty
                 });
-            }, EventBuffer.prototype.removeFilter = function(filter) {
-                if (this._filters) {
-                    if (!filter) return void (this._filters = null);
-                    for (var i = this._filters.length - 1; i >= 0; --i) this._filters[i].func === filter && this._filters.splice(i, 1);
-                }
-            }, EventBuffer.prototype.processEvents = function() {
+            };
+            EventBuffer.prototype.removeFilter = function(filter) {
+                if (this._filters) if (filter) for (var i = this._filters.length - 1; i >= 0; --i) this._filters[i].func === filter && this._filters.splice(i, 1); else this._filters = null;
+            };
+            EventBuffer.prototype.processEvents = function() {
                 var lpevs = this._unfilteredLocalEvents, pevs = this._unfilteredEvents, joins = this._unfilteredJoinLeaves;
-                if (!this._filters) return lpevs.length > 0 && (this._unfilteredLocalEvents = [], 
-                this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs), 
-                pevs.length > 0 && (this._unfilteredEvents = [], this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs), 
-                void (joins.length > 0 && (this._unfilteredJoinLeaves = [], this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins));
-                if (0 === lpevs.length && 0 === pevs.length && 0 === joins.length) for (var i = 0; i < this._filters.length; ++i) if (this._filters[i].handleEmpty) {
-                    var gpevs = this._filters[i].func([]);
-                    if (gpevs) for (var j = 0; j < gpevs.length; ++j) {
-                        var pev = gpevs[j];
-                        EventBuffer.isEventLocal(pev) ? lpevs.push(pev) : 0 === pev[0] || 1 === pev[0] ? joins.push(pev) : pevs.push(pev);
+                if (this._filters) {
+                    if (0 === lpevs.length && 0 === pevs.length && 0 === joins.length) for (var i = 0; i < this._filters.length; ++i) if (this._filters[i].handleEmpty) {
+                        var gpevs = this._filters[i].func([]);
+                        if (gpevs) for (var j = 0; j < gpevs.length; ++j) {
+                            var pev = gpevs[j];
+                            EventBuffer.isEventLocal(pev) ? lpevs.push(pev) : 0 === pev[0] || 1 === pev[0] ? joins.push(pev) : pevs.push(pev);
+                        }
+                    }
+                    if (lpevs.length > 0) {
+                        this._unfilteredLocalEvents = [];
+                        for (var i = 0; i < this._filters.length; ++i) {
+                            lpevs = this._filters[i].func(lpevs);
+                            if (!lpevs) break;
+                        }
+                        lpevs && lpevs.length > 0 && (this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs);
+                    }
+                    if (pevs.length > 0) {
+                        this._unfilteredEvents = [];
+                        for (var i = 0; i < this._filters.length; ++i) {
+                            pevs = this._filters[i].func(pevs);
+                            if (!pevs) break;
+                        }
+                        pevs && pevs.length > 0 && (this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs);
+                    }
+                    if (joins.length > 0) {
+                        this._unfilteredJoinLeaves = [];
+                        for (var i = 0; i < this._filters.length && joins && joins.length > 0; ++i) {
+                            joins = this._filters[i].func(joins);
+                            if (!joins) break;
+                        }
+                        joins && joins.length > 0 && (this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins);
+                    }
+                } else {
+                    if (lpevs.length > 0) {
+                        this._unfilteredLocalEvents = [];
+                        this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs;
+                    }
+                    if (pevs.length > 0) {
+                        this._unfilteredEvents = [];
+                        this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs;
+                    }
+                    if (joins.length > 0) {
+                        this._unfilteredJoinLeaves = [];
+                        this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins;
                     }
                 }
-                if (lpevs.length > 0) {
-                    this._unfilteredLocalEvents = [];
-                    for (var i = 0; i < this._filters.length && (lpevs = this._filters[i].func(lpevs), 
-                    lpevs); ++i) ;
-                    lpevs && lpevs.length > 0 && (this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs);
-                }
-                if (pevs.length > 0) {
-                    this._unfilteredEvents = [];
-                    for (var i = 0; i < this._filters.length && (pevs = this._filters[i].func(pevs), 
-                    pevs); ++i) ;
-                    pevs && pevs.length > 0 && (this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs);
-                }
-                if (joins.length > 0) {
-                    this._unfilteredJoinLeaves = [];
-                    for (var i = 0; i < this._filters.length && joins && joins.length > 0 && (joins = this._filters[i].func(joins), 
-                    joins); ++i) ;
-                    joins && joins.length > 0 && (this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins);
-                }
-            }, EventBuffer;
+            };
+            return EventBuffer;
         }();
         exports.EventBuffer = EventBuffer;
     }, {
@@ -217,9 +306,10 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), EventConverter = function() {
             function EventConverter(param) {
-                this._game = param.game, this._playerTable = {};
+                this._game = param.game;
+                this._playerTable = {};
             }
-            return EventConverter.prototype.toGameEvent = function(pev) {
+            EventConverter.prototype.toGameEvent = function(pev) {
                 var pointerId, entityId, target, point, startDelta, prevDelta, local, timestamp, eventCode = pev[0], prio = pev[1], playerId = pev[2], player = this._playerTable[playerId] || {
                     id: playerId
                 };
@@ -228,57 +318,79 @@ require = function() {
                     player = {
                         id: playerId,
                         name: pev[3]
-                    }, this._playerTable[playerId] = player;
+                    };
+                    this._playerTable[playerId] = player;
                     var store = void 0;
                     if (pev[4]) {
                         var keys = [], values = [];
                         pev[4].map(function(data) {
-                            keys.push(data.readKey), values.push(data.values);
-                        }), store = new g.StorageValueStore(keys, values);
+                            keys.push(data.readKey);
+                            values.push(data.values);
+                        });
+                        store = new g.StorageValueStore(keys, values);
                     }
                     return new g.JoinEvent(player, store, prio);
 
                   case 1:
-                    return delete this._playerTable[player.id], new g.LeaveEvent(player, prio);
+                    delete this._playerTable[player.id];
+                    return new g.LeaveEvent(player, prio);
 
                   case 2:
-                    return timestamp = pev[3], new g.TimestampEvent(timestamp, player, prio);
+                    timestamp = pev[3];
+                    return new g.TimestampEvent(timestamp, player, prio);
 
                   case 32:
-                    return local = pev[4], new g.MessageEvent(pev[3], player, local, prio);
+                    local = pev[4];
+                    return new g.MessageEvent(pev[3], player, local, prio);
 
                   case 33:
-                    return local = pev[7], pointerId = pev[3], entityId = pev[6], target = null == entityId ? void 0 : entityId >= 0 ? this._game.db[entityId] : this._game._localDb[entityId], 
+                    local = pev[7];
+                    pointerId = pev[3];
+                    entityId = pev[6];
+                    target = null == entityId ? void 0 : entityId >= 0 ? this._game.db[entityId] : this._game._localDb[entityId];
                     point = {
                         x: pev[4],
                         y: pev[5]
-                    }, new g.PointDownEvent(pointerId, target, point, player, local, prio);
+                    };
+                    return new g.PointDownEvent(pointerId, target, point, player, local, prio);
 
                   case 34:
-                    return local = pev[11], pointerId = pev[3], entityId = pev[10], target = null == entityId ? void 0 : entityId >= 0 ? this._game.db[entityId] : this._game._localDb[entityId], 
+                    local = pev[11];
+                    pointerId = pev[3];
+                    entityId = pev[10];
+                    target = null == entityId ? void 0 : entityId >= 0 ? this._game.db[entityId] : this._game._localDb[entityId];
                     point = {
                         x: pev[4],
                         y: pev[5]
-                    }, startDelta = {
+                    };
+                    startDelta = {
                         x: pev[6],
                         y: pev[7]
-                    }, prevDelta = {
+                    };
+                    prevDelta = {
                         x: pev[8],
                         y: pev[9]
-                    }, new g.PointMoveEvent(pointerId, target, point, prevDelta, startDelta, player, local, prio);
+                    };
+                    return new g.PointMoveEvent(pointerId, target, point, prevDelta, startDelta, player, local, prio);
 
                   case 35:
-                    return local = pev[11], pointerId = pev[3], entityId = pev[10], target = null == entityId ? void 0 : entityId >= 0 ? this._game.db[entityId] : this._game._localDb[entityId], 
+                    local = pev[11];
+                    pointerId = pev[3];
+                    entityId = pev[10];
+                    target = null == entityId ? void 0 : entityId >= 0 ? this._game.db[entityId] : this._game._localDb[entityId];
                     point = {
                         x: pev[4],
                         y: pev[5]
-                    }, startDelta = {
+                    };
+                    startDelta = {
                         x: pev[6],
                         y: pev[7]
-                    }, prevDelta = {
+                    };
+                    prevDelta = {
                         x: pev[8],
                         y: pev[9]
-                    }, new g.PointUpEvent(pointerId, target, point, prevDelta, startDelta, player, local, prio);
+                    };
+                    return new g.PointUpEvent(pointerId, target, point, prevDelta, startDelta, player, local, prio);
 
                   case 64:
                     local = pev[5];
@@ -288,7 +400,8 @@ require = function() {
                   default:
                     throw g.ExceptionFactory.createAssertionError("EventConverter#toGameEvent");
                 }
-            }, EventConverter.prototype.toPlaylogEvent = function(e, preservePlayer) {
+            };
+            EventConverter.prototype.toPlaylogEvent = function(e, preservePlayer) {
                 var targetId, playerId;
                 switch (e.type) {
                   case g.EventType.Join:
@@ -297,38 +410,46 @@ require = function() {
 
                   case g.EventType.Timestamp:
                     var ts = e;
-                    return playerId = preservePlayer ? ts.player.id : this._game.player.id, [ 2, ts.priority, playerId, ts.timestamp ];
+                    playerId = preservePlayer ? ts.player.id : this._game.player.id;
+                    return [ 2, ts.priority, playerId, ts.timestamp ];
 
                   case g.EventType.PointDown:
                     var pointDown = e;
-                    return targetId = pointDown.target ? pointDown.target.id : null, playerId = preservePlayer ? pointDown.player.id : this._game.player.id, 
-                    [ 33, pointDown.priority, playerId, pointDown.pointerId, pointDown.point.x, pointDown.point.y, targetId, !!pointDown.local ];
+                    targetId = pointDown.target ? pointDown.target.id : null;
+                    playerId = preservePlayer ? pointDown.player.id : this._game.player.id;
+                    return [ 33, pointDown.priority, playerId, pointDown.pointerId, pointDown.point.x, pointDown.point.y, targetId, !!pointDown.local ];
 
                   case g.EventType.PointMove:
                     var pointMove = e;
-                    return targetId = pointMove.target ? pointMove.target.id : null, playerId = preservePlayer ? pointMove.player.id : this._game.player.id, 
-                    [ 34, pointMove.priority, playerId, pointMove.pointerId, pointMove.point.x, pointMove.point.y, pointMove.startDelta.x, pointMove.startDelta.y, pointMove.prevDelta.x, pointMove.prevDelta.y, targetId, !!pointMove.local ];
+                    targetId = pointMove.target ? pointMove.target.id : null;
+                    playerId = preservePlayer ? pointMove.player.id : this._game.player.id;
+                    return [ 34, pointMove.priority, playerId, pointMove.pointerId, pointMove.point.x, pointMove.point.y, pointMove.startDelta.x, pointMove.startDelta.y, pointMove.prevDelta.x, pointMove.prevDelta.y, targetId, !!pointMove.local ];
 
                   case g.EventType.PointUp:
                     var pointUp = e;
-                    return targetId = pointUp.target ? pointUp.target.id : null, playerId = preservePlayer ? pointUp.player.id : this._game.player.id, 
-                    [ 35, pointUp.priority, playerId, pointUp.pointerId, pointUp.point.x, pointUp.point.y, pointUp.startDelta.x, pointUp.startDelta.y, pointUp.prevDelta.x, pointUp.prevDelta.y, targetId, !!pointUp.local ];
+                    targetId = pointUp.target ? pointUp.target.id : null;
+                    playerId = preservePlayer ? pointUp.player.id : this._game.player.id;
+                    return [ 35, pointUp.priority, playerId, pointUp.pointerId, pointUp.point.x, pointUp.point.y, pointUp.startDelta.x, pointUp.startDelta.y, pointUp.prevDelta.x, pointUp.prevDelta.y, targetId, !!pointUp.local ];
 
                   case g.EventType.Message:
                     var message = e;
-                    return playerId = preservePlayer ? message.player.id : this._game.player.id, [ 32, message.priority, playerId, message.data, !!message.local ];
+                    playerId = preservePlayer ? message.player.id : this._game.player.id;
+                    return [ 32, message.priority, playerId, message.data, !!message.local ];
 
                   case g.EventType.Operation:
                     var op = e;
-                    return playerId = preservePlayer ? op.player.id : this._game.player.id, [ 64, op.priority, playerId, op.code, op.data, !!op.local ];
+                    playerId = preservePlayer ? op.player.id : this._game.player.id;
+                    return [ 64, op.priority, playerId, op.code, op.data, !!op.local ];
 
                   default:
                     throw g.ExceptionFactory.createAssertionError("Unknown type: " + e.type);
                 }
-            }, EventConverter.prototype.makePlaylogOperationEvent = function(op) {
+            };
+            EventConverter.prototype.makePlaylogOperationEvent = function(op) {
                 var playerId = this._game.player.id, priority = null != op.priority ? op.priority : 0;
                 return [ 64, priority, playerId, op._code, op.data, !!op.local ];
-            }, EventConverter;
+            };
+            return EventConverter;
         }();
         exports.EventConverter = EventConverter;
     }, {
@@ -347,8 +468,10 @@ require = function() {
         });
         var ExecutionMode;
         !function(ExecutionMode) {
-            ExecutionMode[ExecutionMode.Active = 0] = "Active", ExecutionMode[ExecutionMode.Passive = 1] = "Passive";
-        }(ExecutionMode || (ExecutionMode = {})), exports.default = ExecutionMode;
+            ExecutionMode[ExecutionMode.Active = 0] = "Active";
+            ExecutionMode[ExecutionMode.Passive = 1] = "Passive";
+        }(ExecutionMode || (ExecutionMode = {}));
+        exports.default = ExecutionMode;
     }, {} ],
     6: [ function(require, module, exports) {
         "use strict";
@@ -364,8 +487,8 @@ require = function() {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -374,53 +497,86 @@ require = function() {
         var g = require("@akashic/akashic-engine"), Game = function(_super) {
             function Game(param) {
                 var _this = _super.call(this, param.configuration, param.resourceFactory, param.assetBase, param.player.id, param.operationPluginViewInfo) || this;
-                return _this.agePassedTrigger = new g.Trigger(), _this.targetTimeReachedTrigger = new g.Trigger(), 
-                _this.skippingChangedTrigger = new g.Trigger(), _this.abortTrigger = new g.Trigger(), 
-                _this.player = param.player, _this.raiseEventTrigger = new g.Trigger(), _this.raiseTickTrigger = new g.Trigger(), 
-                _this.snapshotTrigger = new g.Trigger(), _this.isSnapshotSaver = !!param.isSnapshotSaver, 
-                _this._getCurrentTimeFunc = null, _this._eventFilterFuncs = null, _this._notifyPassedAgeTable = {}, 
-                _this._notifiesTargetTimeReached = !1, _this._isSkipAware = !1, _this._gameArgs = param.gameArgs, 
-                _this._globalGameArgs = param.globalGameArgs, _this.skippingChangedTrigger.add(_this._onSkippingChanged, _this), 
-                _this;
+                _this.agePassedTrigger = new g.Trigger();
+                _this.targetTimeReachedTrigger = new g.Trigger();
+                _this.skippingChangedTrigger = new g.Trigger();
+                _this.abortTrigger = new g.Trigger();
+                _this.player = param.player;
+                _this.raiseEventTrigger = new g.Trigger();
+                _this.raiseTickTrigger = new g.Trigger();
+                _this.snapshotTrigger = new g.Trigger();
+                _this.isSnapshotSaver = !!param.isSnapshotSaver;
+                _this._getCurrentTimeFunc = null;
+                _this._eventFilterFuncs = null;
+                _this._notifyPassedAgeTable = {};
+                _this._notifiesTargetTimeReached = !1;
+                _this._isSkipAware = !1;
+                _this._gameArgs = param.gameArgs;
+                _this._globalGameArgs = param.globalGameArgs;
+                _this.skippingChangedTrigger.add(_this._onSkippingChanged, _this);
+                return _this;
             }
-            return __extends(Game, _super), Game.prototype.requestNotifyAgePassed = function(age) {
+            __extends(Game, _super);
+            Game.prototype.requestNotifyAgePassed = function(age) {
                 this._notifyPassedAgeTable[age] = !0;
-            }, Game.prototype.cancelNotifyAgePassed = function(age) {
+            };
+            Game.prototype.cancelNotifyAgePassed = function(age) {
                 delete this._notifyPassedAgeTable[age];
-            }, Game.prototype.requestNotifyTargetTimeReached = function() {
+            };
+            Game.prototype.requestNotifyTargetTimeReached = function() {
                 this._notifiesTargetTimeReached = !0;
-            }, Game.prototype.cancelNofityTargetTimeReached = function() {
+            };
+            Game.prototype.cancelNofityTargetTimeReached = function() {
                 this._notifiesTargetTimeReached = !1;
-            }, Game.prototype.fireAgePassedIfNeeded = function() {
+            };
+            Game.prototype.fireAgePassedIfNeeded = function() {
                 var age = this.age - 1;
-                return !!this._notifyPassedAgeTable[age] && (delete this._notifyPassedAgeTable[age], 
-                this.agePassedTrigger.fire(age), !0);
-            }, Game.prototype.setCurrentTimeFunc = function(fun) {
+                if (this._notifyPassedAgeTable[age]) {
+                    delete this._notifyPassedAgeTable[age];
+                    this.agePassedTrigger.fire(age);
+                    return !0;
+                }
+                return !1;
+            };
+            Game.prototype.setCurrentTimeFunc = function(fun) {
                 this._getCurrentTimeFunc = fun;
-            }, Game.prototype.setEventFilterFuncs = function(funcs) {
+            };
+            Game.prototype.setEventFilterFuncs = function(funcs) {
                 this._eventFilterFuncs = funcs;
-            }, Game.prototype.setStorageFunc = function(funcs) {
-                this.storage._registerLoad(funcs.storageGetFunc), this.storage._registerWrite(funcs.storagePutFunc), 
+            };
+            Game.prototype.setStorageFunc = function(funcs) {
+                this.storage._registerLoad(funcs.storageGetFunc);
+                this.storage._registerWrite(funcs.storagePutFunc);
                 this.storage.requestValuesForJoinPlayer = funcs.requestValuesForJoinFunc;
-            }, Game.prototype.getIsSkipAware = function() {
+            };
+            Game.prototype.getIsSkipAware = function() {
                 return this._isSkipAware;
-            }, Game.prototype.setIsSkipAware = function(aware) {
+            };
+            Game.prototype.setIsSkipAware = function(aware) {
                 this._isSkipAware = aware;
-            }, Game.prototype.getCurrentTime = function() {
+            };
+            Game.prototype.getCurrentTime = function() {
                 return this._getCurrentTimeFunc();
-            }, Game.prototype.raiseEvent = function(event) {
+            };
+            Game.prototype.raiseEvent = function(event) {
                 this.raiseEventTrigger.fire(event);
-            }, Game.prototype.raiseTick = function(events) {
+            };
+            Game.prototype.raiseTick = function(events) {
                 if (!this.scene() || this.scene().tickGenerationMode !== g.TickGenerationMode.Manual) throw g.ExceptionFactory.createAssertionError("Game#raiseTick(): tickGenerationMode for the current scene is not Manual.");
                 this.raiseTickTrigger.fire(events);
-            }, Game.prototype.addEventFilter = function(filter, handleEmpty) {
+            };
+            Game.prototype.addEventFilter = function(filter, handleEmpty) {
                 this._eventFilterFuncs.addFilter(filter, handleEmpty);
-            }, Game.prototype.removeEventFilter = function(filter) {
+            };
+            Game.prototype.removeEventFilter = function(filter) {
                 this._eventFilterFuncs.removeFilter(filter);
-            }, Game.prototype.shouldSaveSnapshot = function() {
+            };
+            Game.prototype.shouldSaveSnapshot = function() {
                 return this.isSnapshotSaver;
-            }, Game.prototype.saveSnapshot = function(gameSnapshot, timestamp) {
-                void 0 === timestamp && (timestamp = this._getCurrentTimeFunc()), this.shouldSaveSnapshot() && this.snapshotTrigger.fire({
+            };
+            Game.prototype.saveSnapshot = function(gameSnapshot, timestamp) {
+                void 0 === timestamp && (timestamp = this._getCurrentTimeFunc());
+                this.shouldSaveSnapshot() && this.snapshotTrigger.fire({
                     frame: this.age,
                     timestamp: timestamp,
                     data: {
@@ -428,22 +584,41 @@ require = function() {
                         gameSnapshot: gameSnapshot
                     }
                 });
-            }, Game.prototype._destroy = function() {
-                this.agePassedTrigger.destroy(), this.agePassedTrigger = null, this.targetTimeReachedTrigger.destroy(), 
-                this.targetTimeReachedTrigger = null, this.skippingChangedTrigger.destroy(), this.skippingChangedTrigger = null, 
-                this.abortTrigger.destroy(), this.abortTrigger = null, this.player = null, this.raiseEventTrigger.destroy(), 
-                this.raiseEventTrigger = null, this.raiseTickTrigger.destroy(), this.raiseTickTrigger = null, 
-                this.snapshotTrigger.destroy(), this.snapshotTrigger = null, this.isSnapshotSaver = !1, 
-                this._getCurrentTimeFunc = null, this._eventFilterFuncs = null, this._notifyPassedAgeTable = null, 
-                this._gameArgs = null, this._globalGameArgs = null, _super.prototype._destroy.call(this);
-            }, Game.prototype._restartWithSnapshot = function(snapshot) {
+            };
+            Game.prototype._destroy = function() {
+                this.agePassedTrigger.destroy();
+                this.agePassedTrigger = null;
+                this.targetTimeReachedTrigger.destroy();
+                this.targetTimeReachedTrigger = null;
+                this.skippingChangedTrigger.destroy();
+                this.skippingChangedTrigger = null;
+                this.abortTrigger.destroy();
+                this.abortTrigger = null;
+                this.player = null;
+                this.raiseEventTrigger.destroy();
+                this.raiseEventTrigger = null;
+                this.raiseTickTrigger.destroy();
+                this.raiseTickTrigger = null;
+                this.snapshotTrigger.destroy();
+                this.snapshotTrigger = null;
+                this.isSnapshotSaver = !1;
+                this._getCurrentTimeFunc = null;
+                this._eventFilterFuncs = null;
+                this._notifyPassedAgeTable = null;
+                this._gameArgs = null;
+                this._globalGameArgs = null;
+                _super.prototype._destroy.call(this);
+            };
+            Game.prototype._restartWithSnapshot = function(snapshot) {
                 var data = snapshot.data;
-                if (this._eventFilterFuncs.removeFilter(), null != data.seed) {
+                this._eventFilterFuncs.removeFilter();
+                if (null != data.seed) {
                     var randGen = new g.XorshiftRandomGenerator(data.seed);
                     this._reset({
                         age: snapshot.frame,
                         randGen: randGen
-                    }), this._loadAndStart({
+                    });
+                    this._loadAndStart({
                         args: this._gameArgs,
                         globalArgs: this._globalGameArgs
                     });
@@ -452,17 +627,26 @@ require = function() {
                     this._reset({
                         age: snapshot.frame,
                         randGen: randGen
-                    }), this._loadAndStart({
+                    });
+                    this._loadAndStart({
                         snapshot: data.gameSnapshot
                     });
                 }
-            }, Game.prototype._leaveGame = function() {}, Game.prototype._terminateGame = function() {
+            };
+            Game.prototype._leaveGame = function() {};
+            Game.prototype._terminateGame = function() {
                 this.abortTrigger.fire();
-            }, Game.prototype._onRawTargetTimeReached = function(targetTime) {
-                this._notifiesTargetTimeReached && (this._notifiesTargetTimeReached = !1, this.targetTimeReachedTrigger.fire(targetTime));
-            }, Game.prototype._onSkippingChanged = function(skipping) {
+            };
+            Game.prototype._onRawTargetTimeReached = function(targetTime) {
+                if (this._notifiesTargetTimeReached) {
+                    this._notifiesTargetTimeReached = !1;
+                    this.targetTimeReachedTrigger.fire(targetTime);
+                }
+            };
+            Game.prototype._onSkippingChanged = function(skipping) {
                 this._isSkipAware && this.skippingChanged.fire(skipping);
-            }, Game;
+            };
+            return Game;
         }(g.Game);
         exports.Game = Game;
     }, {
@@ -475,64 +659,98 @@ require = function() {
         });
         var es6_promise_1 = require("es6-promise"), g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), Game_1 = require("./Game"), EventBuffer_1 = require("./EventBuffer"), GameLoop_1 = require("./GameLoop"), PdiUtil_1 = require("./PdiUtil"), GameDriver = function() {
             function GameDriver(param) {
-                this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner), 
-                this.configurationLoadedTrigger = new g.Trigger(), this.gameCreatedTrigger = new g.Trigger(), 
-                this._platform = param.platform, this._loadConfigurationFunc = PdiUtil_1.PdiUtil.makeLoadConfigurationFunc(param.platform), 
-                this._player = param.player, this._rendererRequirement = null, this._playId = null, 
-                this._game = null, this._gameLoop = null, this._eventBuffer = null, this._openedAmflow = !1, 
-                this._playToken = null, this._permission = null, this._hidden = !1;
+                this.errorTrigger = new g.Trigger();
+                param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
+                this.configurationLoadedTrigger = new g.Trigger();
+                this.gameCreatedTrigger = new g.Trigger();
+                this._platform = param.platform;
+                this._loadConfigurationFunc = PdiUtil_1.PdiUtil.makeLoadConfigurationFunc(param.platform);
+                this._player = param.player;
+                this._rendererRequirement = null;
+                this._playId = null;
+                this._game = null;
+                this._gameLoop = null;
+                this._eventBuffer = null;
+                this._openedAmflow = !1;
+                this._playToken = null;
+                this._permission = null;
+                this._hidden = !1;
             }
-            return GameDriver.prototype.initialize = function(param, callback) {
+            GameDriver.prototype.initialize = function(param, callback) {
                 this.doInitialize(param).then(function() {
                     callback();
                 }, callback);
-            }, GameDriver.prototype.changeState = function(param, callback) {
+            };
+            GameDriver.prototype.changeState = function(param, callback) {
                 var _this = this, pausing = this._gameLoop && this._gameLoop.running;
-                pausing && this._gameLoop.stop(), this.initialize(param, function(err) {
-                    return err ? void callback(err) : (pausing && _this._gameLoop.start(), void callback());
+                pausing && this._gameLoop.stop();
+                this.initialize(param, function(err) {
+                    if (err) callback(err); else {
+                        pausing && _this._gameLoop.start();
+                        callback();
+                    }
                 });
-            }, GameDriver.prototype.startGame = function() {
-                return this._gameLoop ? void this._gameLoop.start() : void this.errorTrigger.fire(new Error("Not initialized"));
-            }, GameDriver.prototype.stopGame = function() {
+            };
+            GameDriver.prototype.startGame = function() {
+                this._gameLoop ? this._gameLoop.start() : this.errorTrigger.fire(new Error("Not initialized"));
+            };
+            GameDriver.prototype.stopGame = function() {
                 this._gameLoop && this._gameLoop.stop();
-            }, GameDriver.prototype.setNextAge = function(age) {
+            };
+            GameDriver.prototype.setNextAge = function(age) {
                 this._gameLoop.setNextAge(age);
-            }, GameDriver.prototype.getPermission = function() {
+            };
+            GameDriver.prototype.getPermission = function() {
                 return this._permission;
-            }, GameDriver.prototype.getDriverConfiguration = function() {
+            };
+            GameDriver.prototype.getDriverConfiguration = function() {
                 return {
                     playId: this._playId,
                     playToken: this._playToken,
                     executionMode: this._gameLoop ? this._gameLoop.getExecutionMode() : void 0,
                     eventBufferMode: this._eventBuffer ? this._eventBuffer.getMode() : void 0
                 };
-            }, GameDriver.prototype.getLoopConfiguration = function() {
+            };
+            GameDriver.prototype.getLoopConfiguration = function() {
                 return this._gameLoop ? this._gameLoop.getLoopConfiguration() : null;
-            }, GameDriver.prototype.getHidden = function() {
+            };
+            GameDriver.prototype.getHidden = function() {
                 return this._hidden;
-            }, GameDriver.prototype.resetPrimarySurface = function(width, height, rendererCandidates) {
+            };
+            GameDriver.prototype.resetPrimarySurface = function(width, height, rendererCandidates) {
                 rendererCandidates = rendererCandidates ? rendererCandidates : this._rendererRequirement ? this._rendererRequirement.rendererCandidates : null;
                 var game = this._game, pf = this._platform, primarySurface = pf.getPrimarySurface();
                 game.renderers = game.renderers.filter(function(renderer) {
                     return renderer !== primarySurface.renderer();
-                }), pf.setRendererRequirement({
+                });
+                pf.setRendererRequirement({
                     primarySurfaceWidth: width,
                     primarySurfaceHeight: height,
                     rendererCandidates: rendererCandidates
-                }), this._rendererRequirement = {
+                });
+                this._rendererRequirement = {
                     primarySurfaceWidth: width,
                     primarySurfaceHeight: height,
                     rendererCandidates: rendererCandidates
-                }, game.renderers.push(pf.getPrimarySurface().renderer()), game.width = width, game.height = height, 
+                };
+                game.renderers.push(pf.getPrimarySurface().renderer());
+                game.width = width;
+                game.height = height;
                 game.resized.fire({
                     width: width,
                     height: height
-                }), game.modified = !0;
-            }, GameDriver.prototype.doInitialize = function(param) {
+                });
+                game.modified = !0;
+            };
+            GameDriver.prototype.doInitialize = function(param) {
                 var _this = this, p = new es6_promise_1.Promise(function(resolve, reject) {
-                    return _this._gameLoop && _this._gameLoop.running ? reject(new Error("Game is running. Must be stopped.")) : (_this._gameLoop && param.loopConfiguration && _this._gameLoop.setLoopConfiguration(param.loopConfiguration), 
-                    null != param.hidden && (_this._hidden = param.hidden, _this._game && _this._game._setMuted(param.hidden)), 
-                    void resolve());
+                    if (_this._gameLoop && _this._gameLoop.running) return reject(new Error("Game is running. Must be stopped."));
+                    _this._gameLoop && param.loopConfiguration && _this._gameLoop.setLoopConfiguration(param.loopConfiguration);
+                    if (null != param.hidden) {
+                        _this._hidden = param.hidden;
+                        _this._game && _this._game._setMuted(param.hidden);
+                    }
+                    resolve();
                 }).then(function() {
                     return _this._doSetDriverConfiguration(param.driverConfiguration);
                 });
@@ -541,21 +759,41 @@ require = function() {
                 }).then(function(conf) {
                     return _this._createGame(conf, _this._player, param);
                 }) : p;
-            }, GameDriver.prototype.destroy = function() {
+            };
+            GameDriver.prototype.destroy = function() {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
-                    _this.stopGame(), _this._game && (_this._game._destroy(), _this._game = null), _this.errorTrigger.destroy(), 
-                    _this.errorTrigger = null, _this.configurationLoadedTrigger.destroy(), _this.configurationLoadedTrigger = null, 
-                    _this.gameCreatedTrigger.destroy(), _this.gameCreatedTrigger = null, _this._platform.setRendererRequirement(void 0), 
-                    _this._platform = null, _this._loadConfigurationFunc = null, _this._player = null, 
-                    _this._rendererRequirement = null, _this._playId = null, _this._gameLoop = null, 
-                    _this._eventBuffer = null, _this._openedAmflow = !1, _this._playToken = null, _this._permission = null, 
-                    _this._hidden = !1, resolve();
+                    _this.stopGame();
+                    if (_this._game) {
+                        _this._game._destroy();
+                        _this._game = null;
+                    }
+                    _this.errorTrigger.destroy();
+                    _this.errorTrigger = null;
+                    _this.configurationLoadedTrigger.destroy();
+                    _this.configurationLoadedTrigger = null;
+                    _this.gameCreatedTrigger.destroy();
+                    _this.gameCreatedTrigger = null;
+                    _this._platform.setRendererRequirement(void 0);
+                    _this._platform = null;
+                    _this._loadConfigurationFunc = null;
+                    _this._player = null;
+                    _this._rendererRequirement = null;
+                    _this._playId = null;
+                    _this._gameLoop = null;
+                    _this._eventBuffer = null;
+                    _this._openedAmflow = !1;
+                    _this._playToken = null;
+                    _this._permission = null;
+                    _this._hidden = !1;
+                    resolve();
                 });
-            }, GameDriver.prototype._doSetDriverConfiguration = function(dconf) {
+            };
+            GameDriver.prototype._doSetDriverConfiguration = function(dconf) {
                 var _this = this;
                 if (null == dconf) return es6_promise_1.Promise.resolve();
-                void 0 === dconf.playId && (dconf.playId = this._playId), void 0 === dconf.playToken && (dconf.playToken = this._playToken), 
+                void 0 === dconf.playId && (dconf.playId = this._playId);
+                void 0 === dconf.playToken && (dconf.playToken = this._playToken);
                 void 0 === dconf.eventBufferMode && (dconf.executionMode === ExecutionMode_1.default.Active ? dconf.eventBufferMode = {
                     isReceiver: !0,
                     isSender: !1
@@ -564,52 +802,74 @@ require = function() {
                     isSender: !0
                 }));
                 var p = es6_promise_1.Promise.resolve();
-                return this._playId !== dconf.playId && (p = p.then(function() {
+                this._playId !== dconf.playId && (p = p.then(function() {
                     return _this._doOpenAmflow(dconf.playId);
-                })), this._playToken !== dconf.playToken && (p = p.then(function() {
+                }));
+                this._playToken !== dconf.playToken && (p = p.then(function() {
                     return _this._doAuthenticate(dconf.playToken);
-                })), p.then(function() {
+                }));
+                return p.then(function() {
                     return new es6_promise_1.Promise(function(resolve, reject) {
-                        null != dconf.eventBufferMode && (null == dconf.eventBufferMode.defaultEventPriority && (dconf.eventBufferMode.defaultEventPriority = _this._permission.maxEventPriority), 
-                        _this._eventBuffer && _this._eventBuffer.setMode(dconf.eventBufferMode)), null != dconf.executionMode && _this._gameLoop && _this._gameLoop.setExecutionMode(dconf.executionMode), 
+                        if (null != dconf.eventBufferMode) {
+                            null == dconf.eventBufferMode.defaultEventPriority && (dconf.eventBufferMode.defaultEventPriority = _this._permission.maxEventPriority);
+                            _this._eventBuffer && _this._eventBuffer.setMode(dconf.eventBufferMode);
+                        }
+                        null != dconf.executionMode && _this._gameLoop && _this._gameLoop.setExecutionMode(dconf.executionMode);
                         resolve();
                     });
                 });
-            }, GameDriver.prototype._doCloseAmflow = function() {
+            };
+            GameDriver.prototype._doCloseAmflow = function() {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
-                    return _this._openedAmflow ? void _this._platform.amflow.close(function(err) {
-                        return _this._openedAmflow = !1, err ? reject(err) : void resolve();
-                    }) : resolve();
+                    if (!_this._openedAmflow) return resolve();
+                    _this._platform.amflow.close(function(err) {
+                        _this._openedAmflow = !1;
+                        if (err) return reject(err);
+                        resolve();
+                    });
                 });
-            }, GameDriver.prototype._doOpenAmflow = function(playId) {
+            };
+            GameDriver.prototype._doOpenAmflow = function(playId) {
                 var _this = this;
                 if (void 0 === playId) return es6_promise_1.Promise.resolve();
                 var p = this._doCloseAmflow();
                 return p.then(function() {
                     return new es6_promise_1.Promise(function(resolve, reject) {
-                        return null === playId ? resolve() : void _this._platform.amflow.open(playId, function(err) {
-                            return err ? reject(err) : (_this._openedAmflow = !0, _this._playId = playId, _this._game && _this._updateGamePlayId(_this._game), 
-                            void resolve());
+                        if (null === playId) return resolve();
+                        _this._platform.amflow.open(playId, function(err) {
+                            if (err) return reject(err);
+                            _this._openedAmflow = !0;
+                            _this._playId = playId;
+                            _this._game && _this._updateGamePlayId(_this._game);
+                            resolve();
                         });
                     });
                 });
-            }, GameDriver.prototype._doAuthenticate = function(playToken) {
+            };
+            GameDriver.prototype._doAuthenticate = function(playToken) {
                 var _this = this;
                 return null == playToken ? es6_promise_1.Promise.resolve() : new es6_promise_1.Promise(function(resolve, reject) {
                     _this._platform.amflow.authenticate(playToken, function(err, permission) {
-                        return err ? reject(err) : (_this._playToken = playToken, _this._permission = permission, 
-                        _this._game && (_this._game.isSnapshotSaver = _this._permission.writeTick), void resolve());
+                        if (err) return reject(err);
+                        _this._playToken = playToken;
+                        _this._permission = permission;
+                        _this._game && (_this._game.isSnapshotSaver = _this._permission.writeTick);
+                        resolve();
                     });
                 });
-            }, GameDriver.prototype._loadConfiguration = function(configurationUrl, basePath) {
+            };
+            GameDriver.prototype._loadConfiguration = function(configurationUrl, basePath) {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
                     _this._loadConfigurationFunc(configurationUrl, basePath, function(err, conf) {
-                        return err ? reject(err) : (_this.configurationLoadedTrigger.fire(conf), void resolve(conf));
+                        if (err) return reject(err);
+                        _this.configurationLoadedTrigger.fire(conf);
+                        resolve(conf);
                     });
                 });
-            }, GameDriver.prototype._putZerothStartPoint = function(data) {
+            };
+            GameDriver.prototype._putZerothStartPoint = function(data) {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
                     var zerothStartPoint = {
@@ -618,10 +878,12 @@ require = function() {
                         data: data
                     };
                     _this._platform.amflow.putStartPoint(zerothStartPoint, function(err) {
-                        return err ? reject(err) : void resolve();
+                        if (err) return reject(err);
+                        resolve();
                     });
                 });
-            }, GameDriver.prototype._getZerothStartPointData = function() {
+            };
+            GameDriver.prototype._getZerothStartPointData = function() {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
                     _this._platform.amflow.getStartPoint({
@@ -629,19 +891,23 @@ require = function() {
                     }, function(err, startPoint) {
                         if (err) return reject(err);
                         var data = startPoint.data;
-                        return "number" != typeof data.seed ? reject(new Error("GameDriver#_getRandomSeed: No seed found.")) : void resolve(data);
+                        if ("number" != typeof data.seed) return reject(new Error("GameDriver#_getRandomSeed: No seed found."));
+                        resolve(data);
                     });
                 });
-            }, GameDriver.prototype._createGame = function(conf, player, param) {
+            };
+            GameDriver.prototype._createGame = function(conf, player, param) {
                 var p, _this = this, putSeed = param.driverConfiguration.executionMode === ExecutionMode_1.default.Active && this._permission.writeTick;
-                return p = putSeed ? this._putZerothStartPoint({
+                p = putSeed ? this._putZerothStartPoint({
                     seed: Date.now(),
                     globalArgs: param.globalGameArgs,
                     fps: conf.fps,
                     startedAt: Date.now()
-                }) : es6_promise_1.Promise.resolve(), p = p.then(function() {
+                }) : es6_promise_1.Promise.resolve();
+                p = p.then(function() {
                     return _this._getZerothStartPointData();
-                }), p.then(function(zerothData) {
+                });
+                return p.then(function(zerothData) {
                     var pf = _this._platform, driverConf = param.driverConfiguration || {
                         eventBufferMode: {
                             isReceiver: !0,
@@ -667,11 +933,13 @@ require = function() {
                         game: game,
                         amflow: pf.amflow
                     });
-                    eventBuffer.setMode(driverConf.eventBufferMode), pf.setPlatformEventHandler(eventBuffer), 
+                    eventBuffer.setMode(driverConf.eventBufferMode);
+                    pf.setPlatformEventHandler(eventBuffer);
                     game.setEventFilterFuncs({
                         addFilter: eventBuffer.addFilter.bind(eventBuffer),
                         removeFilter: eventBuffer.removeFilter.bind(eventBuffer)
-                    }), game.renderers.push(pf.getPrimarySurface().renderer());
+                    });
+                    game.renderers.push(pf.getPrimarySurface().renderer());
                     var gameLoop = new GameLoop_1.GameLoop({
                         game: game,
                         amflow: pf.amflow,
@@ -682,26 +950,37 @@ require = function() {
                         startedAt: startedAt,
                         profiler: param.profiler
                     });
-                    gameLoop.rawTargetTimeReachedTrigger.add(game._onRawTargetTimeReached, game), game.setCurrentTimeFunc(gameLoop.getCurrentTime.bind(gameLoop)), 
+                    gameLoop.rawTargetTimeReachedTrigger.add(game._onRawTargetTimeReached, game);
+                    game.setCurrentTimeFunc(gameLoop.getCurrentTime.bind(gameLoop));
                     game._reset({
                         age: 0,
                         randGen: new g.XorshiftRandomGenerator(seed)
-                    }), _this._updateGamePlayId(game), _this._hidden && game._setMuted(!0), game.snapshotTrigger.add(function(startPoint) {
+                    });
+                    _this._updateGamePlayId(game);
+                    _this._hidden && game._setMuted(!0);
+                    game.snapshotTrigger.add(function(startPoint) {
                         _this._platform.amflow.putStartPoint(startPoint, function(err) {
                             err && _this.errorTrigger.fire(err);
                         });
-                    }), _this._game = game, _this._eventBuffer = eventBuffer, _this._gameLoop = gameLoop, 
-                    _this._rendererRequirement = rendererRequirement, _this.gameCreatedTrigger.fire(game), 
+                    });
+                    _this._game = game;
+                    _this._eventBuffer = eventBuffer;
+                    _this._gameLoop = gameLoop;
+                    _this._rendererRequirement = rendererRequirement;
+                    _this.gameCreatedTrigger.fire(game);
                     _this._game._loadAndStart({
                         args: param.gameArgs || void 0
                     });
                 });
-            }, GameDriver.prototype._updateGamePlayId = function(game) {
+            };
+            GameDriver.prototype._updateGamePlayId = function(game) {
                 var _this = this;
-                game.playId = this._playId, game.external.send = function(data) {
+                game.playId = this._playId;
+                game.external.send = function(data) {
                     _this._platform.sendToExternal(_this._playId, data);
                 };
-            }, GameDriver;
+            };
+            return GameDriver;
         }();
         exports.GameDriver = GameDriver;
     }, {
@@ -720,26 +999,42 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), constants = require("./constants"), LoopMode_1 = require("./LoopMode"), LoopRenderMode_1 = require("./LoopRenderMode"), ExecutionMode_1 = require("./ExecutionMode"), Clock_1 = require("./Clock"), ProfilerClock_1 = require("./ProfilerClock"), EventConverter_1 = require("./EventConverter"), TickController_1 = require("./TickController"), GameLoop = function() {
             function GameLoop(param) {
-                this.errorTrigger = new g.Trigger(), this.rawTargetTimeReachedTrigger = new g.Trigger(), 
-                this.running = !1, this._currentTime = param.startedAt, this._frameTime = 1e3 / param.game.fps, 
+                this.errorTrigger = new g.Trigger();
+                this.rawTargetTimeReachedTrigger = new g.Trigger();
+                this.running = !1;
+                this._currentTime = param.startedAt;
+                this._frameTime = 1e3 / param.game.fps;
                 param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
                 var conf = param.configuration;
-                this._startedAt = param.startedAt, this._targetTimeFunc = conf.targetTimeFunc || null, 
-                this._targetTimeOffset = conf.targetTimeOffset || null, this._originDate = conf.originDate || null, 
-                this._realTargetTimeOffset = null != this._originDate ? this._originDate : (this._targetTimeOffset || 0) + this._startedAt, 
-                this._delayIgnoreThreshold = conf.delayIgnoreThreshold || constants.DEFAULT_DELAY_IGNORE_THRESHOLD, 
-                this._skipTicksAtOnce = conf.skipTicksAtOnce || constants.DEFAULT_SKIP_TICKS_AT_ONCE, 
-                this._skipThreshold = conf.skipThreshold || constants.DEFAULT_SKIP_THRESHOLD, this._jumpTryThreshold = conf.jumpTryThreshold || constants.DEFAULT_JUMP_TRY_THRESHOLD, 
-                this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold || constants.DEFAULT_JUMP_IGNORE_THRESHOLD, 
-                this._pollingTickThreshold = conf._pollingTickThreshold || constants.DEFAULT_POLLING_TICK_THRESHOLD, 
+                this._startedAt = param.startedAt;
+                this._targetTimeFunc = conf.targetTimeFunc || null;
+                this._targetTimeOffset = conf.targetTimeOffset || null;
+                this._originDate = conf.originDate || null;
+                this._realTargetTimeOffset = null != this._originDate ? this._originDate : (this._targetTimeOffset || 0) + this._startedAt;
+                this._delayIgnoreThreshold = conf.delayIgnoreThreshold || constants.DEFAULT_DELAY_IGNORE_THRESHOLD;
+                this._skipTicksAtOnce = conf.skipTicksAtOnce || constants.DEFAULT_SKIP_TICKS_AT_ONCE;
+                this._skipThreshold = conf.skipThreshold || constants.DEFAULT_SKIP_THRESHOLD;
+                this._jumpTryThreshold = conf.jumpTryThreshold || constants.DEFAULT_JUMP_TRY_THRESHOLD;
+                this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold || constants.DEFAULT_JUMP_IGNORE_THRESHOLD;
+                this._pollingTickThreshold = conf._pollingTickThreshold || constants.DEFAULT_POLLING_TICK_THRESHOLD;
                 this._playbackRate = conf.playbackRate || 1;
                 var loopRenderMode = null != conf.loopRenderMode ? conf.loopRenderMode : LoopRenderMode_1.default.AfterRawFrame;
-                this._loopRenderMode = null, this._omitInterpolatedTickOnReplay = !!conf.omitInterpolatedTickOnReplay, 
-                this._loopMode = conf.loopMode, this._amflow = param.amflow, this._game = param.game, 
-                this._eventBuffer = param.eventBuffer, this._executionMode = param.executionMode, 
-                this._sceneTickMode = null, this._sceneLocalMode = null, this._targetAge = null != conf.targetAge ? conf.targetAge : null, 
-                this._waitingStartPoint = !1, this._lastRequestedStartPointAge = -1, this._lastRequestedStartPointTime = -1, 
-                this._waitingNextTick = !1, this._skipping = !1, this._lastPollingTickTime = 0, 
+                this._loopRenderMode = null;
+                this._omitInterpolatedTickOnReplay = !!conf.omitInterpolatedTickOnReplay;
+                this._loopMode = conf.loopMode;
+                this._amflow = param.amflow;
+                this._game = param.game;
+                this._eventBuffer = param.eventBuffer;
+                this._executionMode = param.executionMode;
+                this._sceneTickMode = null;
+                this._sceneLocalMode = null;
+                this._targetAge = null != conf.targetAge ? conf.targetAge : null;
+                this._waitingStartPoint = !1;
+                this._lastRequestedStartPointAge = -1;
+                this._lastRequestedStartPointTime = -1;
+                this._waitingNextTick = !1;
+                this._skipping = !1;
+                this._lastPollingTickTime = 0;
                 param.profiler ? this._clock = new ProfilerClock_1.ProfilerClock({
                     fps: param.game.fps,
                     scaleFactor: this._playbackRate,
@@ -751,7 +1046,8 @@ require = function() {
                     scaleFactor: this._playbackRate,
                     platform: param.platform,
                     maxFramePerOnce: 5
-                }), this._tickController = new TickController_1.TickController({
+                });
+                this._tickController = new TickController_1.TickController({
                     amflow: param.amflow,
                     clock: this._clock,
                     game: param.game,
@@ -760,27 +1056,43 @@ require = function() {
                     startedAt: param.startedAt,
                     errorHandler: this.errorTrigger.fire,
                     errorHandlerOwner: this.errorTrigger
-                }), this._eventConverter = new EventConverter_1.EventConverter({
+                });
+                this._eventConverter = new EventConverter_1.EventConverter({
                     game: param.game
-                }), this._tickBuffer = this._tickController.getBuffer(), this._onGotStartPoint_bound = this._onGotStartPoint.bind(this), 
-                this._setLoopRenderMode(loopRenderMode), this._game.setIsSkipAware(null == conf.skipAwareGame || conf.skipAwareGame), 
-                this._game.setStorageFunc(this._tickController.storageFunc()), this._game.raiseEventTrigger.add(this._onGameRaiseEvent, this), 
-                this._game.raiseTickTrigger.add(this._onGameRaiseTick, this), this._game._started.add(this._onGameStarted, this), 
-                this._game._operationPluginOperated.add(this._onGameOperationPluginOperated, this), 
-                this._tickBuffer.gotNextTickTrigger.add(this._onGotNextFrameTick, this), this._tickBuffer.start(), 
-                this._updateGamePlaybackRate(), this._handleSceneChange();
+                });
+                this._tickBuffer = this._tickController.getBuffer();
+                this._onGotStartPoint_bound = this._onGotStartPoint.bind(this);
+                this._setLoopRenderMode(loopRenderMode);
+                this._game.setIsSkipAware(null == conf.skipAwareGame || conf.skipAwareGame);
+                this._game.setStorageFunc(this._tickController.storageFunc());
+                this._game.raiseEventTrigger.add(this._onGameRaiseEvent, this);
+                this._game.raiseTickTrigger.add(this._onGameRaiseTick, this);
+                this._game._started.add(this._onGameStarted, this);
+                this._game._operationPluginOperated.add(this._onGameOperationPluginOperated, this);
+                this._tickBuffer.gotNextTickTrigger.add(this._onGotNextFrameTick, this);
+                this._tickBuffer.start();
+                this._updateGamePlaybackRate();
+                this._handleSceneChange();
             }
-            return GameLoop.prototype.start = function() {
-                this.running = !0, this._clock.start();
-            }, GameLoop.prototype.stop = function() {
-                this._clock.stop(), this.running = !1;
-            }, GameLoop.prototype.setNextAge = function(age) {
+            GameLoop.prototype.start = function() {
+                this.running = !0;
+                this._clock.start();
+            };
+            GameLoop.prototype.stop = function() {
+                this._clock.stop();
+                this.running = !1;
+            };
+            GameLoop.prototype.setNextAge = function(age) {
                 this._tickController.setNextAge(age);
-            }, GameLoop.prototype.getExecutionMode = function() {
+            };
+            GameLoop.prototype.getExecutionMode = function() {
                 return this._executionMode;
-            }, GameLoop.prototype.setExecutionMode = function(execMode) {
-                this._executionMode = execMode, this._tickController.setExecutionMode(execMode);
-            }, GameLoop.prototype.getLoopConfiguration = function() {
+            };
+            GameLoop.prototype.setExecutionMode = function(execMode) {
+                this._executionMode = execMode;
+                this._tickController.setExecutionMode(execMode);
+            };
+            GameLoop.prototype.getLoopConfiguration = function() {
                 return {
                     loopMode: this._loopMode,
                     delayIgnoreThreshold: this._delayIgnoreThreshold,
@@ -797,218 +1109,316 @@ require = function() {
                     omitInterpolatedTickOnReplay: this._omitInterpolatedTickOnReplay,
                     targetAge: this._targetAge
                 };
-            }, GameLoop.prototype.setLoopConfiguration = function(conf) {
-                null != conf.loopMode && (this._loopMode = conf.loopMode), null != conf.delayIgnoreThreshold && (this._delayIgnoreThreshold = conf.delayIgnoreThreshold), 
-                null != conf.skipTicksAtOnce && (this._skipTicksAtOnce = conf.skipTicksAtOnce), 
-                null != conf.skipThreshold && (this._skipThreshold = conf.skipThreshold), null != conf.skipAwareGame && this._game.setIsSkipAware(conf.skipAwareGame), 
-                null != conf.jumpTryThreshold && (this._jumpTryThreshold = conf.jumpTryThreshold), 
-                null != conf.jumpIgnoreThreshold && (this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold), 
-                null != conf.playbackRate && (this._playbackRate = conf.playbackRate, this._clock.changeScaleFactor(this._playbackRate), 
-                this._updateGamePlaybackRate()), null != conf.loopRenderMode && this._setLoopRenderMode(conf.loopRenderMode), 
-                null != conf.targetTimeFunc && (this._targetTimeFunc = conf.targetTimeFunc), null != conf.targetTimeOffset && (this._targetTimeOffset = conf.targetTimeOffset), 
-                null != conf.originDate && (this._originDate = conf.originDate), this._realTargetTimeOffset = null != this._originDate ? this._originDate : (this._targetTimeOffset || 0) + this._startedAt, 
-                null != conf.omitInterpolatedTickOnReplay && (this._omitInterpolatedTickOnReplay = conf.omitInterpolatedTickOnReplay), 
-                null != conf.targetAge && (this._targetAge !== conf.targetAge && (this._waitingNextTick = !1), 
-                this._targetAge = conf.targetAge);
-            }, GameLoop.prototype.addTickList = function(tickList) {
+            };
+            GameLoop.prototype.setLoopConfiguration = function(conf) {
+                null != conf.loopMode && (this._loopMode = conf.loopMode);
+                null != conf.delayIgnoreThreshold && (this._delayIgnoreThreshold = conf.delayIgnoreThreshold);
+                null != conf.skipTicksAtOnce && (this._skipTicksAtOnce = conf.skipTicksAtOnce);
+                null != conf.skipThreshold && (this._skipThreshold = conf.skipThreshold);
+                null != conf.skipAwareGame && this._game.setIsSkipAware(conf.skipAwareGame);
+                null != conf.jumpTryThreshold && (this._jumpTryThreshold = conf.jumpTryThreshold);
+                null != conf.jumpIgnoreThreshold && (this._jumpIgnoreThreshold = conf.jumpIgnoreThreshold);
+                if (null != conf.playbackRate) {
+                    this._playbackRate = conf.playbackRate;
+                    this._clock.changeScaleFactor(this._playbackRate);
+                    this._updateGamePlaybackRate();
+                }
+                null != conf.loopRenderMode && this._setLoopRenderMode(conf.loopRenderMode);
+                null != conf.targetTimeFunc && (this._targetTimeFunc = conf.targetTimeFunc);
+                null != conf.targetTimeOffset && (this._targetTimeOffset = conf.targetTimeOffset);
+                null != conf.originDate && (this._originDate = conf.originDate);
+                this._realTargetTimeOffset = null != this._originDate ? this._originDate : (this._targetTimeOffset || 0) + this._startedAt;
+                null != conf.omitInterpolatedTickOnReplay && (this._omitInterpolatedTickOnReplay = conf.omitInterpolatedTickOnReplay);
+                if (null != conf.targetAge) {
+                    this._targetAge !== conf.targetAge && (this._waitingNextTick = !1);
+                    this._targetAge = conf.targetAge;
+                }
+            };
+            GameLoop.prototype.addTickList = function(tickList) {
                 this._tickBuffer.addTickList(tickList);
-            }, GameLoop.prototype.getCurrentTime = function() {
+            };
+            GameLoop.prototype.getCurrentTime = function() {
                 return this._currentTime;
-            }, GameLoop.prototype._startSkipping = function() {
-                this._skipping = !0, this._updateGamePlaybackRate(), this._game.skippingChangedTrigger.fire(!0);
-            }, GameLoop.prototype._stopSkipping = function() {
-                this._skipping = !1, this._updateGamePlaybackRate(), this._game.skippingChangedTrigger.fire(!1);
-            }, GameLoop.prototype._updateGamePlaybackRate = function() {
+            };
+            GameLoop.prototype._startSkipping = function() {
+                this._skipping = !0;
+                this._updateGamePlaybackRate();
+                this._game.skippingChangedTrigger.fire(!0);
+            };
+            GameLoop.prototype._stopSkipping = function() {
+                this._skipping = !1;
+                this._updateGamePlaybackRate();
+                this._game.skippingChangedTrigger.fire(!1);
+            };
+            GameLoop.prototype._updateGamePlaybackRate = function() {
                 var realPlaybackRate = this._skipping ? this._playbackRate * this._skipTicksAtOnce : this._playbackRate;
                 this._game._setAudioPlaybackRate(realPlaybackRate);
-            }, GameLoop.prototype._handleSceneChange = function() {
+            };
+            GameLoop.prototype._handleSceneChange = function() {
                 var scene = this._game.scene(), localMode = scene ? scene.local : g.LocalTickMode.FullLocal, tickMode = scene ? scene.tickGenerationMode : g.TickGenerationMode.ByClock;
-                if (this._sceneLocalMode !== localMode || this._sceneTickMode !== tickMode) switch (this._sceneLocalMode = localMode, 
-                this._sceneTickMode = tickMode, localMode) {
-                  case g.LocalTickMode.FullLocal:
-                    this._tickController.stopTick(), this._clock.frameTrigger.remove(this._onFrame, this), 
-                    this._clock.frameTrigger.add(this._onLocalFrame, this);
-                    break;
+                if (this._sceneLocalMode !== localMode || this._sceneTickMode !== tickMode) {
+                    this._sceneLocalMode = localMode;
+                    this._sceneTickMode = tickMode;
+                    switch (localMode) {
+                      case g.LocalTickMode.FullLocal:
+                        this._tickController.stopTick();
+                        this._clock.frameTrigger.remove(this._onFrame, this);
+                        this._clock.frameTrigger.add(this._onLocalFrame, this);
+                        break;
 
-                  case g.LocalTickMode.NonLocal:
-                  case g.LocalTickMode.InterpolateLocal:
-                    tickMode === g.TickGenerationMode.ByClock ? this._tickController.startTick() : this._tickController.startTickOnce(), 
-                    this._clock.frameTrigger.remove(this._onLocalFrame, this), this._clock.frameTrigger.add(this._onFrame, this);
-                    break;
+                      case g.LocalTickMode.NonLocal:
+                      case g.LocalTickMode.InterpolateLocal:
+                        tickMode === g.TickGenerationMode.ByClock ? this._tickController.startTick() : this._tickController.startTickOnce();
+                        this._clock.frameTrigger.remove(this._onLocalFrame, this);
+                        this._clock.frameTrigger.add(this._onFrame, this);
+                        break;
 
-                  default:
-                    return void this.errorTrigger.fire(new Error("Unknown LocalTickMode: " + localMode));
+                      default:
+                        this.errorTrigger.fire(new Error("Unknown LocalTickMode: " + localMode));
+                        return;
+                    }
                 }
-            }, GameLoop.prototype._onLocalFrame = function() {
+            };
+            GameLoop.prototype._onLocalFrame = function() {
                 this._doLocalTick();
-            }, GameLoop.prototype._doLocalTick = function() {
+            };
+            GameLoop.prototype._doLocalTick = function() {
                 var game = this._game, pevs = this._eventBuffer.readLocalEvents();
-                if (this._currentTime += this._frameTime, pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
+                this._currentTime += this._frameTime;
+                if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
                 var sceneChanged = game.tick(!1);
                 sceneChanged && this._handleSceneChange();
-            }, GameLoop.prototype._onFrame = function(frameArg) {
+            };
+            GameLoop.prototype._onFrame = function(frameArg) {
                 if (this._loopMode === LoopMode_1.default.Replay && this._targetTimeFunc) {
                     var givenTargetTime = this._targetTimeFunc(), targetTime = givenTargetTime + this._realTargetTimeOffset, prevTime = this._currentTime;
-                    this._onFrameForTimedReplay(targetTime, frameArg), prevTime === this._currentTime && prevTime <= targetTime && targetTime <= prevTime + this._frameTime && this.rawTargetTimeReachedTrigger.fire(givenTargetTime);
+                    this._onFrameForTimedReplay(targetTime, frameArg);
+                    prevTime === this._currentTime && prevTime <= targetTime && targetTime <= prevTime + this._frameTime && this.rawTargetTimeReachedTrigger.fire(givenTargetTime);
                 } else this._onFrameNormal(frameArg);
-            }, GameLoop.prototype._onFrameForTimedReplay = function(targetTime, frameArg) {
+            };
+            GameLoop.prototype._onFrameForTimedReplay = function(targetTime, frameArg) {
                 var sceneChanged = !1, game = this._game, timeGap = targetTime - this._currentTime, frameGap = timeGap / this._frameTime;
-                if ((frameGap > this._jumpTryThreshold || frameGap < 0) && !this._waitingStartPoint && this._lastRequestedStartPointTime < this._currentTime && (this._waitingStartPoint = !0, 
-                this._lastRequestedStartPointTime = targetTime, this._amflow.getStartPoint({
-                    timestamp: targetTime
-                }, this._onGotStartPoint_bound)), frameGap <= 0) return void (this._skipping && this._stopSkipping());
-                !this._skipping && (frameGap > this._skipThreshold || 0 === this._tickBuffer.currentAge) && this._tickBuffer.hasNextTick() && this._startSkipping();
-                for (var consumedFrame = 0; consumedFrame < this._skipTicksAtOnce; ++consumedFrame) {
-                    if (!this._tickBuffer.hasNextTick()) {
-                        this._waitingNextTick || (this._tickBuffer.requestTicks(), this._startWaitingNextTick());
-                        break;
-                    }
-                    var nextFrameTime = this._currentTime + this._frameTime, nextTickTime = this._tickBuffer.readNextTickTime();
-                    if (null == nextTickTime && (nextTickTime = nextFrameTime), targetTime < nextFrameTime) {
-                        if (!(nextTickTime <= targetTime)) break;
-                        nextFrameTime = targetTime;
-                    } else if (nextFrameTime < nextTickTime) {
-                        if (!this._omitInterpolatedTickOnReplay || !this._skipping) {
-                            this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
-                            continue;
-                        }
-                        if (nextFrameTime = nextTickTime, targetTime <= nextFrameTime) {
-                            this._currentTime = Math.floor(targetTime / this._frameTime) * this._frameTime;
-                            break;
-                        }
-                    }
-                    this._currentTime = nextFrameTime;
-                    var tick = this._tickBuffer.consume(), consumedAge = -1, pevs = this._eventBuffer.readLocalEvents();
-                    if (pevs) for (var j = 0, len = pevs.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs[j]));
-                    if ("number" == typeof tick) consumedAge = tick, sceneChanged = game.tick(!0); else {
-                        consumedAge = tick[0];
-                        var pevs_1 = tick[1];
-                        if (pevs_1) for (var j = 0, len = pevs_1.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_1[j]));
-                        sceneChanged = game.tick(!0);
-                    }
-                    if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
-                        frameArg.interrupt = !0;
-                        break;
-                    }
-                    if (sceneChanged) {
-                        this._handleSceneChange();
-                        break;
-                    }
+                if ((frameGap > this._jumpTryThreshold || frameGap < 0) && !this._waitingStartPoint && this._lastRequestedStartPointTime < this._currentTime) {
+                    this._waitingStartPoint = !0;
+                    this._lastRequestedStartPointTime = targetTime;
+                    this._amflow.getStartPoint({
+                        timestamp: targetTime
+                    }, this._onGotStartPoint_bound);
                 }
-                this._skipping && targetTime - this._currentTime < this._frameTime && this._stopSkipping();
-            }, GameLoop.prototype._onFrameNormal = function(frameArg) {
-                var sceneChanged = !1, game = this._game;
-                if (this._waitingNextTick) return void (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick());
-                var targetAge, ageGap, currentAge = this._tickBuffer.currentAge;
-                if (this._loopMode === LoopMode_1.default.Realtime ? (targetAge = this._tickBuffer.knownLatestAge + 1, 
-                ageGap = targetAge - currentAge) : null === this._targetAge ? (targetAge = null, 
-                ageGap = 1) : this._targetAge === currentAge ? (targetAge = this._targetAge = null, 
-                ageGap = 1) : (targetAge = this._targetAge, ageGap = targetAge - currentAge), (ageGap > this._jumpTryThreshold || ageGap < 0) && !this._waitingStartPoint && this._lastRequestedStartPointAge < currentAge && (this._waitingStartPoint = !0, 
-                this._lastRequestedStartPointAge = targetAge, this._amflow.getStartPoint({
-                    frame: targetAge
-                }, this._onGotStartPoint_bound)), ageGap <= 0) return 0 === ageGap && (this._sceneTickMode !== g.TickGenerationMode.Manual && this._loopMode !== LoopMode_1.default.Replay || 0 !== currentAge || this._tickBuffer.requestTicks(), 
-                this._startWaitingNextTick()), this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick(), 
-                void (this._skipping && this._stopSkipping());
-                !this._skipping && (ageGap > this._skipThreshold || 0 === currentAge) && this._tickBuffer.hasNextTick() && this._startSkipping();
-                for (var loopCount = !this._skipping && ageGap <= this._delayIgnoreThreshold ? 1 : Math.min(ageGap, this._skipTicksAtOnce), consumedFrame = 0; consumedFrame < loopCount; ++consumedFrame) {
-                    var nextFrameTime = this._currentTime + this._frameTime, nextTickTime = this._tickBuffer.readNextTickTime();
-                    if (null != nextTickTime && nextFrameTime < nextTickTime) {
-                        if (!(this._loopMode === LoopMode_1.default.Realtime || this._omitInterpolatedTickOnReplay && this._skipping)) {
-                            if (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal) {
-                                this._doLocalTick();
-                                continue;
+                if (frameGap <= 0) this._skipping && this._stopSkipping(); else {
+                    !this._skipping && (frameGap > this._skipThreshold || 0 === this._tickBuffer.currentAge) && this._tickBuffer.hasNextTick() && this._startSkipping();
+                    for (var consumedFrame = 0; consumedFrame < this._skipTicksAtOnce; ++consumedFrame) {
+                        if (!this._tickBuffer.hasNextTick()) {
+                            if (!this._waitingNextTick) {
+                                this._tickBuffer.requestTicks();
+                                this._startWaitingNextTick();
                             }
                             break;
                         }
-                        nextFrameTime = Math.ceil(nextTickTime / this._frameTime) * this._frameTime;
+                        var nextFrameTime = this._currentTime + this._frameTime, nextTickTime = this._tickBuffer.readNextTickTime();
+                        null == nextTickTime && (nextTickTime = nextFrameTime);
+                        if (targetTime < nextFrameTime) {
+                            if (!(nextTickTime <= targetTime)) break;
+                            nextFrameTime = targetTime;
+                        } else if (nextFrameTime < nextTickTime) {
+                            if (!this._omitInterpolatedTickOnReplay || !this._skipping) {
+                                this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
+                                continue;
+                            }
+                            nextFrameTime = nextTickTime;
+                            if (targetTime <= nextFrameTime) {
+                                this._currentTime = Math.floor(targetTime / this._frameTime) * this._frameTime;
+                                break;
+                            }
+                        }
+                        this._currentTime = nextFrameTime;
+                        var tick = this._tickBuffer.consume(), consumedAge = -1, pevs = this._eventBuffer.readLocalEvents();
+                        if (pevs) for (var j = 0, len = pevs.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs[j]));
+                        if ("number" == typeof tick) {
+                            consumedAge = tick;
+                            sceneChanged = game.tick(!0);
+                        } else {
+                            consumedAge = tick[0];
+                            var pevs_1 = tick[1];
+                            if (pevs_1) for (var j = 0, len = pevs_1.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_1[j]));
+                            sceneChanged = game.tick(!0);
+                        }
+                        if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
+                            frameArg.interrupt = !0;
+                            break;
+                        }
+                        if (sceneChanged) {
+                            this._handleSceneChange();
+                            break;
+                        }
                     }
-                    this._currentTime = nextFrameTime;
-                    var tick = this._tickBuffer.consume(), consumedAge = -1;
-                    if (null == tick) {
-                        this._tickBuffer.requestTicks(), this._startWaitingNextTick();
-                        break;
+                    this._skipping && targetTime - this._currentTime < this._frameTime && this._stopSkipping();
+                }
+            };
+            GameLoop.prototype._onFrameNormal = function(frameArg) {
+                var sceneChanged = !1, game = this._game;
+                if (this._waitingNextTick) this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick(); else {
+                    var targetAge, ageGap, currentAge = this._tickBuffer.currentAge;
+                    if (this._loopMode === LoopMode_1.default.Realtime) {
+                        targetAge = this._tickBuffer.knownLatestAge + 1;
+                        ageGap = targetAge - currentAge;
+                    } else if (null === this._targetAge) {
+                        targetAge = null;
+                        ageGap = 1;
+                    } else if (this._targetAge === currentAge) {
+                        targetAge = this._targetAge = null;
+                        ageGap = 1;
+                    } else {
+                        targetAge = this._targetAge;
+                        ageGap = targetAge - currentAge;
                     }
-                    var pevs = this._eventBuffer.readLocalEvents();
-                    if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
-                    if ("number" == typeof tick) consumedAge = tick, sceneChanged = game.tick(!0); else {
-                        consumedAge = tick[0];
-                        var pevs_2 = tick[1];
-                        if (pevs_2) for (var j = 0, len = pevs_2.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_2[j]));
-                        sceneChanged = game.tick(!0);
+                    if ((ageGap > this._jumpTryThreshold || ageGap < 0) && !this._waitingStartPoint && this._lastRequestedStartPointAge < currentAge) {
+                        this._waitingStartPoint = !0;
+                        this._lastRequestedStartPointAge = targetAge;
+                        this._amflow.getStartPoint({
+                            frame: targetAge
+                        }, this._onGotStartPoint_bound);
                     }
-                    if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
-                        frameArg.interrupt = !0;
-                        break;
-                    }
-                    if (sceneChanged) {
-                        this._handleSceneChange();
-                        break;
+                    if (ageGap <= 0) {
+                        if (0 === ageGap) {
+                            this._sceneTickMode !== g.TickGenerationMode.Manual && this._loopMode !== LoopMode_1.default.Replay || 0 !== currentAge || this._tickBuffer.requestTicks();
+                            this._startWaitingNextTick();
+                        }
+                        this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
+                        this._skipping && this._stopSkipping();
+                    } else {
+                        !this._skipping && (ageGap > this._skipThreshold || 0 === currentAge) && this._tickBuffer.hasNextTick() && this._startSkipping();
+                        for (var loopCount = !this._skipping && ageGap <= this._delayIgnoreThreshold ? 1 : Math.min(ageGap, this._skipTicksAtOnce), consumedFrame = 0; consumedFrame < loopCount; ++consumedFrame) {
+                            var nextFrameTime = this._currentTime + this._frameTime, nextTickTime = this._tickBuffer.readNextTickTime();
+                            if (null != nextTickTime && nextFrameTime < nextTickTime) {
+                                if (!(this._loopMode === LoopMode_1.default.Realtime || this._omitInterpolatedTickOnReplay && this._skipping)) {
+                                    if (this._sceneLocalMode === g.LocalTickMode.InterpolateLocal) {
+                                        this._doLocalTick();
+                                        continue;
+                                    }
+                                    break;
+                                }
+                                nextFrameTime = Math.ceil(nextTickTime / this._frameTime) * this._frameTime;
+                            }
+                            this._currentTime = nextFrameTime;
+                            var tick = this._tickBuffer.consume(), consumedAge = -1;
+                            if (null == tick) {
+                                this._tickBuffer.requestTicks();
+                                this._startWaitingNextTick();
+                                break;
+                            }
+                            var pevs = this._eventBuffer.readLocalEvents();
+                            if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
+                            if ("number" == typeof tick) {
+                                consumedAge = tick;
+                                sceneChanged = game.tick(!0);
+                            } else {
+                                consumedAge = tick[0];
+                                var pevs_2 = tick[1];
+                                if (pevs_2) for (var j = 0, len = pevs_2.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_2[j]));
+                                sceneChanged = game.tick(!0);
+                            }
+                            if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
+                                frameArg.interrupt = !0;
+                                break;
+                            }
+                            if (sceneChanged) {
+                                this._handleSceneChange();
+                                break;
+                            }
+                        }
+                        this._skipping && targetAge - this._tickBuffer.currentAge < 1 && this._stopSkipping();
                     }
                 }
-                this._skipping && targetAge - this._tickBuffer.currentAge < 1 && this._stopSkipping();
-            }, GameLoop.prototype._onGotNextFrameTick = function() {
+            };
+            GameLoop.prototype._onGotNextFrameTick = function() {
                 this._waitingNextTick && this._loopMode !== LoopMode_1.default.FrameByFrame && this._stopWaitingNextTick();
-            }, GameLoop.prototype._onGotStartPoint = function(err, startPoint) {
-                if (this._waitingStartPoint = !1, err) return void this.errorTrigger.fire(err);
-                if (this._targetTimeFunc && this._loopMode !== LoopMode_1.default.Realtime) {
-                    var targetTime = this._targetTimeFunc() + this._realTargetTimeOffset;
-                    if (targetTime < startPoint.timestamp) return;
-                    var currentTime = this._currentTime;
-                    if (currentTime <= targetTime && startPoint.timestamp < currentTime + this._jumpIgnoreThreshold * this._frameTime) return;
-                } else {
-                    var targetAge = this._loopMode === LoopMode_1.default.Realtime ? this._tickBuffer.knownLatestAge + 1 : this._targetAge;
-                    if (null === targetAge || targetAge < startPoint.frame) return;
-                    var currentAge = this._tickBuffer.currentAge;
-                    if (currentAge <= targetAge && startPoint.frame < currentAge + this._jumpIgnoreThreshold) return;
+            };
+            GameLoop.prototype._onGotStartPoint = function(err, startPoint) {
+                this._waitingStartPoint = !1;
+                if (err) this.errorTrigger.fire(err); else {
+                    if (this._targetTimeFunc && this._loopMode !== LoopMode_1.default.Realtime) {
+                        var targetTime = this._targetTimeFunc() + this._realTargetTimeOffset;
+                        if (targetTime < startPoint.timestamp) return;
+                        var currentTime = this._currentTime;
+                        if (currentTime <= targetTime && startPoint.timestamp < currentTime + this._jumpIgnoreThreshold * this._frameTime) return;
+                    } else {
+                        var targetAge = this._loopMode === LoopMode_1.default.Realtime ? this._tickBuffer.knownLatestAge + 1 : this._targetAge;
+                        if (null === targetAge || targetAge < startPoint.frame) return;
+                        var currentAge = this._tickBuffer.currentAge;
+                        if (currentAge <= targetAge && startPoint.frame < currentAge + this._jumpIgnoreThreshold) return;
+                    }
+                    this._clock.frameTrigger.remove(this._eventBuffer.processEvents, this._eventBuffer);
+                    this._skipping && this._stopSkipping();
+                    this._tickBuffer.setCurrentAge(startPoint.frame);
+                    this._currentTime = startPoint.timestamp || startPoint.data.timestamp || 0;
+                    this._waitingNextTick = !1;
+                    this._lastRequestedStartPointAge = -1;
+                    this._lastRequestedStartPointTime = -1;
+                    this._game._restartWithSnapshot(startPoint);
+                    this._handleSceneChange();
                 }
-                this._clock.frameTrigger.remove(this._eventBuffer.processEvents, this._eventBuffer), 
-                this._skipping && this._stopSkipping(), this._tickBuffer.setCurrentAge(startPoint.frame), 
-                this._currentTime = startPoint.timestamp || startPoint.data.timestamp || 0, this._waitingNextTick = !1, 
-                this._lastRequestedStartPointAge = -1, this._lastRequestedStartPointTime = -1, this._game._restartWithSnapshot(startPoint), 
-                this._handleSceneChange();
-            }, GameLoop.prototype._onGameStarted = function() {
+            };
+            GameLoop.prototype._onGameStarted = function() {
                 this._clock.frameTrigger.add({
                     index: 0,
                     owner: this._eventBuffer,
                     func: this._eventBuffer.processEvents
                 });
-            }, GameLoop.prototype._setLoopRenderMode = function(mode) {
-                if (mode !== this._loopRenderMode) switch (this._loopRenderMode = mode, mode) {
-                  case LoopRenderMode_1.default.AfterRawFrame:
-                    this._clock.rawFrameTrigger.add(this._renderOnRawFrame, this);
-                    break;
+            };
+            GameLoop.prototype._setLoopRenderMode = function(mode) {
+                if (mode !== this._loopRenderMode) {
+                    this._loopRenderMode = mode;
+                    switch (mode) {
+                      case LoopRenderMode_1.default.AfterRawFrame:
+                        this._clock.rawFrameTrigger.add(this._renderOnRawFrame, this);
+                        break;
 
-                  case LoopRenderMode_1.default.None:
-                    this._clock.rawFrameTrigger.remove(this._renderOnRawFrame, this);
-                    break;
+                      case LoopRenderMode_1.default.None:
+                        this._clock.rawFrameTrigger.remove(this._renderOnRawFrame, this);
+                        break;
 
-                  default:
-                    this.errorTrigger.fire(new Error("GameLoop#_setLoopRenderMode: unknown mode: " + mode));
+                      default:
+                        this.errorTrigger.fire(new Error("GameLoop#_setLoopRenderMode: unknown mode: " + mode));
+                    }
                 }
-            }, GameLoop.prototype._renderOnRawFrame = function() {
+            };
+            GameLoop.prototype._renderOnRawFrame = function() {
                 var game = this._game;
                 game.modified && game.scenes.length > 0 && game.render();
-            }, GameLoop.prototype._onGameRaiseEvent = function(e) {
+            };
+            GameLoop.prototype._onGameRaiseEvent = function(e) {
                 var pev = this._eventConverter.toPlaylogEvent(e);
                 this._eventBuffer.onEvent(pev);
-            }, GameLoop.prototype._onGameRaiseTick = function(es) {
+            };
+            GameLoop.prototype._onGameRaiseTick = function(es) {
                 if (this._executionMode === ExecutionMode_1.default.Active) {
                     if (es) for (var i = 0; i < es.length; ++i) this._eventBuffer.addEventDirect(this._eventConverter.toPlaylogEvent(es[i]));
                     this._tickController.forceGenerateTick();
                 }
-            }, GameLoop.prototype._onGameOperationPluginOperated = function(op) {
+            };
+            GameLoop.prototype._onGameOperationPluginOperated = function(op) {
                 var pev = this._eventConverter.makePlaylogOperationEvent(op);
                 this._eventBuffer.onEvent(pev);
-            }, GameLoop.prototype._onPollingTick = function() {
+            };
+            GameLoop.prototype._onPollingTick = function() {
                 var time = Date.now();
-                time - this._lastPollingTickTime > this._pollingTickThreshold && (this._lastPollingTickTime = time, 
-                this._tickBuffer.requestTicks());
-            }, GameLoop.prototype._startWaitingNextTick = function() {
-                this._waitingNextTick = !0, this._clock.rawFrameTrigger.add(this._onPollingTick, this), 
-                this._lastPollingTickTime = Date.now(), this._skipping && this._stopSkipping();
-            }, GameLoop.prototype._stopWaitingNextTick = function() {
-                this._waitingNextTick = !1, this._clock.rawFrameTrigger.remove(this._onPollingTick, this);
-            }, GameLoop;
+                if (time - this._lastPollingTickTime > this._pollingTickThreshold) {
+                    this._lastPollingTickTime = time;
+                    this._tickBuffer.requestTicks();
+                }
+            };
+            GameLoop.prototype._startWaitingNextTick = function() {
+                this._waitingNextTick = !0;
+                this._clock.rawFrameTrigger.add(this._onPollingTick, this);
+                this._lastPollingTickTime = Date.now();
+                this._skipping && this._stopSkipping();
+            };
+            GameLoop.prototype._stopWaitingNextTick = function() {
+                this._waitingNextTick = !1;
+                this._clock.rawFrameTrigger.remove(this._onPollingTick, this);
+            };
+            return GameLoop;
         }();
         exports.GameLoop = GameLoop;
     }, {
@@ -1029,22 +1439,32 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), JoinLeaveRequest = function() {
             function JoinLeaveRequest(pev, joinResolver, amflow, keys) {
-                this.joinResolver = joinResolver, this.pev = pev, 0 === pev[0] && keys ? (this.resolved = !1, 
-                amflow.getStorageData(keys, this._onGotStorageData.bind(this))) : this.resolved = !0;
+                this.joinResolver = joinResolver;
+                this.pev = pev;
+                if (0 === pev[0] && keys) {
+                    this.resolved = !1;
+                    amflow.getStorageData(keys, this._onGotStorageData.bind(this));
+                } else this.resolved = !0;
             }
-            return JoinLeaveRequest.prototype._onGotStorageData = function(err, sds) {
-                return this.resolved = !0, err ? void this.joinResolver.errorTrigger.fire(err) : void (this.pev[4] = sds);
-            }, JoinLeaveRequest;
+            JoinLeaveRequest.prototype._onGotStorageData = function(err, sds) {
+                this.resolved = !0;
+                err ? this.joinResolver.errorTrigger.fire(err) : this.pev[4] = sds;
+            };
+            return JoinLeaveRequest;
         }();
         exports.JoinLeaveRequest = JoinLeaveRequest;
         var JoinResolver = function() {
             function JoinResolver(param) {
-                this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner), 
-                this._amflow = param.amflow, this._keysForJoin = null, this._requested = [];
+                this.errorTrigger = new g.Trigger();
+                param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
+                this._amflow = param.amflow;
+                this._keysForJoin = null;
+                this._requested = [];
             }
-            return JoinResolver.prototype.request = function(pev) {
+            JoinResolver.prototype.request = function(pev) {
                 this._requested.push(new JoinLeaveRequest(pev, this, this._amflow, this._keysForJoin));
-            }, JoinResolver.prototype.readResolved = function() {
+            };
+            JoinResolver.prototype.readResolved = function() {
                 var len = this._requested.length;
                 if (0 === len || !this._requested[0].resolved) return null;
                 for (var ret = [], i = 0; i < len; ++i) {
@@ -1052,10 +1472,13 @@ require = function() {
                     if (!req.resolved) break;
                     ret.push(req.pev);
                 }
-                return this._requested.splice(0, i), ret;
-            }, JoinResolver.prototype.setRequestValuesForJoin = function(keys) {
+                this._requested.splice(0, i);
+                return ret;
+            };
+            JoinResolver.prototype.setRequestValuesForJoin = function(keys) {
                 this._keysForJoin = keys;
-            }, JoinResolver;
+            };
+            return JoinResolver;
         }();
         exports.JoinResolver = JoinResolver;
     }, {
@@ -1068,9 +1491,11 @@ require = function() {
         });
         var LoopMode;
         !function(LoopMode) {
-            LoopMode[LoopMode.Realtime = 0] = "Realtime", LoopMode[LoopMode.Replay = 1] = "Replay", 
+            LoopMode[LoopMode.Realtime = 0] = "Realtime";
+            LoopMode[LoopMode.Replay = 1] = "Replay";
             LoopMode[LoopMode.FrameByFrame = 2] = "FrameByFrame";
-        }(LoopMode || (LoopMode = {})), exports.default = LoopMode;
+        }(LoopMode || (LoopMode = {}));
+        exports.default = LoopMode;
     }, {} ],
     11: [ function(require, module, exports) {
         "use strict";
@@ -1079,8 +1504,10 @@ require = function() {
         });
         var LoopRenderMode;
         !function(LoopRenderMode) {
-            LoopRenderMode[LoopRenderMode.AfterRawFrame = 0] = "AfterRawFrame", LoopRenderMode[LoopRenderMode.None = 1] = "None";
-        }(LoopRenderMode || (LoopRenderMode = {})), exports.default = LoopRenderMode;
+            LoopRenderMode[LoopRenderMode.AfterRawFrame = 0] = "AfterRawFrame";
+            LoopRenderMode[LoopRenderMode.None = 1] = "None";
+        }(LoopRenderMode || (LoopRenderMode = {}));
+        exports.default = LoopRenderMode;
     }, {} ],
     12: [ function(require, module, exports) {
         "use strict";
@@ -1092,21 +1519,24 @@ require = function() {
             function makeLoadConfigurationFunc(pf) {
                 function loadResolvedConfiguration(url, basePath, callback) {
                     pf.loadGameConfiguration(url, function(err, conf) {
-                        if (err) return void callback(err, null);
-                        try {
-                            conf = PdiUtil._resolveConfigurationBasePath(conf, null != basePath ? basePath : g.PathUtil.resolveDirname(url));
-                        } catch (e) {
-                            return void callback(e, null);
+                        if (err) callback(err, null); else {
+                            try {
+                                conf = PdiUtil._resolveConfigurationBasePath(conf, null != basePath ? basePath : g.PathUtil.resolveDirname(url));
+                            } catch (e) {
+                                callback(e, null);
+                                return;
+                            }
+                            if (conf.definitions) {
+                                var defs = conf.definitions.map(function(def) {
+                                    return "string" == typeof def ? promisifiedLoad(def) : promisifiedLoad(def.url, def.basePath);
+                                });
+                                es6_promise_1.Promise.all(defs).then(function(confs) {
+                                    return callback(null, confs.reduce(PdiUtil._mergeGameConfiguration));
+                                }).catch(function(e) {
+                                    return callback(e, null);
+                                });
+                            } else callback(null, conf);
                         }
-                        if (!conf.definitions) return void callback(null, conf);
-                        var defs = conf.definitions.map(function(def) {
-                            return "string" == typeof def ? promisifiedLoad(def) : promisifiedLoad(def.url, def.basePath);
-                        });
-                        es6_promise_1.Promise.all(defs).then(function(confs) {
-                            return callback(null, confs.reduce(PdiUtil._mergeGameConfiguration));
-                        }).catch(function(e) {
-                            return callback(e, null);
-                        });
                     });
                 }
                 function promisifiedLoad(url, basePath) {
@@ -1125,17 +1555,23 @@ require = function() {
                     return ret;
                 }
                 var assets = configuration.assets;
-                if (assets instanceof Object) for (var p in assets) assets.hasOwnProperty(p) && "path" in assets[p] && (assets[p].virtualPath = assets[p].virtualPath || assets[p].path, 
-                assets[p].path = resolvePath(basePath, assets[p].path));
-                return configuration.globalScripts && (configuration.globalScripts.forEach(function(path) {
-                    if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
-                    assets[path] = {
-                        type: /\.json$/i.test(path) ? "text" : "script",
-                        virtualPath: path,
-                        path: resolvePath(basePath, path),
-                        global: !0
-                    };
-                }), delete configuration.globalScripts), configuration;
+                if (assets instanceof Object) for (var p in assets) if (assets.hasOwnProperty(p) && "path" in assets[p]) {
+                    assets[p].virtualPath = assets[p].virtualPath || assets[p].path;
+                    assets[p].path = resolvePath(basePath, assets[p].path);
+                }
+                if (configuration.globalScripts) {
+                    configuration.globalScripts.forEach(function(path) {
+                        if (assets.hasOwnProperty(path)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: asset ID already exists: " + path);
+                        assets[path] = {
+                            type: /\.json$/i.test(path) ? "text" : "script",
+                            virtualPath: path,
+                            path: resolvePath(basePath, path),
+                            global: !0
+                        };
+                    });
+                    delete configuration.globalScripts;
+                }
+                return configuration;
             }
             function _mergeObject(target, source) {
                 for (var ks = Object.keys(source), i = 0, len = ks.length; i < len; ++i) {
@@ -1160,8 +1596,10 @@ require = function() {
             function _mergeGameConfiguration(target, source) {
                 return PdiUtil._mergeObject(target, source);
             }
-            PdiUtil.makeLoadConfigurationFunc = makeLoadConfigurationFunc, PdiUtil._resolveConfigurationBasePath = _resolveConfigurationBasePath, 
-            PdiUtil._mergeObject = _mergeObject, PdiUtil._mergeGameConfiguration = _mergeGameConfiguration;
+            PdiUtil.makeLoadConfigurationFunc = makeLoadConfigurationFunc;
+            PdiUtil._resolveConfigurationBasePath = _resolveConfigurationBasePath;
+            PdiUtil._mergeObject = _mergeObject;
+            PdiUtil._mergeGameConfiguration = _mergeGameConfiguration;
         }(PdiUtil = exports.PdiUtil || (exports.PdiUtil = {}));
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
@@ -1174,9 +1612,10 @@ require = function() {
         });
         var PointEventResolver = function() {
             function PointEventResolver(param) {
-                this._game = param.game, this._pointEventMap = {};
+                this._game = param.game;
+                this._pointEventMap = {};
             }
-            return PointEventResolver.prototype.pointDown = function(e) {
+            PointEventResolver.prototype.pointDown = function(e) {
                 var player = this._game.player, source = this._game.findPointSource(e.offset), point = source.point ? source.point : e.offset, targetId = source.target ? source.target.id : null;
                 this._pointEventMap[e.identifier] = {
                     targetId: targetId,
@@ -1192,8 +1631,10 @@ require = function() {
                     }
                 };
                 var ret = [ 33, 2, player.id, e.identifier, point.x, point.y, targetId ];
-                return source.local && ret.push(source.local), ret;
-            }, PointEventResolver.prototype.pointMove = function(e) {
+                source.local && ret.push(source.local);
+                return ret;
+            };
+            PointEventResolver.prototype.pointMove = function(e) {
                 var player = this._game.player, holder = this._pointEventMap[e.identifier];
                 if (!holder) return null;
                 var prev = {
@@ -1205,8 +1646,10 @@ require = function() {
                 };
                 this._pointMoveAndUp(holder, e.offset, prev, start);
                 var ret = [ 34, 2, player.id, e.identifier, holder.point.x, holder.point.y, start.x, start.y, prev.x, prev.y, holder.targetId ];
-                return holder.local && ret.push(holder.local), ret;
-            }, PointEventResolver.prototype.pointUp = function(e) {
+                holder.local && ret.push(holder.local);
+                return ret;
+            };
+            PointEventResolver.prototype.pointUp = function(e) {
                 var player = this._game.player, holder = this._pointEventMap[e.identifier];
                 if (!holder) return null;
                 var prev = {
@@ -1216,14 +1659,21 @@ require = function() {
                     x: 0,
                     y: 0
                 };
-                this._pointMoveAndUp(holder, e.offset, prev, start), delete this._pointEventMap[e.identifier];
+                this._pointMoveAndUp(holder, e.offset, prev, start);
+                delete this._pointEventMap[e.identifier];
                 var ret = [ 35, 2, player.id, e.identifier, holder.point.x, holder.point.y, start.x, start.y, prev.x, prev.y, holder.targetId ];
-                return holder.local && ret.push(holder.local), ret;
-            }, PointEventResolver.prototype._pointMoveAndUp = function(holder, offset, prevDelta, startDelta) {
-                startDelta.x = offset.x - holder.start.x, startDelta.y = offset.y - holder.start.y, 
-                prevDelta.x = offset.x - holder.prev.x, prevDelta.y = offset.y - holder.prev.y, 
-                holder.prev.x = offset.x, holder.prev.y = offset.y;
-            }, PointEventResolver;
+                holder.local && ret.push(holder.local);
+                return ret;
+            };
+            PointEventResolver.prototype._pointMoveAndUp = function(holder, offset, prevDelta, startDelta) {
+                startDelta.x = offset.x - holder.start.x;
+                startDelta.y = offset.y - holder.start.y;
+                prevDelta.x = offset.x - holder.prev.x;
+                prevDelta.y = offset.y - holder.prev.y;
+                holder.prev.x = offset.x;
+                holder.prev.y = offset.y;
+            };
+            return PointEventResolver;
         }();
         exports.PointEventResolver = PointEventResolver;
     }, {} ],
@@ -1241,8 +1691,8 @@ require = function() {
                 function __() {
                     this.constructor = d;
                 }
-                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
-                new __());
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
             };
         }();
         Object.defineProperty(exports, "__esModule", {
@@ -1251,24 +1701,40 @@ require = function() {
         var Clock_1 = require("./Clock"), ProfilerClock = function(_super) {
             function ProfilerClock(param) {
                 var _this = _super.call(this, param) || this;
-                return _this._profiler = param.profiler, _this;
+                _this._profiler = param.profiler;
+                return _this;
             }
-            return __extends(ProfilerClock, _super), ProfilerClock.prototype._onLooperCall = function(deltaTime) {
+            __extends(ProfilerClock, _super);
+            ProfilerClock.prototype._onLooperCall = function(deltaTime) {
                 if (deltaTime <= 0) return this._waitTime - this._totalDeltaTime;
                 deltaTime > this._deltaTimeBrokenThreshold && (deltaTime = this._waitTime);
                 var totalDeltaTime = this._totalDeltaTime;
-                if (totalDeltaTime += deltaTime, totalDeltaTime <= this._skipFrameWaitTime) return this._totalDeltaTime = totalDeltaTime, 
-                this._waitTime - totalDeltaTime;
-                this._profiler.timeEnd(1), this._profiler.time(1);
+                totalDeltaTime += deltaTime;
+                if (totalDeltaTime <= this._skipFrameWaitTime) {
+                    this._totalDeltaTime = totalDeltaTime;
+                    return this._waitTime - totalDeltaTime;
+                }
+                this._profiler.timeEnd(1);
+                this._profiler.time(1);
                 var frameCount = totalDeltaTime < this._waitTimeDoubled ? 1 : totalDeltaTime > this._waitTimeMax ? this._realMaxFramePerOnce : totalDeltaTime / this._waitTime | 0, fc = frameCount, arg = {
                     interrupt: !1
                 };
-                for (this._profiler.setValue(0, fc - 1); fc > 0 && this.running && !arg.interrupt; ) --fc, 
-                this._profiler.time(2), this.frameTrigger.fire(arg), this._profiler.timeEnd(2);
-                return totalDeltaTime -= (frameCount - fc) * this._waitTime, this._profiler.time(3), 
-                this.rawFrameTrigger.fire(), this._profiler.timeEnd(3), this._totalDeltaTime = totalDeltaTime, 
-                this._profiler.flush(), this._waitTime - totalDeltaTime;
-            }, ProfilerClock;
+                this._profiler.setValue(0, fc - 1);
+                for (;fc > 0 && this.running && !arg.interrupt; ) {
+                    --fc;
+                    this._profiler.time(2);
+                    this.frameTrigger.fire(arg);
+                    this._profiler.timeEnd(2);
+                }
+                totalDeltaTime -= (frameCount - fc) * this._waitTime;
+                this._profiler.time(3);
+                this.rawFrameTrigger.fire();
+                this._profiler.timeEnd(3);
+                this._totalDeltaTime = totalDeltaTime;
+                this._profiler.flush();
+                return this._waitTime - totalDeltaTime;
+            };
+            return ProfilerClock;
         }(Clock_1.Clock);
         exports.ProfilerClock = ProfilerClock;
     }, {
@@ -1281,47 +1747,72 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), StorageResolver = function() {
             function StorageResolver(param) {
-                this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner), 
-                this.getStorageFunc = this._getStorage.bind(this), this.putStorageFunc = this._putStorage.bind(this), 
-                this.requestValuesForJoinFunc = this._requestValuesForJoin.bind(this), this._game = param.game, 
-                this._amflow = param.amflow, this._tickGenerator = param.tickGenerator, this._tickBuffer = param.tickBuffer, 
-                this._executionMode = null, this.setExecutionMode(param.executionMode), this._unresolvedLoaders = {}, 
-                this._unresolvedStorages = {}, this._onStoragePut_bound = this._onStoragePut.bind(this);
+                this.errorTrigger = new g.Trigger();
+                param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
+                this.getStorageFunc = this._getStorage.bind(this);
+                this.putStorageFunc = this._putStorage.bind(this);
+                this.requestValuesForJoinFunc = this._requestValuesForJoin.bind(this);
+                this._game = param.game;
+                this._amflow = param.amflow;
+                this._tickGenerator = param.tickGenerator;
+                this._tickBuffer = param.tickBuffer;
+                this._executionMode = null;
+                this.setExecutionMode(param.executionMode);
+                this._unresolvedLoaders = {};
+                this._unresolvedStorages = {};
+                this._onStoragePut_bound = this._onStoragePut.bind(this);
             }
-            return StorageResolver.prototype.setExecutionMode = function(executionMode) {
+            StorageResolver.prototype.setExecutionMode = function(executionMode) {
                 if (this._executionMode !== executionMode) {
                     this._executionMode = executionMode;
                     var tickBuf = this._tickBuffer, tickGen = this._tickGenerator;
-                    executionMode === ExecutionMode_1.default.Active ? (tickBuf.gotStorageTrigger.remove(this._onGotStorageOnTick, this), 
-                    tickGen.gotStorageTrigger.add(this._onGotStorageOnTick, this)) : (tickGen.gotStorageTrigger.remove(this._onGotStorageOnTick, this), 
-                    tickBuf.gotStorageTrigger.add(this._onGotStorageOnTick, this));
+                    if (executionMode === ExecutionMode_1.default.Active) {
+                        tickBuf.gotStorageTrigger.remove(this._onGotStorageOnTick, this);
+                        tickGen.gotStorageTrigger.add(this._onGotStorageOnTick, this);
+                    } else {
+                        tickGen.gotStorageTrigger.remove(this._onGotStorageOnTick, this);
+                        tickBuf.gotStorageTrigger.add(this._onGotStorageOnTick, this);
+                    }
                 }
-            }, StorageResolver.prototype._onGotStorageOnTick = function(storageOnTick) {
+            };
+            StorageResolver.prototype._onGotStorageOnTick = function(storageOnTick) {
                 var resolvingAge = storageOnTick.age, storageData = storageOnTick.storageData, loader = this._unresolvedLoaders[resolvingAge];
-                if (!loader) return void (this._unresolvedStorages[resolvingAge] = storageData);
-                delete this._unresolvedLoaders[resolvingAge];
-                var serialization = resolvingAge, values = storageData.map(function(d) {
-                    return d.values;
-                });
-                loader._onLoaded(values, serialization);
-            }, StorageResolver.prototype._getStorage = function(keys, loader, ser) {
+                if (loader) {
+                    delete this._unresolvedLoaders[resolvingAge];
+                    var serialization = resolvingAge, values = storageData.map(function(d) {
+                        return d.values;
+                    });
+                    loader._onLoaded(values, serialization);
+                } else this._unresolvedStorages[resolvingAge] = storageData;
+            };
+            StorageResolver.prototype._getStorage = function(keys, loader, ser) {
                 var resolvingAge;
-                null != ser ? (resolvingAge = ser, this._tickBuffer.requestTicks(resolvingAge, 1)) : this._executionMode === ExecutionMode_1.default.Active ? resolvingAge = this._tickGenerator.requestStorageTick(keys) : (resolvingAge = this._game.age, 
-                this._tickBuffer.requestTicks(resolvingAge, 1));
+                if (null != ser) {
+                    resolvingAge = ser;
+                    this._tickBuffer.requestTicks(resolvingAge, 1);
+                } else if (this._executionMode === ExecutionMode_1.default.Active) resolvingAge = this._tickGenerator.requestStorageTick(keys); else {
+                    resolvingAge = this._game.age;
+                    this._tickBuffer.requestTicks(resolvingAge, 1);
+                }
                 var sd = this._unresolvedStorages[resolvingAge];
-                if (!sd) return void (this._unresolvedLoaders[resolvingAge] = loader);
-                delete this._unresolvedStorages[resolvingAge];
-                var serialization = resolvingAge, values = sd.map(function(d) {
-                    return d.values;
-                });
-                loader._onLoaded(values, serialization);
-            }, StorageResolver.prototype._putStorage = function(key, value, option) {
+                if (sd) {
+                    delete this._unresolvedStorages[resolvingAge];
+                    var serialization = resolvingAge, values = sd.map(function(d) {
+                        return d.values;
+                    });
+                    loader._onLoaded(values, serialization);
+                } else this._unresolvedLoaders[resolvingAge] = loader;
+            };
+            StorageResolver.prototype._putStorage = function(key, value, option) {
                 this._executionMode === ExecutionMode_1.default.Active && this._amflow.putStorageData(key, value, option, this._onStoragePut_bound);
-            }, StorageResolver.prototype._requestValuesForJoin = function(keys) {
+            };
+            StorageResolver.prototype._requestValuesForJoin = function(keys) {
                 this._tickGenerator.setRequestValuesForJoin(keys);
-            }, StorageResolver.prototype._onStoragePut = function(err) {
+            };
+            StorageResolver.prototype._onStoragePut = function(err) {
                 err && this.errorTrigger.fire(err);
-            }, StorageResolver;
+            };
+            return StorageResolver;
         }();
         exports.StorageResolver = StorageResolver;
     }, {
@@ -1335,34 +1826,65 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), TickBuffer = function() {
             function TickBuffer(param) {
-                this.currentAge = 0, this.knownLatestAge = -1, this.gotNextTickTrigger = new g.Trigger(), 
-                this.gotStorageTrigger = new g.Trigger(), this._amflow = param.amflow, this._prefetchThreshold = param.prefetchThreshold || TickBuffer.DEFAULT_PREFETCH_THRESHOLD, 
-                this._sizeRequestOnce = param.sizeRequestOnce || TickBuffer.DEFAULT_SIZE_REQUEST_ONCE, 
-                this._executionMode = param.executionMode, this._startedAt = param.startedAt || 0, 
-                this._oldTimestampThreshold = null != param.startedAt ? param.startedAt - 864e6 : 0, 
-                this._receiving = !1, this._tickRanges = [], this._nearestAbsentAge = this.currentAge, 
-                this._nextTickTimeCache = null, this._addTick_bound = this.addTick.bind(this), this._onTicks_bound = this._onTicks.bind(this);
+                this.currentAge = 0;
+                this.knownLatestAge = -1;
+                this.gotNextTickTrigger = new g.Trigger();
+                this.gotStorageTrigger = new g.Trigger();
+                this._amflow = param.amflow;
+                this._prefetchThreshold = param.prefetchThreshold || TickBuffer.DEFAULT_PREFETCH_THRESHOLD;
+                this._sizeRequestOnce = param.sizeRequestOnce || TickBuffer.DEFAULT_SIZE_REQUEST_ONCE;
+                this._executionMode = param.executionMode;
+                this._startedAt = param.startedAt || 0;
+                this._oldTimestampThreshold = null != param.startedAt ? param.startedAt - 864e6 : 0;
+                this._receiving = !1;
+                this._tickRanges = [];
+                this._nearestAbsentAge = this.currentAge;
+                this._nextTickTimeCache = null;
+                this._addTick_bound = this.addTick.bind(this);
+                this._onTicks_bound = this._onTicks.bind(this);
             }
-            return TickBuffer.prototype.start = function() {
-                this._receiving = !0, this._updateAmflowReceiveState();
-            }, TickBuffer.prototype.stop = function() {
-                this._receiving = !1, this._updateAmflowReceiveState();
-            }, TickBuffer.prototype.setExecutionMode = function(execMode) {
-                this._executionMode !== execMode && (this._dropUntil(this.knownLatestAge + 1), this.knownLatestAge = this.currentAge, 
-                this._nextTickTimeCache = null, this._nearestAbsentAge = this.currentAge, this._executionMode = execMode, 
-                this._updateAmflowReceiveState());
-            }, TickBuffer.prototype.setCurrentAge = function(age) {
-                this._dropUntil(age), this._nextTickTimeCache = null, this.currentAge = age, this._nearestAbsentAge = this._findNearestAbscentAge(age);
-            }, TickBuffer.prototype.hasNextTick = function() {
+            TickBuffer.prototype.start = function() {
+                this._receiving = !0;
+                this._updateAmflowReceiveState();
+            };
+            TickBuffer.prototype.stop = function() {
+                this._receiving = !1;
+                this._updateAmflowReceiveState();
+            };
+            TickBuffer.prototype.setExecutionMode = function(execMode) {
+                if (this._executionMode !== execMode) {
+                    this._dropUntil(this.knownLatestAge + 1);
+                    this.knownLatestAge = this.currentAge;
+                    this._nextTickTimeCache = null;
+                    this._nearestAbsentAge = this.currentAge;
+                    this._executionMode = execMode;
+                    this._updateAmflowReceiveState();
+                }
+            };
+            TickBuffer.prototype.setCurrentAge = function(age) {
+                this._dropUntil(age);
+                this._nextTickTimeCache = null;
+                this.currentAge = age;
+                this._nearestAbsentAge = this._findNearestAbscentAge(age);
+            };
+            TickBuffer.prototype.hasNextTick = function() {
                 return this.currentAge !== this._nearestAbsentAge;
-            }, TickBuffer.prototype.consume = function() {
+            };
+            TickBuffer.prototype.consume = function() {
                 if (this.currentAge === this._nearestAbsentAge) return null;
                 var age = this.currentAge, range = this._tickRanges[0];
-                return age === range.start ? (this._nextTickTimeCache = null, ++this.currentAge, 
-                ++range.start, age + this._prefetchThreshold === this._nearestAbsentAge && this.requestTicks(this._nearestAbsentAge, this._sizeRequestOnce), 
-                range.start === range.end && this._tickRanges.shift(), range.ticks.length > 0 && range.ticks[0][0] === age ? range.ticks.shift() : age) : (this._dropUntil(this.currentAge), 
-                this.consume());
-            }, TickBuffer.prototype.readNextTickTime = function() {
+                if (age === range.start) {
+                    this._nextTickTimeCache = null;
+                    ++this.currentAge;
+                    ++range.start;
+                    age + this._prefetchThreshold === this._nearestAbsentAge && this.requestTicks(this._nearestAbsentAge, this._sizeRequestOnce);
+                    range.start === range.end && this._tickRanges.shift();
+                    return range.ticks.length > 0 && range.ticks[0][0] === age ? range.ticks.shift() : age;
+                }
+                this._dropUntil(this.currentAge);
+                return this.consume();
+            };
+            TickBuffer.prototype.readNextTickTime = function() {
                 if (null != this._nextTickTimeCache) return this._nextTickTimeCache;
                 if (this.currentAge === this._nearestAbsentAge) return null;
                 var age = this.currentAge, range = this._tickRanges[0];
@@ -1374,18 +1896,24 @@ require = function() {
                     if (!pevs) return null;
                     for (var i = 0; i < pevs.length; ++i) if (2 === pevs[i][0]) {
                         var nextTickTime = pevs[i][3];
-                        return nextTickTime < this._oldTimestampThreshold && (nextTickTime += this._startedAt), 
-                        this._nextTickTimeCache = nextTickTime, nextTickTime;
+                        nextTickTime < this._oldTimestampThreshold && (nextTickTime += this._startedAt);
+                        this._nextTickTimeCache = nextTickTime;
+                        return nextTickTime;
                     }
                     return null;
                 }
-                return this._dropUntil(this.currentAge), this.readNextTickTime();
-            }, TickBuffer.prototype.requestTicks = function(from, len) {
-                void 0 === from && (from = this.currentAge), void 0 === len && (len = this._sizeRequestOnce), 
+                this._dropUntil(this.currentAge);
+                return this.readNextTickTime();
+            };
+            TickBuffer.prototype.requestTicks = function(from, len) {
+                void 0 === from && (from = this.currentAge);
+                void 0 === len && (len = this._sizeRequestOnce);
                 this._executionMode === ExecutionMode_1.default.Passive && this._amflow.getTickList(from, from + len, this._onTicks_bound);
-            }, TickBuffer.prototype.addTick = function(tick) {
+            };
+            TickBuffer.prototype.addTick = function(tick) {
                 var age = tick[0], gotNext = this.currentAge === age && this._nearestAbsentAge === age;
-                this.knownLatestAge < age && (this.knownLatestAge = age), tick[2] && this.gotStorageTrigger.fire({
+                this.knownLatestAge < age && (this.knownLatestAge = age);
+                tick[2] && this.gotStorageTrigger.fire({
                     age: tick[0],
                     storageData: tick[2]
                 });
@@ -1396,11 +1924,18 @@ require = function() {
                 var nextRange = this._tickRanges[i + 1];
                 if (i < 0) this._tickRanges.unshift(this._createTickRangeFromTick(tick)); else {
                     var range = this._tickRanges[i];
-                    age === range.end ? (++range.end, tick[1] && range.ticks.push(tick)) : age > range.end && this._tickRanges.splice(i + 1, 0, this._createTickRangeFromTick(tick));
+                    if (age === range.end) {
+                        ++range.end;
+                        tick[1] && range.ticks.push(tick);
+                    } else age > range.end && this._tickRanges.splice(i + 1, 0, this._createTickRangeFromTick(tick));
                 }
-                this._nearestAbsentAge === age && (++this._nearestAbsentAge, nextRange && this._nearestAbsentAge === nextRange.start && (this._nearestAbsentAge = this._findNearestAbscentAge(this._nearestAbsentAge))), 
+                if (this._nearestAbsentAge === age) {
+                    ++this._nearestAbsentAge;
+                    nextRange && this._nearestAbsentAge === nextRange.start && (this._nearestAbsentAge = this._findNearestAbscentAge(this._nearestAbsentAge));
+                }
                 gotNext && this.gotNextTickTrigger.fire();
-            }, TickBuffer.prototype.addTickList = function(tickList) {
+            };
+            TickBuffer.prototype.addTickList = function(tickList) {
                 var start = tickList[0], end = tickList[1] + 1, ticks = tickList[2], origStart = start, origEnd = end;
                 this.knownLatestAge < end - 1 && (this.knownLatestAge = end - 1);
                 var i = 0, len = this._tickRanges.length;
@@ -1427,7 +1962,8 @@ require = function() {
                     end: start,
                     ticks: []
                 };
-                ticks || (ticks = []), origStart === start && origEnd === end || (ticks = ticks.filter(function(tick) {
+                ticks || (ticks = []);
+                origStart === start && origEnd === end || (ticks = ticks.filter(function(tick) {
                     var age = tick[0];
                     return start <= age && age < end;
                 }));
@@ -1443,17 +1979,21 @@ require = function() {
                     end: end,
                     ticks: ticks
                 }, delLen = Math.max(0, i - insertPoint);
-                return this._tickRanges.splice(insertPoint, delLen, range), start <= this._nearestAbsentAge && this._nearestAbsentAge < end && (this._nearestAbsentAge = this._findNearestAbscentAge(this._nearestAbsentAge)), 
-                range;
-            }, TickBuffer.prototype._updateAmflowReceiveState = function() {
+                this._tickRanges.splice(insertPoint, delLen, range);
+                start <= this._nearestAbsentAge && this._nearestAbsentAge < end && (this._nearestAbsentAge = this._findNearestAbscentAge(this._nearestAbsentAge));
+                return range;
+            };
+            TickBuffer.prototype._updateAmflowReceiveState = function() {
                 this._receiving && this._executionMode === ExecutionMode_1.default.Passive ? this._amflow.onTick(this._addTick_bound) : this._amflow.offTick(this._addTick_bound);
-            }, TickBuffer.prototype._onTicks = function(err, ticks) {
+            };
+            TickBuffer.prototype._onTicks = function(err, ticks) {
                 if (err) throw new Error();
                 if (ticks) {
                     var mayGotNext = this.currentAge === this._nearestAbsentAge, inserted = this.addTickList(ticks);
                     mayGotNext && inserted.start <= this.currentAge && this.currentAge < inserted.end && this.gotNextTickTrigger.fire();
                 }
-            }, TickBuffer.prototype._findNearestAbscentAge = function(age) {
+            };
+            TickBuffer.prototype._findNearestAbscentAge = function(age) {
                 for (var i = 0, len = this._tickRanges.length; i < len && !(age <= this._tickRanges[i].end); ++i) ;
                 for (;i < len; ++i) {
                     var range = this._tickRanges[i];
@@ -1461,25 +2001,32 @@ require = function() {
                     age = range.end;
                 }
                 return age;
-            }, TickBuffer.prototype._dropUntil = function(age) {
+            };
+            TickBuffer.prototype._dropUntil = function(age) {
                 var i;
                 for (i = 0; i < this._tickRanges.length && !(age < this._tickRanges[i].end); ++i) ;
-                if (this._tickRanges = this._tickRanges.slice(i), 0 !== this._tickRanges.length) {
+                this._tickRanges = this._tickRanges.slice(i);
+                if (0 !== this._tickRanges.length) {
                     var range = this._tickRanges[0];
                     if (!(age < range.start)) {
-                        for (range.start = age, i = 0; i < range.ticks.length && !(age <= range.ticks[i][0]); ++i) ;
+                        range.start = age;
+                        for (i = 0; i < range.ticks.length && !(age <= range.ticks[i][0]); ++i) ;
                         range.ticks = range.ticks.slice(i);
                     }
                 }
-            }, TickBuffer.prototype._createTickRangeFromTick = function(tick) {
+            };
+            TickBuffer.prototype._createTickRangeFromTick = function(tick) {
                 var age = tick[0], range = {
                     start: age,
                     end: age + 1,
                     ticks: []
                 };
-                return tick[1] && range.ticks.push(tick), range;
-            }, TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800, TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3, 
-            TickBuffer;
+                tick[1] && range.ticks.push(tick);
+                return range;
+            };
+            TickBuffer.DEFAULT_PREFETCH_THRESHOLD = 1800;
+            TickBuffer.DEFAULT_SIZE_REQUEST_ONCE = 9e3;
+            return TickBuffer;
         }();
         exports.TickBuffer = TickBuffer;
     }, {
@@ -1493,18 +2040,24 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), ExecutionMode_1 = require("./ExecutionMode"), TickBuffer_1 = require("./TickBuffer"), TickGenerator_1 = require("./TickGenerator"), sr = require("./StorageResolver"), TickController = function() {
             function TickController(param) {
-                this.errorTrigger = new g.Trigger(), param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner), 
-                this._amflow = param.amflow, this._clock = param.clock, this._started = !1, this._executionMode = param.executionMode, 
+                this.errorTrigger = new g.Trigger();
+                param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
+                this._amflow = param.amflow;
+                this._clock = param.clock;
+                this._started = !1;
+                this._executionMode = param.executionMode;
                 this._generator = new TickGenerator_1.TickGenerator({
                     amflow: param.amflow,
                     eventBuffer: param.eventBuffer,
                     errorHandler: this.errorTrigger.fire,
                     errorHandlerOwner: this.errorTrigger
-                }), this._buffer = new TickBuffer_1.TickBuffer({
+                });
+                this._buffer = new TickBuffer_1.TickBuffer({
                     amflow: param.amflow,
                     executionMode: param.executionMode,
                     startedAt: param.startedAt
-                }), this._storageResolver = new sr.StorageResolver({
+                });
+                this._storageResolver = new sr.StorageResolver({
                     game: param.game,
                     amflow: param.amflow,
                     tickGenerator: this._generator,
@@ -1512,38 +2065,59 @@ require = function() {
                     executionMode: param.executionMode,
                     errorHandler: this.errorTrigger.fire,
                     errorHandlerOwner: this.errorTrigger
-                }), this._generator.tickTrigger.add(this._onTickGenerated, this), this._clock.frameTrigger.add(this._generator.next, this._generator);
+                });
+                this._generator.tickTrigger.add(this._onTickGenerated, this);
+                this._clock.frameTrigger.add(this._generator.next, this._generator);
             }
-            return TickController.prototype.startTick = function() {
-                this._started = !0, this._updateGeneratorState();
-            }, TickController.prototype.stopTick = function() {
-                this._started = !1, this._updateGeneratorState();
-            }, TickController.prototype.startTickOnce = function() {
-                this._started = !0, this._generator.tickTrigger.addOnce(this._stopTriggerOnTick, this), 
+            TickController.prototype.startTick = function() {
+                this._started = !0;
                 this._updateGeneratorState();
-            }, TickController.prototype.setNextAge = function(age) {
+            };
+            TickController.prototype.stopTick = function() {
+                this._started = !1;
+                this._updateGeneratorState();
+            };
+            TickController.prototype.startTickOnce = function() {
+                this._started = !0;
+                this._generator.tickTrigger.addOnce(this._stopTriggerOnTick, this);
+                this._updateGeneratorState();
+            };
+            TickController.prototype.setNextAge = function(age) {
                 this._generator.setNextAge(age);
-            }, TickController.prototype.forceGenerateTick = function() {
+            };
+            TickController.prototype.forceGenerateTick = function() {
                 this._generator.forceNext();
-            }, TickController.prototype.getBuffer = function() {
+            };
+            TickController.prototype.getBuffer = function() {
                 return this._buffer;
-            }, TickController.prototype.storageFunc = function() {
+            };
+            TickController.prototype.storageFunc = function() {
                 return {
                     storageGetFunc: this._storageResolver.getStorageFunc,
                     storagePutFunc: this._storageResolver.putStorageFunc,
                     requestValuesForJoinFunc: this._storageResolver.requestValuesForJoinFunc
                 };
-            }, TickController.prototype.setExecutionMode = function(execMode) {
-                this._executionMode !== execMode && (this._executionMode = execMode, this._updateGeneratorState(), 
-                this._buffer.setExecutionMode(execMode), this._storageResolver.setExecutionMode(execMode));
-            }, TickController.prototype._stopTriggerOnTick = function() {
+            };
+            TickController.prototype.setExecutionMode = function(execMode) {
+                if (this._executionMode !== execMode) {
+                    this._executionMode = execMode;
+                    this._updateGeneratorState();
+                    this._buffer.setExecutionMode(execMode);
+                    this._storageResolver.setExecutionMode(execMode);
+                }
+            };
+            TickController.prototype._stopTriggerOnTick = function() {
                 this.stopTick();
-            }, TickController.prototype._updateGeneratorState = function() {
+            };
+            TickController.prototype._updateGeneratorState = function() {
                 var toGenerate = this._started && this._executionMode === ExecutionMode_1.default.Active;
                 this._generator.startStopGenerate(toGenerate);
-            }, TickController.prototype._onTickGenerated = function(tick) {
-                this._amflow.sendTick(tick), this._buffer.addTick(tick);
-            }, TickController;
+            };
+            TickController.prototype._onTickGenerated = function(tick) {
+                this._amflow.sendTick(tick);
+                this._buffer.addTick(tick);
+            };
+            return TickController;
         }();
         exports.TickController = TickController;
     }, {
@@ -1560,52 +2134,78 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), JoinResolver_1 = require("./JoinResolver"), TickGenerator = function() {
             function TickGenerator(param) {
-                this.tickTrigger = new g.Trigger(), this.gotStorageTrigger = new g.Trigger(), this.errorTrigger = new g.Trigger(), 
-                param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner), 
-                this._amflow = param.amflow, this._eventBuffer = param.eventBuffer, this._joinResolver = new JoinResolver_1.JoinResolver({
+                this.tickTrigger = new g.Trigger();
+                this.gotStorageTrigger = new g.Trigger();
+                this.errorTrigger = new g.Trigger();
+                param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
+                this._amflow = param.amflow;
+                this._eventBuffer = param.eventBuffer;
+                this._joinResolver = new JoinResolver_1.JoinResolver({
                     amflow: param.amflow,
                     errorHandler: this.errorTrigger.fire,
                     errorHandlerOwner: this.errorTrigger
-                }), this._nextAge = 0, this._storageDataForNext = null, this._generatingTick = !1, 
-                this._waitingStorage = !1, this._onGotStorageData_bound = this._onGotStorageData.bind(this);
+                });
+                this._nextAge = 0;
+                this._storageDataForNext = null;
+                this._generatingTick = !1;
+                this._waitingStorage = !1;
+                this._onGotStorageData_bound = this._onGotStorageData.bind(this);
             }
-            return TickGenerator.prototype.next = function() {
+            TickGenerator.prototype.next = function() {
                 if (this._generatingTick && !this._waitingStorage) {
                     var joinLeaves = this._eventBuffer.readJoinLeaves();
                     if (joinLeaves) for (var i = 0; i < joinLeaves.length; ++i) this._joinResolver.request(joinLeaves[i]);
                     var evs = this._eventBuffer.readEvents(), resolvedJoinLeaves = this._joinResolver.readResolved();
                     resolvedJoinLeaves && (evs ? evs.push.apply(evs, resolvedJoinLeaves) : evs = resolvedJoinLeaves);
                     var sds = this._storageDataForNext;
-                    this._storageDataForNext = null, this.tickTrigger.fire([ this._nextAge++, evs, sds ]);
+                    this._storageDataForNext = null;
+                    this.tickTrigger.fire([ this._nextAge++, evs, sds ]);
                 }
-            }, TickGenerator.prototype.forceNext = function() {
-                if (this._waitingStorage) return void this.errorTrigger.fire(new Error("TickGenerator#forceNext(): cannot generate tick while waiting storage."));
-                var origValue = this._generatingTick;
-                this._generatingTick = !0, this.next(), this._generatingTick = origValue;
-            }, TickGenerator.prototype.startStopGenerate = function(toGenerate) {
+            };
+            TickGenerator.prototype.forceNext = function() {
+                if (this._waitingStorage) this.errorTrigger.fire(new Error("TickGenerator#forceNext(): cannot generate tick while waiting storage.")); else {
+                    var origValue = this._generatingTick;
+                    this._generatingTick = !0;
+                    this.next();
+                    this._generatingTick = origValue;
+                }
+            };
+            TickGenerator.prototype.startStopGenerate = function(toGenerate) {
                 this._generatingTick = toGenerate;
-            }, TickGenerator.prototype.startTick = function() {
+            };
+            TickGenerator.prototype.startTick = function() {
                 this._generatingTick = !0;
-            }, TickGenerator.prototype.stopTick = function() {
+            };
+            TickGenerator.prototype.stopTick = function() {
                 this._generatingTick = !1;
-            }, TickGenerator.prototype.setNextAge = function(age) {
-                return this._waitingStorage ? void this.errorTrigger.fire(new Error("TickGenerator#setNextAge(): cannot change the next age while waiting storage.")) : void (this._nextAge = age);
-            }, TickGenerator.prototype.requestStorageTick = function(keys) {
+            };
+            TickGenerator.prototype.setNextAge = function(age) {
+                this._waitingStorage ? this.errorTrigger.fire(new Error("TickGenerator#setNextAge(): cannot change the next age while waiting storage.")) : this._nextAge = age;
+            };
+            TickGenerator.prototype.requestStorageTick = function(keys) {
                 if (this._waitingStorage) {
                     var err = g.ExceptionFactory.createAssertionError("TickGenerator#requestStorageTick(): Unsupported: multiple storage request");
-                    return this.errorTrigger.fire(err), -1;
+                    this.errorTrigger.fire(err);
+                    return -1;
                 }
-                return this._waitingStorage = !0, this._amflow.getStorageData(keys, this._onGotStorageData_bound), 
-                this._nextAge;
-            }, TickGenerator.prototype.setRequestValuesForJoin = function(keys) {
+                this._waitingStorage = !0;
+                this._amflow.getStorageData(keys, this._onGotStorageData_bound);
+                return this._nextAge;
+            };
+            TickGenerator.prototype.setRequestValuesForJoin = function(keys) {
                 this._joinResolver.setRequestValuesForJoin(keys);
-            }, TickGenerator.prototype._onGotStorageData = function(err, sds) {
-                return this._waitingStorage = !1, err ? void this.errorTrigger.fire(err) : (this._storageDataForNext = sds, 
-                void this.gotStorageTrigger.fire({
-                    age: this._nextAge,
-                    storageData: sds
-                }));
-            }, TickGenerator;
+            };
+            TickGenerator.prototype._onGotStorageData = function(err, sds) {
+                this._waitingStorage = !1;
+                if (err) this.errorTrigger.fire(err); else {
+                    this._storageDataForNext = sds;
+                    this.gotStorageTrigger.fire({
+                        age: this._nextAge,
+                        storageData: sds
+                    });
+                }
+            };
+            return TickGenerator;
         }();
         exports.TickGenerator = TickGenerator;
     }, {
@@ -1619,28 +2219,41 @@ require = function() {
         });
         var MemoryAmflowClient = function() {
             function MemoryAmflowClient(param) {
-                this._playId = param.playId, this._putStorageDataSyncFunc = param.putStorageDataSyncFunc || function() {
+                this._playId = param.playId;
+                this._putStorageDataSyncFunc = param.putStorageDataSyncFunc || function() {
                     throw new Error("Implementation not given");
-                }, this._getStorageDataSyncFunc = param.getStorageDataSyncFunc || function() {
+                };
+                this._getStorageDataSyncFunc = param.getStorageDataSyncFunc || function() {
                     throw new Error("Implementation not given");
-                }, this._tickHandlers = [], this._eventHandlers = [], this._events = [], this._tickList = null, 
-                param.startPoints ? (this._tickList = param.tickList, this._startPoints = param.startPoints) : this._startPoints = [];
+                };
+                this._tickHandlers = [];
+                this._eventHandlers = [];
+                this._events = [];
+                this._tickList = null;
+                if (param.startPoints) {
+                    this._tickList = param.tickList;
+                    this._startPoints = param.startPoints;
+                } else this._startPoints = [];
             }
-            return MemoryAmflowClient.prototype.dump = function() {
+            MemoryAmflowClient.prototype.dump = function() {
                 return {
                     tickList: this._tickList,
                     startPoints: this._startPoints
                 };
-            }, MemoryAmflowClient.prototype.open = function(playId, callback) {
+            };
+            MemoryAmflowClient.prototype.open = function(playId, callback) {
                 var _this = this;
                 setTimeout(function() {
-                    return playId !== _this._playId ? void callback(new Error("MemoryAmflowClient#open: unknown playId")) : void callback();
+                    if (playId !== _this._playId) return void callback(new Error("MemoryAmflowClient#open: unknown playId"));
+                    callback();
                 }, 0);
-            }, MemoryAmflowClient.prototype.close = function(callback) {
+            };
+            MemoryAmflowClient.prototype.close = function(callback) {
                 setTimeout(function() {
                     callback();
                 }, 0);
-            }, MemoryAmflowClient.prototype.authenticate = function(token, callback) {
+            };
+            MemoryAmflowClient.prototype.authenticate = function(token, callback) {
                 setTimeout(function() {
                     switch (token) {
                       case MemoryAmflowClient.TOKEN_ACTIVE:
@@ -1676,40 +2289,53 @@ require = function() {
                         });
                     }
                 }, 0);
-            }, MemoryAmflowClient.prototype.sendTick = function(tick) {
+            };
+            MemoryAmflowClient.prototype.sendTick = function(tick) {
                 if (this._tickList) {
                     if (this._tickList[0] <= tick[0] && tick[0] <= this._tickList[1]) throw new Error("illegal age tick");
                     this._tickList[1] = tick[0];
                 } else this._tickList = [ tick[0], tick[0], [] ];
-                (tick[1] || tick[2]) && this._tickList[2].push(tick), this._tickHandlers.forEach(function(h) {
+                (tick[1] || tick[2]) && this._tickList[2].push(tick);
+                this._tickHandlers.forEach(function(h) {
                     return h(tick);
                 });
-            }, MemoryAmflowClient.prototype.onTick = function(handler) {
+            };
+            MemoryAmflowClient.prototype.onTick = function(handler) {
                 this._tickHandlers.push(handler);
-            }, MemoryAmflowClient.prototype.offTick = function(handler) {
+            };
+            MemoryAmflowClient.prototype.offTick = function(handler) {
                 this._tickHandlers = this._tickHandlers.filter(function(h) {
                     return h !== handler;
                 });
-            }, MemoryAmflowClient.prototype.sendEvent = function(pev) {
-                return 0 === this._eventHandlers.length ? void this._events.push(pev) : void this._eventHandlers.forEach(function(h) {
+            };
+            MemoryAmflowClient.prototype.sendEvent = function(pev) {
+                0 !== this._eventHandlers.length ? this._eventHandlers.forEach(function(h) {
                     return h(pev);
-                });
-            }, MemoryAmflowClient.prototype.onEvent = function(handler) {
+                }) : this._events.push(pev);
+            };
+            MemoryAmflowClient.prototype.onEvent = function(handler) {
                 var _this = this;
-                this._eventHandlers.push(handler), this._events.length > 0 && (this._events.forEach(function(pev) {
-                    _this._eventHandlers.forEach(function(h) {
-                        return h(pev);
+                this._eventHandlers.push(handler);
+                if (this._events.length > 0) {
+                    this._events.forEach(function(pev) {
+                        _this._eventHandlers.forEach(function(h) {
+                            return h(pev);
+                        });
                     });
-                }), this._events = []);
-            }, MemoryAmflowClient.prototype.offEvent = function(handler) {
+                    this._events = [];
+                }
+            };
+            MemoryAmflowClient.prototype.offEvent = function(handler) {
                 this._eventHandlers = this._eventHandlers.filter(function(h) {
                     return h !== handler;
                 });
-            }, MemoryAmflowClient.prototype.getTickList = function(from, to, callback) {
+            };
+            MemoryAmflowClient.prototype.getTickList = function(from, to, callback) {
                 if (!this._tickList) return void setTimeout(function() {
                     return callback(null, null);
                 }, 0);
-                from = Math.max(from, this._tickList[0]), to = Math.min(to, this._tickList[1]);
+                from = Math.max(from, this._tickList[0]);
+                to = Math.min(to, this._tickList[1]);
                 var ticks = this._tickList[2].filter(function(tick) {
                     var age = tick[0];
                     return from <= age && age <= to;
@@ -1717,36 +2343,47 @@ require = function() {
                 setTimeout(function() {
                     return callback(null, tickList);
                 }, 0);
-            }, MemoryAmflowClient.prototype.putStartPoint = function(startPoint, callback) {
+            };
+            MemoryAmflowClient.prototype.putStartPoint = function(startPoint, callback) {
                 var _this = this;
                 setTimeout(function() {
-                    _this._startPoints.push(startPoint), callback(null);
+                    _this._startPoints.push(startPoint);
+                    callback(null);
                 }, 0);
-            }, MemoryAmflowClient.prototype.getStartPoint = function(opts, callback) {
+            };
+            MemoryAmflowClient.prototype.getStartPoint = function(opts, callback) {
                 var _this = this;
                 setTimeout(function() {
                     if (!_this._startPoints || 0 === _this._startPoints.length) return void callback(new Error("no startpoint"));
                     var index = 0;
                     if (null != opts.frame) for (var nearestFrame = _this._startPoints[0].frame, i = 1; i < _this._startPoints.length; ++i) {
                         var frame = _this._startPoints[i].frame;
-                        frame <= opts.frame && nearestFrame < frame && (nearestFrame = frame, index = i);
+                        if (frame <= opts.frame && nearestFrame < frame) {
+                            nearestFrame = frame;
+                            index = i;
+                        }
                     } else for (var nearestTimestamp = _this._startPoints[0].timestamp, i = 1; i < _this._startPoints.length; ++i) {
                         var timestamp = _this._startPoints[i].timestamp;
-                        timestamp <= opts.timestamp && nearestTimestamp < timestamp && (nearestTimestamp = timestamp, 
-                        index = i);
+                        if (timestamp <= opts.timestamp && nearestTimestamp < timestamp) {
+                            nearestTimestamp = timestamp;
+                            index = i;
+                        }
                     }
                     callback(null, _this._startPoints[index]);
                 }, 0);
-            }, MemoryAmflowClient.prototype.putStorageData = function(key, value, options, callback) {
+            };
+            MemoryAmflowClient.prototype.putStorageData = function(key, value, options, callback) {
                 var _this = this;
                 setTimeout(function() {
                     try {
-                        _this._putStorageDataSyncFunc(key, value, options), callback(null);
+                        _this._putStorageDataSyncFunc(key, value, options);
+                        callback(null);
                     } catch (e) {
                         callback(e);
                     }
                 }, 0);
-            }, MemoryAmflowClient.prototype.getStorageData = function(keys, callback) {
+            };
+            MemoryAmflowClient.prototype.getStorageData = function(keys, callback) {
                 var _this = this;
                 setTimeout(function() {
                     try {
@@ -1756,19 +2393,28 @@ require = function() {
                         callback(e);
                     }
                 }, 0);
-            }, MemoryAmflowClient.prototype.dropAfter = function(age) {
+            };
+            MemoryAmflowClient.prototype.dropAfter = function(age) {
                 if (this._tickList) {
                     var from = this._tickList[0], to = this._tickList[1];
-                    age <= from ? (this._tickList = null, this._startPoints = []) : age <= to && (this._tickList[1] = age - 1, 
-                    this._tickList[2] = this._tickList[2].filter(function(tick) {
-                        var ta = tick[0];
-                        return from <= ta && ta <= age - 1;
-                    }), this._startPoints = this._startPoints.filter(function(sp) {
-                        return sp.frame < age;
-                    }));
+                    if (age <= from) {
+                        this._tickList = null;
+                        this._startPoints = [];
+                    } else if (age <= to) {
+                        this._tickList[1] = age - 1;
+                        this._tickList[2] = this._tickList[2].filter(function(tick) {
+                            var ta = tick[0];
+                            return from <= ta && ta <= age - 1;
+                        });
+                        this._startPoints = this._startPoints.filter(function(sp) {
+                            return sp.frame < age;
+                        });
+                    }
                 }
-            }, MemoryAmflowClient.TOKEN_ACTIVE = "mamfc-token:active", MemoryAmflowClient.TOKEN_PASSIVE = "mamfc-token:passive", 
-            MemoryAmflowClient;
+            };
+            MemoryAmflowClient.TOKEN_ACTIVE = "mamfc-token:active";
+            MemoryAmflowClient.TOKEN_PASSIVE = "mamfc-token:passive";
+            return MemoryAmflowClient;
         }();
         exports.MemoryAmflowClient = MemoryAmflowClient;
     }, {} ],
@@ -1779,85 +2425,115 @@ require = function() {
         });
         var ReplayAmflowProxy = function() {
             function ReplayAmflowProxy(param) {
-                this._amflow = param.amflow, this._tickList = param.tickList, this._startPoints = param.startPoints;
+                this._amflow = param.amflow;
+                this._tickList = param.tickList;
+                this._startPoints = param.startPoints;
             }
-            return ReplayAmflowProxy.prototype.dropAfter = function(age) {
+            ReplayAmflowProxy.prototype.dropAfter = function(age) {
                 if (this._tickList) {
                     var givenFrom = this._tickList[0], givenTo = this._tickList[1], givenTicksWithEvents = this._tickList[2];
-                    age <= givenFrom ? (this._tickList = null, this._startPoints = []) : age <= givenTo && (this._tickList[1] = age - 1, 
-                    this._tickList[2] = this._sliceTicks(givenTicksWithEvents, givenTo, age - 1), this._startPoints = this._startPoints.filter(function(sp) {
-                        return sp.frame < age;
-                    }));
+                    if (age <= givenFrom) {
+                        this._tickList = null;
+                        this._startPoints = [];
+                    } else if (age <= givenTo) {
+                        this._tickList[1] = age - 1;
+                        this._tickList[2] = this._sliceTicks(givenTicksWithEvents, givenTo, age - 1);
+                        this._startPoints = this._startPoints.filter(function(sp) {
+                            return sp.frame < age;
+                        });
+                    }
                 }
-            }, ReplayAmflowProxy.prototype.open = function(playId, callback) {
+            };
+            ReplayAmflowProxy.prototype.open = function(playId, callback) {
                 this._amflow.open(playId, callback);
-            }, ReplayAmflowProxy.prototype.close = function(callback) {
+            };
+            ReplayAmflowProxy.prototype.close = function(callback) {
                 this._amflow.close(callback);
-            }, ReplayAmflowProxy.prototype.authenticate = function(token, callback) {
+            };
+            ReplayAmflowProxy.prototype.authenticate = function(token, callback) {
                 this._amflow.authenticate(token, callback);
-            }, ReplayAmflowProxy.prototype.sendTick = function(tick) {
+            };
+            ReplayAmflowProxy.prototype.sendTick = function(tick) {
                 this._amflow.sendTick(tick);
-            }, ReplayAmflowProxy.prototype.onTick = function(handler) {
+            };
+            ReplayAmflowProxy.prototype.onTick = function(handler) {
                 this._amflow.onTick(handler);
-            }, ReplayAmflowProxy.prototype.offTick = function(handler) {
+            };
+            ReplayAmflowProxy.prototype.offTick = function(handler) {
                 this._amflow.offTick(handler);
-            }, ReplayAmflowProxy.prototype.sendEvent = function(event) {
+            };
+            ReplayAmflowProxy.prototype.sendEvent = function(event) {
                 this._amflow.sendEvent(event);
-            }, ReplayAmflowProxy.prototype.onEvent = function(handler) {
+            };
+            ReplayAmflowProxy.prototype.onEvent = function(handler) {
                 this._amflow.onEvent(handler);
-            }, ReplayAmflowProxy.prototype.offEvent = function(handler) {
+            };
+            ReplayAmflowProxy.prototype.offEvent = function(handler) {
                 this._amflow.offEvent(handler);
-            }, ReplayAmflowProxy.prototype.getTickList = function(from, to, callback) {
+            };
+            ReplayAmflowProxy.prototype.getTickList = function(from, to, callback) {
                 var _this = this;
-                if (!this._tickList) return void this._amflow.getTickList(from, to, callback);
-                var givenFrom = this._tickList[0], givenTo = this._tickList[1], givenTicksWithEvents = this._tickList[2], fromInGiven = givenFrom <= from && from <= givenTo, toInGiven = givenFrom <= to && to <= givenTo;
-                fromInGiven && toInGiven ? setTimeout(function() {
-                    callback(null, [ from, to, _this._sliceTicks(givenTicksWithEvents, from, to) ]);
-                }, 0) : this._amflow.getTickList(from, to, function(err, tickList) {
-                    if (err) return void callback(err);
-                    if (tickList) if (fromInGiven || toInGiven) if (fromInGiven) {
-                        var ticksWithEvents = _this._sliceTicks(givenTicksWithEvents, from, to).concat(tickList[2] || []);
-                        callback(null, [ from, tickList[1], ticksWithEvents ]);
-                    } else {
-                        var ticksWithEvents = (tickList[2] || []).concat(_this._sliceTicks(givenTicksWithEvents, from, to));
-                        callback(null, [ tickList[0], to, ticksWithEvents ]);
-                    } else if (to < givenFrom || givenTo < from) callback(null, tickList); else {
-                        var ticksWithEvents = tickList[2];
-                        if (ticksWithEvents) {
-                            var beforeGiven = _this._sliceTicks(ticksWithEvents, from, givenFrom - 1), afterGiven = _this._sliceTicks(ticksWithEvents, givenTo + 1, to);
-                            ticksWithEvents = beforeGiven.concat(givenTicksWithEvents, afterGiven);
-                        } else ticksWithEvents = givenTicksWithEvents;
-                        callback(null, [ from, to, ticksWithEvents ]);
-                    } else fromInGiven || toInGiven ? fromInGiven ? callback(null, [ from, givenTo, _this._sliceTicks(givenTicksWithEvents, from, to) ]) : callback(null, [ givenFrom, to, _this._sliceTicks(givenTicksWithEvents, from, to) ]) : to < givenFrom || givenTo < from ? callback(null, tickList) : callback(null, [ givenFrom, givenTo, _this._sliceTicks(givenTicksWithEvents, from, to) ]);
-                });
-            }, ReplayAmflowProxy.prototype.putStartPoint = function(startPoint, callback) {
+                if (this._tickList) {
+                    var givenFrom = this._tickList[0], givenTo = this._tickList[1], givenTicksWithEvents = this._tickList[2], fromInGiven = givenFrom <= from && from <= givenTo, toInGiven = givenFrom <= to && to <= givenTo;
+                    fromInGiven && toInGiven ? setTimeout(function() {
+                        callback(null, [ from, to, _this._sliceTicks(givenTicksWithEvents, from, to) ]);
+                    }, 0) : this._amflow.getTickList(from, to, function(err, tickList) {
+                        if (err) return void callback(err);
+                        if (tickList) if (fromInGiven || toInGiven) if (fromInGiven) {
+                            var ticksWithEvents = _this._sliceTicks(givenTicksWithEvents, from, to).concat(tickList[2] || []);
+                            callback(null, [ from, tickList[1], ticksWithEvents ]);
+                        } else {
+                            var ticksWithEvents = (tickList[2] || []).concat(_this._sliceTicks(givenTicksWithEvents, from, to));
+                            callback(null, [ tickList[0], to, ticksWithEvents ]);
+                        } else if (to < givenFrom || givenTo < from) callback(null, tickList); else {
+                            var ticksWithEvents = tickList[2];
+                            if (ticksWithEvents) {
+                                var beforeGiven = _this._sliceTicks(ticksWithEvents, from, givenFrom - 1), afterGiven = _this._sliceTicks(ticksWithEvents, givenTo + 1, to);
+                                ticksWithEvents = beforeGiven.concat(givenTicksWithEvents, afterGiven);
+                            } else ticksWithEvents = givenTicksWithEvents;
+                            callback(null, [ from, to, ticksWithEvents ]);
+                        } else fromInGiven || toInGiven ? fromInGiven ? callback(null, [ from, givenTo, _this._sliceTicks(givenTicksWithEvents, from, to) ]) : callback(null, [ givenFrom, to, _this._sliceTicks(givenTicksWithEvents, from, to) ]) : to < givenFrom || givenTo < from ? callback(null, tickList) : callback(null, [ givenFrom, givenTo, _this._sliceTicks(givenTicksWithEvents, from, to) ]);
+                    });
+                } else this._amflow.getTickList(from, to, callback);
+            };
+            ReplayAmflowProxy.prototype.putStartPoint = function(startPoint, callback) {
                 this._amflow.putStartPoint(startPoint, callback);
-            }, ReplayAmflowProxy.prototype.getStartPoint = function(opts, callback) {
+            };
+            ReplayAmflowProxy.prototype.getStartPoint = function(opts, callback) {
                 var _this = this, index = 0;
                 if (this._startPoints.length > 0) if (null != opts.frame) for (var nearestFrame = this._startPoints[0].frame, i = 1; i < this._startPoints.length; ++i) {
                     var frame = this._startPoints[i].frame;
-                    frame <= opts.frame && nearestFrame < frame && (nearestFrame = frame, index = i);
+                    if (frame <= opts.frame && nearestFrame < frame) {
+                        nearestFrame = frame;
+                        index = i;
+                    }
                 } else for (var nearestTimestamp = this._startPoints[0].timestamp, i = 1; i < this._startPoints.length; ++i) {
                     var timestamp = this._startPoints[i].timestamp;
-                    timestamp <= opts.timestamp && nearestTimestamp < timestamp && (nearestTimestamp = timestamp, 
-                    index = i);
+                    if (timestamp <= opts.timestamp && nearestTimestamp < timestamp) {
+                        nearestTimestamp = timestamp;
+                        index = i;
+                    }
                 }
                 var givenTo = this._tickList ? this._tickList[1] : -1;
                 opts.frame > givenTo ? this._amflow.getStartPoint(opts, function(err, startPoint) {
-                    return err ? void callback(err) : void (givenTo < startPoint.frame ? callback(null, startPoint) : callback(null, _this._startPoints[index]));
+                    err ? callback(err) : givenTo < startPoint.frame ? callback(null, startPoint) : callback(null, _this._startPoints[index]);
                 }) : setTimeout(function() {
                     callback(null, _this._startPoints[index]);
                 }, 0);
-            }, ReplayAmflowProxy.prototype.putStorageData = function(key, value, options, callback) {
+            };
+            ReplayAmflowProxy.prototype.putStorageData = function(key, value, options, callback) {
                 this._amflow.putStorageData(key, value, options, callback);
-            }, ReplayAmflowProxy.prototype.getStorageData = function(keys, callback) {
+            };
+            ReplayAmflowProxy.prototype.getStorageData = function(keys, callback) {
                 this._amflow.getStorageData(keys, callback);
-            }, ReplayAmflowProxy.prototype._sliceTicks = function(ticks, from, to) {
+            };
+            ReplayAmflowProxy.prototype._sliceTicks = function(ticks, from, to) {
                 return ticks.filter(function(t) {
                     var age = t[0];
                     return from <= age && age <= to;
                 });
-            }, ReplayAmflowProxy;
+            };
+            return ReplayAmflowProxy;
         }();
         exports.ReplayAmflowProxy = ReplayAmflowProxy;
     }, {} ],
@@ -1868,29 +2544,38 @@ require = function() {
         });
         var g = require("@akashic/akashic-engine"), SimpleProfiler = function() {
             function SimpleProfiler(param) {
-                this._interval = null != param.interval ? param.interval : SimpleProfiler.DEFAULT_INTERVAL, 
-                null != param.limit ? this._limit = param.limit >= SimpleProfiler.DEFAULT_LIMIT ? param.limit : SimpleProfiler.DEFAULT_LIMIT : this._limit = SimpleProfiler.DEFAULT_LIMIT, 
-                this._calculateProfilerValueTrigger = new g.Trigger(), param.getValueHandler && this._calculateProfilerValueTrigger.add(param.getValueHandler, param.getValueHandlerOwner), 
+                this._interval = null != param.interval ? param.interval : SimpleProfiler.DEFAULT_INTERVAL;
+                null != param.limit ? this._limit = param.limit >= SimpleProfiler.DEFAULT_LIMIT ? param.limit : SimpleProfiler.DEFAULT_LIMIT : this._limit = SimpleProfiler.DEFAULT_LIMIT;
+                this._calculateProfilerValueTrigger = new g.Trigger();
+                param.getValueHandler && this._calculateProfilerValueTrigger.add(param.getValueHandler, param.getValueHandlerOwner);
                 this._reset();
             }
-            return SimpleProfiler.prototype.time = function(type) {
+            SimpleProfiler.prototype.time = function(type) {
                 this._beforeTimes[type] = this._getCurrentTime();
-            }, SimpleProfiler.prototype.timeEnd = function(type) {
+            };
+            SimpleProfiler.prototype.timeEnd = function(type) {
                 var now = this._getCurrentTime(), value = null != this._beforeTimes[type] ? now - this._beforeTimes[type] : 0;
                 this._values[type].push({
                     time: now,
                     value: value
                 });
-            }, SimpleProfiler.prototype.flush = function() {
+            };
+            SimpleProfiler.prototype.flush = function() {
                 var now = this._getCurrentTime();
-                if (0 === this._beforeFlushTime && (this._beforeFlushTime = now), this._beforeFlushTime + this._interval < now && (this._calculateProfilerValueTrigger.fire(this.getProfilerValue(this._interval)), 
-                this._beforeFlushTime = now), this._values[1].length > this._limit) for (var i in this._values) this._values.hasOwnProperty(i) && (this._values[i] = this._values[i].slice(-SimpleProfiler.BACKUP_MARGIN));
-            }, SimpleProfiler.prototype.setValue = function(type, value) {
+                0 === this._beforeFlushTime && (this._beforeFlushTime = now);
+                if (this._beforeFlushTime + this._interval < now) {
+                    this._calculateProfilerValueTrigger.fire(this.getProfilerValue(this._interval));
+                    this._beforeFlushTime = now;
+                }
+                if (this._values[1].length > this._limit) for (var i in this._values) this._values.hasOwnProperty(i) && (this._values[i] = this._values[i].slice(-SimpleProfiler.BACKUP_MARGIN));
+            };
+            SimpleProfiler.prototype.setValue = function(type, value) {
                 this._values[type].push({
                     time: this._getCurrentTime(),
                     value: value
                 });
-            }, SimpleProfiler.prototype.getProfilerValue = function(time) {
+            };
+            SimpleProfiler.prototype.getProfilerValue = function(time) {
                 var rawFrameInterval = this._calculateProfilerValue(1, time);
                 return {
                     skippedFrameCount: this._calculateProfilerValue(0, time),
@@ -1903,25 +2588,42 @@ require = function() {
                     frameTime: this._calculateProfilerValue(2, time),
                     renderingTime: this._calculateProfilerValue(3, time)
                 };
-            }, SimpleProfiler.prototype._reset = function() {
-                this._startTime = this._getCurrentTime(), this._beforeFlushTime = 0, this._beforeTimes = [], 
-                this._beforeTimes[1] = 0, this._beforeTimes[2] = 0, this._beforeTimes[3] = 0, this._beforeTimes[0] = 0, 
-                this._values = [], this._values[1] = [], this._values[2] = [], this._values[3] = [], 
+            };
+            SimpleProfiler.prototype._reset = function() {
+                this._startTime = this._getCurrentTime();
+                this._beforeFlushTime = 0;
+                this._beforeTimes = [];
+                this._beforeTimes[1] = 0;
+                this._beforeTimes[2] = 0;
+                this._beforeTimes[3] = 0;
+                this._beforeTimes[0] = 0;
+                this._values = [];
+                this._values[1] = [];
+                this._values[2] = [];
+                this._values[3] = [];
                 this._values[0] = [];
-            }, SimpleProfiler.prototype._calculateProfilerValue = function(type, time) {
+            };
+            SimpleProfiler.prototype._calculateProfilerValue = function(type, time) {
                 for (var limit = this._getCurrentTime() - time, sum = 0, num = 0, max = 0, min = Number.MAX_VALUE, i = this._values[type].length - 1; i >= 0 && !(0 < num && this._values[type][i].time < limit); --i) {
                     var value = this._values[type][i].value;
-                    max < value && (max = value), value < min && (min = value), sum += value, ++num;
+                    max < value && (max = value);
+                    value < min && (min = value);
+                    sum += value;
+                    ++num;
                 }
                 return {
                     ave: sum / num,
                     max: max,
                     min: min
                 };
-            }, SimpleProfiler.prototype._getCurrentTime = function() {
+            };
+            SimpleProfiler.prototype._getCurrentTime = function() {
                 return +new Date();
-            }, SimpleProfiler.DEFAULT_INTERVAL = 1e3, SimpleProfiler.DEFAULT_LIMIT = 1e3, SimpleProfiler.BACKUP_MARGIN = 100, 
-            SimpleProfiler;
+            };
+            SimpleProfiler.DEFAULT_INTERVAL = 1e3;
+            SimpleProfiler.DEFAULT_LIMIT = 1e3;
+            SimpleProfiler.BACKUP_MARGIN = 100;
+            return SimpleProfiler;
         }();
         exports.SimpleProfiler = SimpleProfiler;
     }, {
@@ -1931,9 +2633,13 @@ require = function() {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
-        }), exports.DEFAULT_DELAY_IGNORE_THRESHOLD = 6, exports.DEFAULT_SKIP_TICKS_AT_ONCE = 100, 
-        exports.DEFAULT_SKIP_THRESHOLD = 100, exports.DEFAULT_JUMP_TRY_THRESHOLD = 3e4, 
-        exports.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3, exports.DEFAULT_POLLING_TICK_THRESHOLD = 1e4;
+        });
+        exports.DEFAULT_DELAY_IGNORE_THRESHOLD = 6;
+        exports.DEFAULT_SKIP_TICKS_AT_ONCE = 100;
+        exports.DEFAULT_SKIP_THRESHOLD = 100;
+        exports.DEFAULT_JUMP_TRY_THRESHOLD = 3e4;
+        exports.DEFAULT_JUMP_IGNORE_THRESHOLD = 15e3;
+        exports.DEFAULT_POLLING_TICK_THRESHOLD = 1e4;
     }, {} ],
     23: [ function(require, module, exports) {
         arguments[4][4][0].apply(exports, arguments);
@@ -1977,15 +2683,17 @@ require = function() {
                 }
                 function useMutationObserver() {
                     var iterations = 0, observer = new BrowserMutationObserver(flush), node = document.createTextNode("");
-                    return observer.observe(node, {
+                    observer.observe(node, {
                         characterData: !0
-                    }), function() {
+                    });
+                    return function() {
                         node.data = iterations = ++iterations % 2;
                     };
                 }
                 function useMessageChannel() {
                     var channel = new MessageChannel();
-                    return channel.port1.onmessage = flush, function() {
+                    channel.port1.onmessage = flush;
+                    return function() {
                         return channel.port2.postMessage(0);
                     };
                 }
@@ -1998,14 +2706,17 @@ require = function() {
                 function flush() {
                     for (var i = 0; i < len; i += 2) {
                         var callback = queue[i], arg = queue[i + 1];
-                        callback(arg), queue[i] = void 0, queue[i + 1] = void 0;
+                        callback(arg);
+                        queue[i] = void 0;
+                        queue[i + 1] = void 0;
                     }
                     len = 0;
                 }
                 function attemptVertx() {
                     try {
                         var r = require, vertx = r("vertx");
-                        return vertxNext = vertx.runOnLoop || vertx.runOnContext, useVertxTimer();
+                        vertxNext = vertx.runOnLoop || vertx.runOnContext;
+                        return useVertxTimer();
                     } catch (e) {
                         return useSetTimeout();
                     }
@@ -2014,18 +2725,20 @@ require = function() {
                     var _arguments = arguments, parent = this, child = new this.constructor(noop);
                     void 0 === child[PROMISE_ID] && makePromise(child);
                     var _state = parent._state;
-                    return _state ? !function() {
+                    _state ? !function() {
                         var callback = _arguments[_state - 1];
                         asap(function() {
                             return invokeCallback(_state, child, callback, parent._result);
                         });
-                    }() : subscribe(parent, child, onFulfillment, onRejection), child;
+                    }() : subscribe(parent, child, onFulfillment, onRejection);
+                    return child;
                 }
                 function resolve(object) {
                     var Constructor = this;
                     if (object && "object" == typeof object && object.constructor === Constructor) return object;
                     var promise = new Constructor(noop);
-                    return _resolve(promise, object), promise;
+                    _resolve(promise, object);
+                    return promise;
                 }
                 function noop() {}
                 function selfFulfillment() {
@@ -2038,7 +2751,8 @@ require = function() {
                     try {
                         return promise.then;
                     } catch (error) {
-                        return GET_THEN_ERROR.error = error, GET_THEN_ERROR;
+                        GET_THEN_ERROR.error = error;
+                        return GET_THEN_ERROR;
                     }
                 }
                 function tryThen(then, value, fulfillmentHandler, rejectionHandler) {
@@ -2051,11 +2765,20 @@ require = function() {
                 function handleForeignThenable(promise, thenable, then) {
                     asap(function(promise) {
                         var sealed = !1, error = tryThen(then, thenable, function(value) {
-                            sealed || (sealed = !0, thenable !== value ? _resolve(promise, value) : fulfill(promise, value));
+                            if (!sealed) {
+                                sealed = !0;
+                                thenable !== value ? _resolve(promise, value) : fulfill(promise, value);
+                            }
                         }, function(reason) {
-                            sealed || (sealed = !0, _reject(promise, reason));
+                            if (!sealed) {
+                                sealed = !0;
+                                _reject(promise, reason);
+                            }
                         }, "Settle: " + (promise._label || " unknown promise"));
-                        !sealed && error && (sealed = !0, _reject(promise, error));
+                        if (!sealed && error) {
+                            sealed = !0;
+                            _reject(promise, error);
+                        }
                     }, promise);
                 }
                 function handleOwnThenable(promise, thenable) {
@@ -2072,26 +2795,39 @@ require = function() {
                     promise === value ? _reject(promise, selfFulfillment()) : objectOrFunction(value) ? handleMaybeThenable(promise, value, getThen(value)) : fulfill(promise, value);
                 }
                 function publishRejection(promise) {
-                    promise._onerror && promise._onerror(promise._result), publish(promise);
+                    promise._onerror && promise._onerror(promise._result);
+                    publish(promise);
                 }
                 function fulfill(promise, value) {
-                    promise._state === PENDING && (promise._result = value, promise._state = FULFILLED, 
-                    0 !== promise._subscribers.length && asap(publish, promise));
+                    if (promise._state === PENDING) {
+                        promise._result = value;
+                        promise._state = FULFILLED;
+                        0 !== promise._subscribers.length && asap(publish, promise);
+                    }
                 }
                 function _reject(promise, reason) {
-                    promise._state === PENDING && (promise._state = REJECTED, promise._result = reason, 
-                    asap(publishRejection, promise));
+                    if (promise._state === PENDING) {
+                        promise._state = REJECTED;
+                        promise._result = reason;
+                        asap(publishRejection, promise);
+                    }
                 }
                 function subscribe(parent, child, onFulfillment, onRejection) {
                     var _subscribers = parent._subscribers, length = _subscribers.length;
-                    parent._onerror = null, _subscribers[length] = child, _subscribers[length + FULFILLED] = onFulfillment, 
-                    _subscribers[length + REJECTED] = onRejection, 0 === length && parent._state && asap(publish, parent);
+                    parent._onerror = null;
+                    _subscribers[length] = child;
+                    _subscribers[length + FULFILLED] = onFulfillment;
+                    _subscribers[length + REJECTED] = onRejection;
+                    0 === length && parent._state && asap(publish, parent);
                 }
                 function publish(promise) {
                     var subscribers = promise._subscribers, settled = promise._state;
                     if (0 !== subscribers.length) {
-                        for (var child = void 0, callback = void 0, detail = promise._result, i = 0; i < subscribers.length; i += 3) child = subscribers[i], 
-                        callback = subscribers[i + settled], child ? invokeCallback(settled, child, callback, detail) : callback(detail);
+                        for (var child = void 0, callback = void 0, detail = promise._result, i = 0; i < subscribers.length; i += 3) {
+                            child = subscribers[i];
+                            callback = subscribers[i + settled];
+                            child ? invokeCallback(settled, child, callback, detail) : callback(detail);
+                        }
                         promise._subscribers.length = 0;
                     }
                 }
@@ -2102,15 +2838,27 @@ require = function() {
                     try {
                         return callback(detail);
                     } catch (e) {
-                        return TRY_CATCH_ERROR.error = e, TRY_CATCH_ERROR;
+                        TRY_CATCH_ERROR.error = e;
+                        return TRY_CATCH_ERROR;
                     }
                 }
                 function invokeCallback(settled, promise, callback, detail) {
                     var hasCallback = isFunction(callback), value = void 0, error = void 0, succeeded = void 0, failed = void 0;
                     if (hasCallback) {
-                        if (value = tryCatch(callback, detail), value === TRY_CATCH_ERROR ? (failed = !0, 
-                        error = value.error, value = null) : succeeded = !0, promise === value) return void _reject(promise, cannotReturnOwn());
-                    } else value = detail, succeeded = !0;
+                        value = tryCatch(callback, detail);
+                        if (value === TRY_CATCH_ERROR) {
+                            failed = !0;
+                            error = value.error;
+                            value = null;
+                        } else succeeded = !0;
+                        if (promise === value) {
+                            _reject(promise, cannotReturnOwn());
+                            return;
+                        }
+                    } else {
+                        value = detail;
+                        succeeded = !0;
+                    }
                     promise._state !== PENDING || (hasCallback && succeeded ? _resolve(promise, value) : failed ? _reject(promise, error) : settled === FULFILLED ? fulfill(promise, value) : settled === REJECTED && _reject(promise, value));
                 }
                 function initializePromise(promise, resolver) {
@@ -2128,13 +2876,26 @@ require = function() {
                     return id++;
                 }
                 function makePromise(promise) {
-                    promise[PROMISE_ID] = id++, promise._state = void 0, promise._result = void 0, promise._subscribers = [];
+                    promise[PROMISE_ID] = id++;
+                    promise._state = void 0;
+                    promise._result = void 0;
+                    promise._subscribers = [];
                 }
                 function Enumerator(Constructor, input) {
-                    this._instanceConstructor = Constructor, this.promise = new Constructor(noop), this.promise[PROMISE_ID] || makePromise(this.promise), 
-                    isArray(input) ? (this._input = input, this.length = input.length, this._remaining = input.length, 
-                    this._result = new Array(this.length), 0 === this.length ? fulfill(this.promise, this._result) : (this.length = this.length || 0, 
-                    this._enumerate(), 0 === this._remaining && fulfill(this.promise, this._result))) : _reject(this.promise, validationError());
+                    this._instanceConstructor = Constructor;
+                    this.promise = new Constructor(noop);
+                    this.promise[PROMISE_ID] || makePromise(this.promise);
+                    if (isArray(input)) {
+                        this._input = input;
+                        this.length = input.length;
+                        this._remaining = input.length;
+                        this._result = new Array(this.length);
+                        if (0 === this.length) fulfill(this.promise, this._result); else {
+                            this.length = this.length || 0;
+                            this._enumerate();
+                            0 === this._remaining && fulfill(this.promise, this._result);
+                        }
+                    } else _reject(this.promise, validationError());
                 }
                 function validationError() {
                     return new Error("Array Methods must be provided an Array");
@@ -2152,7 +2913,8 @@ require = function() {
                 }
                 function reject(reason) {
                     var Constructor = this, promise = new Constructor(noop);
-                    return _reject(promise, reason), promise;
+                    _reject(promise, reason);
+                    return promise;
                 }
                 function needsResolver() {
                     throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");
@@ -2161,8 +2923,13 @@ require = function() {
                     throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
                 }
                 function Promise(resolver) {
-                    this[PROMISE_ID] = nextId(), this._result = this._state = void 0, this._subscribers = [], 
-                    noop !== resolver && ("function" != typeof resolver && needsResolver(), this instanceof Promise ? initializePromise(this, resolver) : needsNew());
+                    this[PROMISE_ID] = nextId();
+                    this._result = this._state = void 0;
+                    this._subscribers = [];
+                    if (noop !== resolver) {
+                        "function" != typeof resolver && needsResolver();
+                        this instanceof Promise ? initializePromise(this, resolver) : needsNew();
+                    }
                 }
                 function polyfill() {
                     var local = void 0;
@@ -2186,44 +2953,66 @@ require = function() {
                     return "[object Array]" === Object.prototype.toString.call(x);
                 };
                 var isArray = _isArray, len = 0, vertxNext = void 0, customSchedulerFn = void 0, asap = function(callback, arg) {
-                    queue[len] = callback, queue[len + 1] = arg, len += 2, 2 === len && (customSchedulerFn ? customSchedulerFn(flush) : scheduleFlush());
+                    queue[len] = callback;
+                    queue[len + 1] = arg;
+                    len += 2;
+                    2 === len && (customSchedulerFn ? customSchedulerFn(flush) : scheduleFlush());
                 }, browserWindow = "undefined" != typeof window ? window : void 0, browserGlobal = browserWindow || {}, BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver, isNode = "undefined" == typeof self && "undefined" != typeof process && "[object process]" === {}.toString.call(process), isWorker = "undefined" != typeof Uint8ClampedArray && "undefined" != typeof importScripts && "undefined" != typeof MessageChannel, queue = new Array(1e3), scheduleFlush = void 0;
                 scheduleFlush = isNode ? useNextTick() : BrowserMutationObserver ? useMutationObserver() : isWorker ? useMessageChannel() : void 0 === browserWindow && "function" == typeof require ? attemptVertx() : useSetTimeout();
                 var PROMISE_ID = Math.random().toString(36).substring(16), PENDING = void 0, FULFILLED = 1, REJECTED = 2, GET_THEN_ERROR = new ErrorObject(), TRY_CATCH_ERROR = new ErrorObject(), id = 0;
-                return Enumerator.prototype._enumerate = function() {
+                Enumerator.prototype._enumerate = function() {
                     for (var length = this.length, _input = this._input, i = 0; this._state === PENDING && i < length; i++) this._eachEntry(_input[i], i);
-                }, Enumerator.prototype._eachEntry = function(entry, i) {
+                };
+                Enumerator.prototype._eachEntry = function(entry, i) {
                     var c = this._instanceConstructor, resolve$$ = c.resolve;
                     if (resolve$$ === resolve) {
                         var _then = getThen(entry);
-                        if (_then === then && entry._state !== PENDING) this._settledAt(entry._state, i, entry._result); else if ("function" != typeof _then) this._remaining--, 
-                        this._result[i] = entry; else if (c === Promise) {
+                        if (_then === then && entry._state !== PENDING) this._settledAt(entry._state, i, entry._result); else if ("function" != typeof _then) {
+                            this._remaining--;
+                            this._result[i] = entry;
+                        } else if (c === Promise) {
                             var promise = new c(noop);
-                            handleMaybeThenable(promise, entry, _then), this._willSettleAt(promise, i);
+                            handleMaybeThenable(promise, entry, _then);
+                            this._willSettleAt(promise, i);
                         } else this._willSettleAt(new c(function(resolve$$) {
                             return resolve$$(entry);
                         }), i);
                     } else this._willSettleAt(resolve$$(entry), i);
-                }, Enumerator.prototype._settledAt = function(state, i, value) {
+                };
+                Enumerator.prototype._settledAt = function(state, i, value) {
                     var promise = this.promise;
-                    promise._state === PENDING && (this._remaining--, state === REJECTED ? _reject(promise, value) : this._result[i] = value), 
+                    if (promise._state === PENDING) {
+                        this._remaining--;
+                        state === REJECTED ? _reject(promise, value) : this._result[i] = value;
+                    }
                     0 === this._remaining && fulfill(promise, this._result);
-                }, Enumerator.prototype._willSettleAt = function(promise, i) {
+                };
+                Enumerator.prototype._willSettleAt = function(promise, i) {
                     var enumerator = this;
                     subscribe(promise, void 0, function(value) {
                         return enumerator._settledAt(FULFILLED, i, value);
                     }, function(reason) {
                         return enumerator._settledAt(REJECTED, i, reason);
                     });
-                }, Promise.all = all, Promise.race = race, Promise.resolve = resolve, Promise.reject = reject, 
-                Promise._setScheduler = setScheduler, Promise._setAsap = setAsap, Promise._asap = asap, 
+                };
+                Promise.all = all;
+                Promise.race = race;
+                Promise.resolve = resolve;
+                Promise.reject = reject;
+                Promise._setScheduler = setScheduler;
+                Promise._setAsap = setAsap;
+                Promise._asap = asap;
                 Promise.prototype = {
                     constructor: Promise,
                     then: then,
                     catch: function(onRejection) {
                         return this.then(null, onRejection);
                     }
-                }, polyfill(), Promise.polyfill = polyfill, Promise.Promise = Promise, Promise;
+                };
+                polyfill();
+                Promise.polyfill = polyfill;
+                Promise.Promise = Promise;
+                return Promise;
             });
         }).call(this, require("_process"), "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
     }, {
@@ -2238,8 +3027,10 @@ require = function() {
         }
         function runTimeout(fun) {
             if (cachedSetTimeout === setTimeout) return setTimeout(fun, 0);
-            if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) return cachedSetTimeout = setTimeout, 
-            setTimeout(fun, 0);
+            if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+                cachedSetTimeout = setTimeout;
+                return setTimeout(fun, 0);
+            }
             try {
                 return cachedSetTimeout(fun, 0);
             } catch (e) {
@@ -2252,8 +3043,10 @@ require = function() {
         }
         function runClearTimeout(marker) {
             if (cachedClearTimeout === clearTimeout) return clearTimeout(marker);
-            if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) return cachedClearTimeout = clearTimeout, 
-            clearTimeout(marker);
+            if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+                cachedClearTimeout = clearTimeout;
+                return clearTimeout(marker);
+            }
             try {
                 return cachedClearTimeout(marker);
             } catch (e) {
@@ -2265,22 +3058,31 @@ require = function() {
             }
         }
         function cleanUpNextTick() {
-            draining && currentQueue && (draining = !1, currentQueue.length ? queue = currentQueue.concat(queue) : queueIndex = -1, 
-            queue.length && drainQueue());
+            if (draining && currentQueue) {
+                draining = !1;
+                currentQueue.length ? queue = currentQueue.concat(queue) : queueIndex = -1;
+                queue.length && drainQueue();
+            }
         }
         function drainQueue() {
             if (!draining) {
                 var timeout = runTimeout(cleanUpNextTick);
                 draining = !0;
                 for (var len = queue.length; len; ) {
-                    for (currentQueue = queue, queue = []; ++queueIndex < len; ) currentQueue && currentQueue[queueIndex].run();
-                    queueIndex = -1, len = queue.length;
+                    currentQueue = queue;
+                    queue = [];
+                    for (;++queueIndex < len; ) currentQueue && currentQueue[queueIndex].run();
+                    queueIndex = -1;
+                    len = queue.length;
                 }
-                currentQueue = null, draining = !1, runClearTimeout(timeout);
+                currentQueue = null;
+                draining = !1;
+                runClearTimeout(timeout);
             }
         }
         function Item(fun, array) {
-            this.fun = fun, this.array = array;
+            this.fun = fun;
+            this.array = array;
         }
         function noop() {}
         var cachedSetTimeout, cachedClearTimeout, process = module.exports = {};
@@ -2300,22 +3102,40 @@ require = function() {
         process.nextTick = function(fun) {
             var args = new Array(arguments.length - 1);
             if (arguments.length > 1) for (var i = 1; i < arguments.length; i++) args[i - 1] = arguments[i];
-            queue.push(new Item(fun, args)), 1 !== queue.length || draining || runTimeout(drainQueue);
-        }, Item.prototype.run = function() {
+            queue.push(new Item(fun, args));
+            1 !== queue.length || draining || runTimeout(drainQueue);
+        };
+        Item.prototype.run = function() {
             this.fun.apply(null, this.array);
-        }, process.title = "browser", process.browser = !0, process.env = {}, process.argv = [], 
-        process.version = "", process.versions = {}, process.on = noop, process.addListener = noop, 
-        process.once = noop, process.off = noop, process.removeListener = noop, process.removeAllListeners = noop, 
-        process.emit = noop, process.prependListener = noop, process.prependOnceListener = noop, 
+        };
+        process.title = "browser";
+        process.browser = !0;
+        process.env = {};
+        process.argv = [];
+        process.version = "";
+        process.versions = {};
+        process.on = noop;
+        process.addListener = noop;
+        process.once = noop;
+        process.off = noop;
+        process.removeListener = noop;
+        process.removeAllListeners = noop;
+        process.emit = noop;
+        process.prependListener = noop;
+        process.prependOnceListener = noop;
         process.listeners = function(name) {
             return [];
-        }, process.binding = function(name) {
+        };
+        process.binding = function(name) {
             throw new Error("process.binding is not supported");
-        }, process.cwd = function() {
+        };
+        process.cwd = function() {
             return "/";
-        }, process.chdir = function(dir) {
+        };
+        process.chdir = function(dir) {
             throw new Error("process.chdir is not supported");
-        }, process.umask = function() {
+        };
+        process.umask = function() {
             return 0;
         };
     }, {} ],
@@ -2326,7 +3146,8 @@ require = function() {
         }
         Object.defineProperty(exports, "__esModule", {
             value: !0
-        }), __export(require("./constants"));
+        });
+        __export(require("./constants"));
         var EventIndex = require("./EventIndex");
         exports.EventIndex = EventIndex;
         var LoopMode_1 = require("./LoopMode");
