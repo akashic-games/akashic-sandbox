@@ -1004,6 +1004,7 @@ require = function() {
                 this.running = !1;
                 this._currentTime = param.startedAt;
                 this._frameTime = 1e3 / param.game.fps;
+                this._omittedTickDuration = 0;
                 param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
                 var conf = param.configuration;
                 this._startedAt = param.startedAt;
@@ -1186,7 +1187,8 @@ require = function() {
                 var game = this._game, pevs = this._eventBuffer.readLocalEvents();
                 this._currentTime += this._frameTime;
                 if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
-                var sceneChanged = game.tick(!1);
+                var sceneChanged = game.tick(!1, Math.floor(this._omittedTickDuration / this._frameTime));
+                this._omittedTickDuration = 0;
                 sceneChanged && this._handleSceneChange();
             };
             GameLoop.prototype._onFrame = function(frameArg) {
@@ -1225,24 +1227,27 @@ require = function() {
                                 this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
                                 continue;
                             }
-                            nextFrameTime = nextTickTime;
-                            if (targetTime <= nextFrameTime) {
+                            if (targetTime <= nextTickTime) {
+                                this._omittedTickDuration += targetTime - this._currentTime;
                                 this._currentTime = Math.floor(targetTime / this._frameTime) * this._frameTime;
                                 break;
                             }
+                            nextFrameTime = nextTickTime;
+                            this._omittedTickDuration += nextTickTime - this._currentTime;
                         }
                         this._currentTime = nextFrameTime;
                         var tick = this._tickBuffer.consume(), consumedAge = -1, pevs = this._eventBuffer.readLocalEvents();
                         if (pevs) for (var j = 0, len = pevs.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs[j]));
                         if ("number" == typeof tick) {
                             consumedAge = tick;
-                            sceneChanged = game.tick(!0);
+                            sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                         } else {
                             consumedAge = tick[0];
                             var pevs_1 = tick[1];
                             if (pevs_1) for (var j = 0, len = pevs_1.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_1[j]));
-                            sceneChanged = game.tick(!0);
+                            sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                         }
+                        this._omittedTickDuration = 0;
                         if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
                             frameArg.interrupt = !0;
                             break;
@@ -1299,6 +1304,7 @@ require = function() {
                                     break;
                                 }
                                 nextFrameTime = Math.ceil(nextTickTime / this._frameTime) * this._frameTime;
+                                this._omittedTickDuration += nextFrameTime - this._currentTime;
                             }
                             this._currentTime = nextFrameTime;
                             var tick = this._tickBuffer.consume(), consumedAge = -1;
@@ -1311,13 +1317,14 @@ require = function() {
                             if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
                             if ("number" == typeof tick) {
                                 consumedAge = tick;
-                                sceneChanged = game.tick(!0);
+                                sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                             } else {
                                 consumedAge = tick[0];
                                 var pevs_2 = tick[1];
                                 if (pevs_2) for (var j = 0, len = pevs_2.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_2[j]));
-                                sceneChanged = game.tick(!0);
+                                sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                             }
+                            this._omittedTickDuration = 0;
                             if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
                                 frameArg.interrupt = !0;
                                 break;
@@ -1355,6 +1362,7 @@ require = function() {
                     this._waitingNextTick = !1;
                     this._lastRequestedStartPointAge = -1;
                     this._lastRequestedStartPointTime = -1;
+                    this._omittedTickDuration = 0;
                     this._game._restartWithSnapshot(startPoint);
                     this._handleSceneChange();
                 }
