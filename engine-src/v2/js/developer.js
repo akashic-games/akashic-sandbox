@@ -5,6 +5,7 @@
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
+	const defaultGameTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう
 
 	// loocalStorageにメニューの位置、サイズを保存している
 	var config = {};
@@ -29,6 +30,9 @@ function setupDeveloperMenu(param) {
 	if (config.omitInterpolatedTick == null) {
 		config.omitInterpolatedTick = false;
 	}
+	if (config.gameTimeLimit == null || config.gameTimeLimit === "" || isNaN(config.gameTimeLimit)) {
+		config.gameTimeLimit = defaultGameTimeLimit;
+	}
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
@@ -52,7 +56,7 @@ function setupDeveloperMenu(param) {
 		'camera-view': {title: "Cameras", show: false},
 		'e-view': {title: "E", show: false},
 		'snapshot-view': {title: "Snapshot", show: false},
-		'storage-view': {title: "Storage", show: false},
+		'niconico-view': {title: "Niconico", show: false},
 		'playlog-view': {title: "Replay", show: false}
 	};
 
@@ -92,7 +96,12 @@ function setupDeveloperMenu(param) {
 		playlog: {
 			list: [] // {name: string, url: string}
 		},
-		views: views
+		views: views,
+		rankingGameState: {
+			score: 0,
+			playThreshold: "undefined", // 未定義の場合、未定義であることを表示させるために文字列にしておく
+			clearThreshold: "undefined"
+		}
 	};
 
 	if (config.autoJoin && !param.isReplay) {
@@ -109,6 +118,19 @@ function setupDeveloperMenu(param) {
 		props.game._loaded.addOnce(function () {
 			sendEvents();
 		});
+	}
+
+	var isStartRankingMode = false;
+	if (config.rankingMode && !param.isReplay) {
+		var gameTimeLimit = defaultGameTimeLimit;
+		if (config.gameTimeLimit && !isNaN(config.gameTimeLimit)) {
+			gameTimeLimit = parseInt(config.gameTimeLimit, 10);
+		}
+		// ランキング用イベントを送信
+		props.game._loaded.addOnce(function () {
+			amflow.sendEvent([0x20, 0, "dummy", {"type": "start", "parameters": {"gameTimeLimit": gameTimeLimit}}]);
+		});
+		isStartRankingMode = true;
 	}
 
 	// 歯車ボタン
@@ -165,12 +187,6 @@ function setupDeveloperMenu(param) {
 		data.inputPlayerId = data.inputPlayerName = null;
 		amflow.sendEvent([0 /* Join */,  3, playerId, playerName, null ]);
 	}
-
-	// ストレージデータをクリアする関数
-	function clearStorageData() {
-		props.gameStorage.clearAll();
-		alert("ストレージのデータをクリアしました。");
-	};
 
 	// プロファイラーの各種設定
 	// この値は次回の redrawProfilerCanvas() 呼び出し時に適用される
@@ -360,6 +376,17 @@ function setupDeveloperMenu(param) {
 		profilerCheckBox.checked = data.profiler.show;
 		redrawProfilerCanvas();
 	}
+
+	// g.Game.tickを上書き
+	var originalTickFunc = props.game.tick;
+	props.game.tick = function (advanceAge, omittedTickCount) {
+		if (isStartRankingMode && props.game.vars.gameState) {
+			data.rankingGameState.score = props.game.vars.gameState.score || 0;
+			data.rankingGameState.playThreshold = props.game.vars.gameState.playThreshold || "undefined";
+			data.rankingGameState.clearThreshold = props.game.vars.gameState.clearThreshold || "undefined";
+		}
+		return originalTickFunc.apply(props.game, arguments);
+	};
 
 	// g.Camera2Dを上書き
 	/**
@@ -874,6 +901,16 @@ function setupDeveloperMenu(param) {
 	}
 	data.playlog.list = playlogList;
 
+	function isNotRankingContent() {
+		const environment = props.game._configuration.environment;
+		if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
+			return true;
+		}
+		return environment.niconico.supportedModes.every(function (mode) {
+			return mode !== "ranking";
+		});
+	}
+
 	Vue.component("entity-list-item", {
 		template: "#entity-list-item-template",
 		props: {
@@ -932,6 +969,9 @@ function setupDeveloperMenu(param) {
 					saveConfig();
 				});
 			renderView(this);
+		},
+		computed: {
+			isNotRankingContent: isNotRankingContent
 		},
 		methods: {
 			leaveGame: function(index) {
@@ -1007,7 +1047,6 @@ function setupDeveloperMenu(param) {
 					data: snapshotsList[index].data
 				};
 			},
-			clearStorageData: clearStorageData,
 			savePlaylog: savePlaylog,
 			reloadPlaylog: reloadPlaylog,
 			rewindReplay: rewindReplay,
@@ -1046,6 +1085,12 @@ function setupDeveloperMenu(param) {
 			sendEvents: sendEvents,
 			sendEventsWithValue: sendEventsWithValue,
 			onAutoJoinChanged: function() {
+				saveConfig();
+			},
+			onRankingModeChanged: function() {
+				saveConfig();
+			},
+			onGameTimeLimitChanged: function() {
 				saveConfig();
 			},
 			toggleGrid: toggleGrid,

@@ -252,16 +252,33 @@
 				<pre class="dev-snapshot-preview {{ config.isPositionRight ? '' : 'dev-snapshot-preview-vertical' }}">{{snapshotPreview.data}}</pre>
 			</div>
 		</div>
-		<div class="dev-menu-view" id="storage-view">
-			<div class="dev-menu-contents">
-				<h2>ストレージ</h2>
-				<form class="pure-form">
-					<fieldset>
-						<a class="button-error pure-button" v-on:click="clearStorageData">データクリア</a>
-					</fieldset>
-				</form>
-			</div>
-		</div>
+        <div class="dev-menu-view" id="niconico-view">
+            <div class="dev-menu-contents">
+                <h2>実験放送テスト</h2>
+                <p v-if="isNotRankingContent">
+                    ランキング非対応コンテンツですので本機能は利用できません。
+                    ランキング対応させる場合は<a href="https://akashic-games.github.io/guide/ranking.html" target="_blank">こちら</a>を参照してください
+                </p>
+                <input id="ranking-mode" type="checkbox" v-bind:disabled="isNotRankingContent" v-model="config.rankingMode" v-on:change="onRankingModeChanged">
+                ランキングモードの開始g.MessageEventを送る
+                <div>
+                    制限時間：<input type="text" v-bind:disabled="isNotRankingContent" v-model="config.gameTimeLimit" v-on:change="onGameTimeLimitChanged">秒
+                </div>
+                <div class="pure-g">
+                    <div class="pure-u-1-5">スコア:</div>
+                    <div class="pure-u-4-5"><input type="text" class="dev-info-text" v-model="rankingGameState.score" readonly></div>
+                </div>
+                <div class="pure-g">
+                    <div class="pure-u-1-5">プレイ閾値:</div>
+                    <div class="pure-u-4-5"><input type="text" class="dev-info-text" v-model="rankingGameState.playThreshold" readonly></div>
+                </div>
+                <div class="pure-g">
+                    <div class="pure-u-1-5">クリア閾値:</div>
+                    <div class="pure-u-4-5"><input type="text" class="dev-info-text" v-model="rankingGameState.clearThreshold" readonly></div>
+                </div>
+            </div>
+        </div>
+
 		<div class="dev-menu-view" id="playlog-view">
 			<div class="dev-menu-contents">
 				<form class="pure-form">
