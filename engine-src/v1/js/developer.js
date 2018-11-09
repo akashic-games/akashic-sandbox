@@ -5,7 +5,8 @@
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
-	const defaultGameTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう
+	const defaultTotalTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう
+	var gameStartTime = undefined;
 
 	// loocalStorageにメニューの位置、サイズを保存している
 	var config = {};
@@ -27,8 +28,8 @@ function setupDeveloperMenu(param) {
 	if (config.showGrid == null) {
 		config.showGrid = false;
 	}
-	if (config.gameTimeLimit == null || config.gameTimeLimit === "" || isNaN(config.gameTimeLimit)) {
-		config.gameTimeLimit = defaultGameTimeLimit;
+	if (isNaN(parseInt(config.totalTimeLimit,10))) {
+		config.totalTimeLimit = defaultTotalTimeLimit;
 	}
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
@@ -95,11 +96,11 @@ function setupDeveloperMenu(param) {
 		},
 		views: views,
 		rankingGameState: {
-			score: 0,
-			playThreshold: "undefined", // 未定義の場合、未定義であることを表示させるために文字列にしておく
+			score: "undefined", // 未定義の場合、未定義であることを表示させるために文字列にしておく
+			playThreshold: "undefined",
 			clearThreshold: "undefined"
-		}
-
+		},
+		remainingTime: undefined
 };
 
 	if (config.autoJoin && !param.isReplay) {
@@ -120,18 +121,36 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	var isStartRankingMode = false;
+	// コンテンツにランキング用イベント送信前に、ランキングに対応しているコンテンツ化を確認しておく
+	if (!isRankingContent()) {
+		config.rankingMode = false;
+		config.stopGame = false;
+	}
 	if (config.rankingMode && !param.isReplay) {
-		var gameTimeLimit = defaultGameTimeLimit;
-		if (config.gameTimeLimit && !isNaN(config.gameTimeLimit)) {
-			gameTimeLimit = parseInt(config.gameTimeLimit, 10);
+		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
+
+		if (isNaN(totalTimeLimit)) {
+			totalTimeLimit = defaultTotalTimeLimit;
 		}
 		// ランキング用イベントを送信
 		props.game._loaded.handle(function () {
-			amflow.sendEvent([0x20, 0, "dummy", {"type": "start", "parameters": {"gameTimeLimit": gameTimeLimit}}]);
+			amflow.sendEvent([0x20, 0, "dummy", {"type": "start", "parameters": {"totalTimeLimit": totalTimeLimit}}]);
+			// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので互換性のためにtotalTimeLimitと一緒に送っておく
+			amflow.sendEvent([0x20, 0, "dummy", {"type": "start", "parameters": {"gameTimeLimit": totalTimeLimit - 25}}]);
 			return true;
 		});
-		isStartRankingMode = true;
+		gameStartTime = new Date();
+		var intervalId = setInterval(function() {
+			var currentRemainingTime = totalTimeLimit - ((new Date()).getTime() - gameStartTime.getTime()) / 1000;
+			data.remainingTime = currentRemainingTime > 0 ? Math.ceil(currentRemainingTime) : 0;
+		}, 1000/props.game.fps);
+		setTimeout(function() {
+			data.remainingTime = 0;
+			clearInterval(intervalId);
+			if (config.stopGame) {
+				props.driver.stopGame();
+			}
+		}, totalTimeLimit * 1000 + 2000); // コンテンツがイベントの送信を受けてから制限時間を設定する関係上、制限時間についてコンテンツと1秒弱程度のズレがあるので2秒のバッファを設けた。
 	}
 
 	// 歯車ボタン
@@ -380,10 +399,11 @@ function setupDeveloperMenu(param) {
 	// g.Game.tickを上書き
 	var originalTickFunc = props.game.tick;
 	props.game.tick = function (advanceAge, omittedTickCount) {
-		if (isStartRankingMode && props.game.vars.gameState) {
-			data.rankingGameState.score = props.game.vars.gameState.score || 0;
-			data.rankingGameState.playThreshold = props.game.vars.gameState.playThreshold || "undefined";
-			data.rankingGameState.clearThreshold = props.game.vars.gameState.clearThreshold || "undefined";
+		if (gameStartTime && props.game.vars.gameState) {
+			// ユーザーに値の型も意識させるためJSON.stringifyを使用する
+			data.rankingGameState.score = JSON.stringify(props.game.vars.gameState.score) || "undefined";
+			data.rankingGameState.playThreshold = JSON.stringify(props.game.vars.gameState.playThreshold) || "undefined";
+			data.rankingGameState.clearThreshold = JSON.stringify(props.game.vars.gameState.clearThreshold) || "undefined";
 		}
 		return originalTickFunc.apply(props.game, arguments);
 	};
@@ -888,13 +908,13 @@ function setupDeveloperMenu(param) {
 	}
 	data.playlog.list = playlogList;
 
-	function isNotRankingContent() {
+	function isRankingContent() {
 		const environment = props.game._configuration.environment;
 		if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
-			return true;
+			return false;
 		}
-		return environment.niconico.supportedModes.every(function (mode) {
-			return mode !== "ranking";
+		return environment.niconico.supportedModes.some(function (mode) {
+			return mode === "ranking";
 		});
 	}
 
@@ -958,7 +978,7 @@ function setupDeveloperMenu(param) {
 			renderView(this);
 		},
 		computed: {
-			isNotRankingContent: isNotRankingContent
+			isRankingContent: isRankingContent
 		},
 		methods: {
 			leaveGame: function(index) {
@@ -1077,7 +1097,10 @@ function setupDeveloperMenu(param) {
 			onRankingModeChanged: function() {
 				saveConfig();
 			},
-			onGameTimeLimitChanged: function() {
+			onTotalTimeLimitChanged: function() {
+				saveConfig();
+			},
+			onStopGameChanged: function() {
 				saveConfig();
 			},
 			toggleGrid: toggleGrid,
