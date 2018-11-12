@@ -31,7 +31,7 @@ function setupDeveloperMenu(param) {
 	if (config.omitInterpolatedTick == null) {
 		config.omitInterpolatedTick = false;
 	}
-	if (isNaN(parseInt(config.totalTimeLimit,10))) {
+	if (isNaN(parseInt(config.totalTimeLimit, 10))) {
 		config.totalTimeLimit = defaultTotalTimeLimit;
 	}
 
@@ -99,11 +99,11 @@ function setupDeveloperMenu(param) {
 		},
 		views: views,
 		rankingGameState: {
-			score: "undefined", // 未定義の場合、未定義であることを表示させるために文字列にしておく
-			playThreshold: "undefined",
-			clearThreshold: "undefined"
+			score: "N/A",
+			playThreshold: "N/A",
+			clearThreshold: "N/A"
 		},
-		remainingTime: undefined
+		remainingTime: "N/A"
 	};
 
 	if (config.autoJoin && !param.isReplay) {
@@ -122,12 +122,7 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	// コンテンツにランキング用イベント送信前に、ランキングに対応しているコンテンツ化を確認しておく
-	if (!isRankingContent()) {
-		config.rankingMode = false;
-		config.stopGame = false;
-	}
-	if (config.rankingMode && !param.isReplay) {
+	if (isRankingContent() && config.rankingMode && !param.isReplay) {
 		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
@@ -135,13 +130,18 @@ function setupDeveloperMenu(param) {
 		}
 		// ランキング用イベントを送信
 		props.game._loaded.addOnce(function () {
-			amflow.sendEvent([0x20, 0, "dummy", {"type": "start", "parameters": {"totalTimeLimit": totalTimeLimit}}]);
-			// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので互換性のためにtotalTimeLimitと一緒に送っておく
-			amflow.sendEvent([0x20, 0, "dummy", {"type": "start", "parameters": {"gameTimeLimit": totalTimeLimit - 25}}]);
+			amflow.sendEvent([0x20, 0, "dummy", {
+				"type": "start",
+				"parameters": {
+					"totalTimeLimit": totalTimeLimit,
+					// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので互換性のためにtotalTimeLimitと一緒に送っておく
+					"gameTimeLimit": totalTimeLimit - 25
+				}
+			}]);
 		});
-		gameStartTime = new Date();
+		gameStartTime = Date.now();
 		var intervalId = setInterval(function() {
-			var currentRemainingTime = totalTimeLimit - ((new Date()).getTime() - gameStartTime.getTime()) / 1000;
+			var currentRemainingTime = totalTimeLimit - (Date.now() - gameStartTime) / 1000;
 			data.remainingTime = currentRemainingTime > 0 ? Math.ceil(currentRemainingTime) : 0;
 		}, 1000/props.game.fps);
 		setTimeout(function() {
@@ -400,11 +400,11 @@ function setupDeveloperMenu(param) {
 	// g.Game.tickを上書き
 	var originalTickFunc = props.game.tick;
 	props.game.tick = function (advanceAge, omittedTickCount) {
-		if (gameStartTime && props.game.vars.gameState) {
+		if (gameStartTime && props.game.vars && props.game.vars.gameState) {
 			// ユーザーに値の型も意識させるためJSON.stringifyを使用する
-			data.rankingGameState.score = JSON.stringify(props.game.vars.gameState.score) || "undefined";
-			data.rankingGameState.playThreshold = JSON.stringify(props.game.vars.gameState.playThreshold) || "undefined";
-			data.rankingGameState.clearThreshold = JSON.stringify(props.game.vars.gameState.clearThreshold) || "undefined";
+			data.rankingGameState.score = getJsonStringifiedValue(props.game.vars.gameState.score);
+			data.rankingGameState.playThreshold = getJsonStringifiedValue(props.game.vars.gameState.playThreshold);
+			data.rankingGameState.clearThreshold = getJsonStringifiedValue(props.game.vars.gameState.clearThreshold);
 		}
 		return originalTickFunc.apply(props.game, arguments);
 	};
@@ -930,6 +930,15 @@ function setupDeveloperMenu(param) {
 		return environment.niconico.supportedModes.some(function (mode) {
 			return mode === "ranking";
 		});
+	}
+
+	function getJsonStringifiedValue(value) {
+		try {
+			const stringifiedValue = JSON.stringify(value);
+			return stringifiedValue === undefined ? "N/A" : stringifiedValue;
+		} catch (e) {
+			return "N/A (circular reference)";
+		}
 	}
 
 	Vue.component("entity-list-item", {
