@@ -147,8 +147,9 @@ function setupDeveloperMenu(param) {
 		setTimeout(function() {
 			data.remainingTime = 0;
 			clearInterval(intervalId);
-			if (config.stopGame) {
+			if (config.stopsGameOnTimeout) {
 				props.driver.stopGame();
+				props.game._audioSystemManager._reset(); // stopGameだけでは音が止まらないため
 			}
 		}, totalTimeLimit * 1000 + 2000); // コンテンツがイベントの送信を受けてから制限時間を設定する関係上、制限時間についてコンテンツと1秒弱程度のズレがあるので2秒のバッファを設けた。
 	}
@@ -921,7 +922,7 @@ function setupDeveloperMenu(param) {
 	function getJsonStringifiedValue(value) {
 		try {
 			const stringifiedValue = JSON.stringify(value);
-			return stringifiedValue === undefined ? "N/A" : stringifiedValue;
+			return stringifiedValue === undefined ? "undefined" : stringifiedValue;
 		} catch (e) {
 			return "N/A (circular reference)";
 		}

@@ -268,7 +268,7 @@
                     制限時間設定:<input type="text" v-bind:disabled="!isRankingContent" v-model="config.totalTimeLimit" v-on:change="onTotalTimeLimitChanged">秒
                 </div>
                 <div>
-                    <input id="stop-game" type="checkbox" v-bind:disabled="!isRankingContent" v-model="config.stopGame" v-on:change="onStopGameChanged">
+                    <input id="stop-game" type="checkbox" v-bind:disabled="!isRankingContent" v-model="config.stopsGameOnTimeout" v-on:change="onStopGameChanged">
                     制限時間経過後にゲームを停止
                 </div>
                 <div>
