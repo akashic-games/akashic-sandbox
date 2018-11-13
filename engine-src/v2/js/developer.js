@@ -56,9 +56,9 @@ function setupDeveloperMenu(param) {
 		'events-view': {title: "Events", show: false},
 		'camera-view': {title: "Cameras", show: false},
 		'e-view': {title: "E", show: false},
-		'snapshot-view': {title: "Snapshot", show: false},
 		'niconico-view': {title: "Niconico", show: false},
-		'playlog-view': {title: "Replay", show: false}
+		'playlog-view': {title: "Replay", show: false},
+		'snapshot-view': {title: "Snapshot", show: false}
 	};
 
 	// vue.jsにバインドするデータ
