@@ -148,8 +148,11 @@ function setupDeveloperMenu(param) {
 			data.remainingTime = 0;
 			clearInterval(intervalId);
 			if (config.stopsGameOnTimeout) {
+				if (props.game && props.game.audio) {
+					// 音を明示的に止める。
+					Object.keys(props.game.audio).forEach(function(key) {props.game.audio[key].stopAll();});
+				}
 				props.driver.stopGame();
-				props.game._audioSystemManager._reset(); // stopGameだけでは音が止まらないため
 			}
 		}, totalTimeLimit * 1000 + 2000); // コンテンツがイベントの送信を受けてから制限時間を設定する関係上、制限時間についてコンテンツと1秒弱程度のズレがあるので2秒のバッファを設けた。
 	}
