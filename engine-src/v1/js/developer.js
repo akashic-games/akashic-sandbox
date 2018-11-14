@@ -5,8 +5,7 @@
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
-	const defaultTotalTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう
-	var gameStartTime = undefined;
+	var defaultTotalTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう
 
 	// loocalStorageにメニューの位置、サイズを保存している
 	var config = {};
@@ -95,6 +94,15 @@ function setupDeveloperMenu(param) {
 			list: [] // {name: string, url: string}
 		},
 		views: views,
+		isRankingContent: function() {
+			var environment = props.game._configuration.environment;
+			if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
+				return false;
+			}
+			return environment.niconico.supportedModes.some(function (mode) {
+				return mode === "ranking";
+			});
+		}(),
 		rankingGameState: {
 			score: "N/A",
 			playThreshold: "N/A",
@@ -121,7 +129,7 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	if (isRankingContent() && config.rankingMode && !param.isReplay) {
+	if (data.isRankingContent && config.rankingMode && !param.isReplay) {
 		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
@@ -139,7 +147,7 @@ function setupDeveloperMenu(param) {
 			}]);
 			return true;
 		});
-		gameStartTime = Date.now();
+		var gameStartTime = Date.now();
 		var intervalId = setInterval(function() {
 			var currentRemainingTime = totalTimeLimit - (Date.now() - gameStartTime) / 1000;
 			data.remainingTime = currentRemainingTime > 0 ? Math.ceil(currentRemainingTime) : 0;
@@ -403,7 +411,7 @@ function setupDeveloperMenu(param) {
 	// g.Game.tickを上書き
 	var originalTickFunc = props.game.tick;
 	props.game.tick = function (advanceAge, omittedTickCount) {
-		if (gameStartTime && props.game.vars && props.game.vars.gameState) {
+		if (data.isRankingContent && props.game.vars && props.game.vars.gameState) {
 			// ユーザーに値の型も意識させるためJSON.stringifyを使用する
 			data.rankingGameState.score = getJsonStringifiedValue(props.game.vars.gameState.score);
 			data.rankingGameState.playThreshold = getJsonStringifiedValue(props.game.vars.gameState.playThreshold);
@@ -912,19 +920,9 @@ function setupDeveloperMenu(param) {
 	}
 	data.playlog.list = playlogList;
 
-	function isRankingContent() {
-		const environment = props.game._configuration.environment;
-		if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
-			return false;
-		}
-		return environment.niconico.supportedModes.some(function (mode) {
-			return mode === "ranking";
-		});
-	}
-
 	function getJsonStringifiedValue(value) {
 		try {
-			const stringifiedValue = JSON.stringify(value);
+			var stringifiedValue = JSON.stringify(value);
 			return stringifiedValue === undefined ? "undefined" : stringifiedValue;
 		} catch (e) {
 			return "N/A (circular reference)";
@@ -989,9 +987,6 @@ function setupDeveloperMenu(param) {
 					saveConfig();
 				});
 			renderView(this);
-		},
-		computed: {
-			isRankingContent: isRankingContent
 		},
 		methods: {
 			leaveGame: function(index) {
