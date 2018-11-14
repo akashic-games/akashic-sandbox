@@ -755,7 +755,7 @@ require = function() {
                     return _this._doSetDriverConfiguration(param.driverConfiguration);
                 });
                 return param.configurationUrl ? p.then(function() {
-                    return _this._loadConfiguration(param.configurationUrl, param.assetBase);
+                    return _this._loadConfiguration(param.configurationUrl, param.configurationBase, param.assetBase);
                 }).then(function(conf) {
                     return _this._createGame(conf, _this._player, param);
                 }) : p;
@@ -859,10 +859,10 @@ require = function() {
                     });
                 });
             };
-            GameDriver.prototype._loadConfiguration = function(configurationUrl, basePath) {
+            GameDriver.prototype._loadConfiguration = function(configurationUrl, assetBase, configurationBase) {
                 var _this = this;
                 return new es6_promise_1.Promise(function(resolve, reject) {
-                    _this._loadConfigurationFunc(configurationUrl, basePath, function(err, conf) {
+                    _this._loadConfigurationFunc(configurationUrl, assetBase, configurationBase, function(err, conf) {
                         if (err) return reject(err);
                         _this.configurationLoadedTrigger.fire(conf);
                         resolve(conf);
@@ -1004,6 +1004,7 @@ require = function() {
                 this.running = !1;
                 this._currentTime = param.startedAt;
                 this._frameTime = 1e3 / param.game.fps;
+                this._omittedTickDuration = 0;
                 param.errorHandler && this.errorTrigger.add(param.errorHandler, param.errorHandlerOwner);
                 var conf = param.configuration;
                 this._startedAt = param.startedAt;
@@ -1186,7 +1187,8 @@ require = function() {
                 var game = this._game, pevs = this._eventBuffer.readLocalEvents();
                 this._currentTime += this._frameTime;
                 if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
-                var sceneChanged = game.tick(!1);
+                var sceneChanged = game.tick(!1, Math.floor(this._omittedTickDuration / this._frameTime));
+                this._omittedTickDuration = 0;
                 sceneChanged && this._handleSceneChange();
             };
             GameLoop.prototype._onFrame = function(frameArg) {
@@ -1213,6 +1215,7 @@ require = function() {
                                 this._tickBuffer.requestTicks();
                                 this._startWaitingNextTick();
                             }
+                            this._omitInterpolatedTickOnReplay && this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
                             break;
                         }
                         var nextFrameTime = this._currentTime + this._frameTime, nextTickTime = this._tickBuffer.readNextTickTime();
@@ -1225,24 +1228,27 @@ require = function() {
                                 this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
                                 continue;
                             }
-                            nextFrameTime = nextTickTime;
-                            if (targetTime <= nextFrameTime) {
+                            if (targetTime <= nextTickTime) {
+                                this._omittedTickDuration += targetTime - this._currentTime;
                                 this._currentTime = Math.floor(targetTime / this._frameTime) * this._frameTime;
                                 break;
                             }
+                            nextFrameTime = nextTickTime;
+                            this._omittedTickDuration += nextTickTime - this._currentTime;
                         }
                         this._currentTime = nextFrameTime;
                         var tick = this._tickBuffer.consume(), consumedAge = -1, pevs = this._eventBuffer.readLocalEvents();
                         if (pevs) for (var j = 0, len = pevs.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs[j]));
                         if ("number" == typeof tick) {
                             consumedAge = tick;
-                            sceneChanged = game.tick(!0);
+                            sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                         } else {
                             consumedAge = tick[0];
                             var pevs_1 = tick[1];
                             if (pevs_1) for (var j = 0, len = pevs_1.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_1[j]));
-                            sceneChanged = game.tick(!0);
+                            sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                         }
+                        this._omittedTickDuration = 0;
                         if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
                             frameArg.interrupt = !0;
                             break;
@@ -1299,6 +1305,7 @@ require = function() {
                                     break;
                                 }
                                 nextFrameTime = Math.ceil(nextTickTime / this._frameTime) * this._frameTime;
+                                this._omittedTickDuration += nextFrameTime - this._currentTime;
                             }
                             this._currentTime = nextFrameTime;
                             var tick = this._tickBuffer.consume(), consumedAge = -1;
@@ -1311,13 +1318,14 @@ require = function() {
                             if (pevs) for (var i = 0, len = pevs.length; i < len; ++i) game.events.push(this._eventConverter.toGameEvent(pevs[i]));
                             if ("number" == typeof tick) {
                                 consumedAge = tick;
-                                sceneChanged = game.tick(!0);
+                                sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                             } else {
                                 consumedAge = tick[0];
                                 var pevs_2 = tick[1];
                                 if (pevs_2) for (var j = 0, len = pevs_2.length; j < len; ++j) game.events.push(this._eventConverter.toGameEvent(pevs_2[j]));
-                                sceneChanged = game.tick(!0);
+                                sceneChanged = game.tick(!0, Math.floor(this._omittedTickDuration / this._frameTime));
                             }
+                            this._omittedTickDuration = 0;
                             if (game._notifyPassedAgeTable[consumedAge] && game.fireAgePassedIfNeeded()) {
                                 frameArg.interrupt = !0;
                                 break;
@@ -1355,6 +1363,7 @@ require = function() {
                     this._waitingNextTick = !1;
                     this._lastRequestedStartPointAge = -1;
                     this._lastRequestedStartPointTime = -1;
+                    this._omittedTickDuration = 0;
                     this._game._restartWithSnapshot(startPoint);
                     this._handleSceneChange();
                 }
@@ -1517,18 +1526,19 @@ require = function() {
         var PdiUtil, es6_promise_1 = require("es6-promise"), g = require("@akashic/akashic-engine");
         !function(PdiUtil) {
             function makeLoadConfigurationFunc(pf) {
-                function loadResolvedConfiguration(url, basePath, callback) {
+                function loadResolvedConfiguration(url, assetBase, configurationBase, callback) {
+                    null != configurationBase && (url = g.PathUtil.resolvePath(configurationBase, url));
                     pf.loadGameConfiguration(url, function(err, conf) {
                         if (err) callback(err, null); else {
                             try {
-                                conf = PdiUtil._resolveConfigurationBasePath(conf, null != basePath ? basePath : g.PathUtil.resolveDirname(url));
+                                conf = PdiUtil._resolveConfigurationBasePath(conf, null != assetBase ? assetBase : g.PathUtil.resolveDirname(url));
                             } catch (e) {
                                 callback(e, null);
                                 return;
                             }
                             if (conf.definitions) {
                                 var defs = conf.definitions.map(function(def) {
-                                    return "string" == typeof def ? promisifiedLoad(def) : promisifiedLoad(def.url, def.basePath);
+                                    return "string" == typeof def ? promisifiedLoad(def, assetBase, configurationBase) : promisifiedLoad(def.url, def.basePath, configurationBase);
                                 });
                                 es6_promise_1.Promise.all(defs).then(function(confs) {
                                     return callback(null, confs.reduce(PdiUtil._mergeGameConfiguration));
@@ -1539,16 +1549,16 @@ require = function() {
                         }
                     });
                 }
-                function promisifiedLoad(url, basePath) {
+                function promisifiedLoad(url, assetBase, configurationBase) {
                     return new es6_promise_1.Promise(function(resolve, reject) {
-                        loadResolvedConfiguration(url, basePath, function(err, conf) {
+                        loadResolvedConfiguration(url, assetBase, configurationBase, function(err, conf) {
                             err ? reject(err) : resolve(conf);
                         });
                     });
                 }
                 return loadResolvedConfiguration;
             }
-            function _resolveConfigurationBasePath(configuration, basePath) {
+            function _resolveConfigurationBasePath(configuration, assetBase) {
                 function resolvePath(base, path) {
                     var ret = g.PathUtil.resolvePath(base, path);
                     if (0 !== ret.indexOf(base)) throw g.ExceptionFactory.createAssertionError("PdiUtil._resolveConfigurationBasePath: invalid path: " + path);
@@ -1557,7 +1567,7 @@ require = function() {
                 var assets = configuration.assets;
                 if (assets instanceof Object) for (var p in assets) if (assets.hasOwnProperty(p) && "path" in assets[p]) {
                     assets[p].virtualPath = assets[p].virtualPath || assets[p].path;
-                    assets[p].path = resolvePath(basePath, assets[p].path);
+                    assets[p].path = resolvePath(assetBase, assets[p].path);
                 }
                 if (configuration.globalScripts) {
                     configuration.globalScripts.forEach(function(path) {
@@ -1565,7 +1575,7 @@ require = function() {
                         assets[path] = {
                             type: /\.json$/i.test(path) ? "text" : "script",
                             virtualPath: path,
-                            path: resolvePath(basePath, path),
+                            path: resolvePath(assetBase, path),
                             global: !0
                         };
                     });
