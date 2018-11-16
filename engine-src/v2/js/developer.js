@@ -5,7 +5,7 @@
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
-	var defaultTotalTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう
+	var defaultTotalTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう。
 
 	// loocalStorageにメニューの位置、サイズを保存している
 	var config = {};
@@ -136,13 +136,13 @@ function setupDeveloperMenu(param) {
 		if (isNaN(totalTimeLimit)) {
 			totalTimeLimit = defaultTotalTimeLimit;
 		}
-		// ランキング用イベントを送信
+		// ランキング用イベントを送信する。
 		props.game._loaded.addOnce(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
 				"type": "start",
 				"parameters": {
 					"totalTimeLimit": totalTimeLimit,
-					// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので互換性のためにtotalTimeLimitと一緒に送っておく
+					// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので、互換性のためにtotalTimeLimitと一緒に送っておく。
 					"gameTimeLimit": totalTimeLimit - 25
 				}
 			}]);
@@ -409,11 +409,11 @@ function setupDeveloperMenu(param) {
 		redrawProfilerCanvas();
 	}
 
-	// g.Game.tickを上書き
+	// g.Game.tickを上書きする。
 	var originalTickFunc = props.game.tick;
 	props.game.tick = function (advanceAge, omittedTickCount) {
 		if (data.isRankingContent && props.game.vars && props.game.vars.gameState) {
-			// ユーザーに値の型も意識させるためJSON.stringifyを使用する
+			// ユーザーに値の型も意識させるため、JSON.stringifyを使用する。
 			data.rankingGameState.score = getJsonStringifiedValue(props.game.vars.gameState.score);
 			data.rankingGameState.playThreshold = getJsonStringifiedValue(props.game.vars.gameState.playThreshold);
 			data.rankingGameState.clearThreshold = getJsonStringifiedValue(props.game.vars.gameState.clearThreshold);
