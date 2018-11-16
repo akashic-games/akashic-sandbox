@@ -161,6 +161,7 @@ function setupDeveloperMenu(param) {
 					Object.keys(props.game.audio).forEach(function(key) {props.game.audio[key].stopAll();});
 				}
 				props.driver.stopGame();
+				console.log("ランキング対応テストの機能を用いてゲームを停止しました。");
 			}
 		}, totalTimeLimit * 1000 + 2000); // コンテンツがイベントの送信を受けてから制限時間を設定する関係上、制限時間についてコンテンツと1秒弱程度のズレがあるので2秒のバッファを設けた。
 	}
