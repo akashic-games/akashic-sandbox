@@ -29,6 +29,13 @@ function setupDeveloperMenu(param) {
 	if (config.omitInterpolatedTick == null) {
 		config.omitInterpolatedTick = false;
 	}
+	if (config.warningEs6 == null) {
+		config.warningEs6 = true;
+	}
+	// ES6以降でサポートされるオブジェクトが使われている場合警告を出す。
+	if (config.warningEs6) {
+		warningEs6OnConsole();
+	}
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
@@ -961,6 +968,9 @@ function setupDeveloperMenu(param) {
 				document.body.style.backgroundColor = bg ? "" : "black";
 			},
 			togglePreventDefault: function() {
+				saveConfig();
+			},
+			toggleWarningEs6: function() {
 				saveConfig();
 			},
 			toggleProfiler: toggleProfiler,

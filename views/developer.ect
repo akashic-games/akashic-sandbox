@@ -86,6 +86,12 @@
 								canvas要素上で発生したDOMイベントの伝搬をキャンセルしない(リロードで適用)
 							</label>
 						</div>
+                        <div>
+                            <label for="warning-es6">
+                                <input id="warning-es6" type="checkbox" v-model="config.warningEs6" v-on:change="toggleWarningEs6">
+                                ES5でサポートされない機能が使用された場合警告を出力(リロードで適用)
+                            </label>
+                        </div>
 						<div>
 							<a class="pure-button" v-on:click="fitToWindow">fit to window</a>
 							<a class="pure-button" v-on:click="revertSize">default size</a>
