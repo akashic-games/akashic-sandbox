@@ -25,7 +25,7 @@ function warningEs6OnConsole() {
 						displayFirstWarning();
 						noWarning = false;
 					}
-					console.warn(name + "が使用されました。Akashic Engineでは" + name + "の動作が保証されていないので、使用しないことを推奨します。");
+					console.warn(name + "が使用されました。多くの環境で動作させるため、現在のところES6以降の機能を利用しないことを推奨します。特にニコニコ新市場対応コンテンツでは利用しないでください。");
 					return Reflect.construct(target, args);
 				}
 			});
@@ -43,7 +43,7 @@ function warningEs6OnConsole() {
 					noWarning = false;
 				}
 				var method = name + "." + methodName;
-				console.warn(method + "が実行されました。Akashic Engineでは" + method + "の動作が保証されていないので、使用しないことを推奨します。");
+				console.warn(method + "が実行されました。多くの環境で動作させるため、現在のところES6以降の機能を利用しないことを推奨します。特にニコニコ新市場対応コンテンツでは利用しないでください。");
 				return original.apply(this, arguments);
 			};
 		});
@@ -60,7 +60,7 @@ function warningEs6OnConsole() {
 					noWarning = false;
 				}
 				var method = name + ".prototype." + methodName;
-				console.warn(method + "が実行されました。Akashic Engineでは" + method + "の動作が保証されていないので、使用しないことを推奨します。");
+				console.warn(method + "が実行されました。多くの環境で動作させるため、現在のところES6以降の機能を利用しないことを推奨します。特にニコニコ新市場対応コンテンツでは利用しないでください。");
 				return original.apply(this, arguments);
 			};
 		});
