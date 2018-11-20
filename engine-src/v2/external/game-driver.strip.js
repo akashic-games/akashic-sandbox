@@ -755,7 +755,7 @@ require = function() {
                     return _this._doSetDriverConfiguration(param.driverConfiguration);
                 });
                 return param.configurationUrl ? p.then(function() {
-                    return _this._loadConfiguration(param.configurationUrl, param.configurationBase, param.assetBase);
+                    return _this._loadConfiguration(param.configurationUrl, param.assetBase, param.configurationBase);
                 }).then(function(conf) {
                     return _this._createGame(conf, _this._player, param);
                 }) : p;
