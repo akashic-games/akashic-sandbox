@@ -242,7 +242,7 @@ require = function() {
             EventBuffer.prototype.removeFilter = function(filter) {
                 if (this._filters) if (filter) for (var i = this._filters.length - 1; i >= 0; --i) this._filters[i].func === filter && this._filters.splice(i, 1); else this._filters = null;
             };
-            EventBuffer.prototype.processEvents = function() {
+            EventBuffer.prototype.processEvents = function(isLocal) {
                 var lpevs = this._unfilteredLocalEvents, pevs = this._unfilteredEvents, joins = this._unfilteredJoinLeaves;
                 if (this._filters) {
                     if (0 === lpevs.length && 0 === pevs.length && 0 === joins.length) for (var i = 0; i < this._filters.length; ++i) if (this._filters[i].handleEmpty) {
@@ -260,7 +260,7 @@ require = function() {
                         }
                         lpevs && lpevs.length > 0 && (this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs);
                     }
-                    if (pevs.length > 0) {
+                    if (!isLocal && pevs.length > 0) {
                         this._unfilteredEvents = [];
                         for (var i = 0; i < this._filters.length; ++i) {
                             pevs = this._filters[i].func(pevs);
@@ -268,7 +268,7 @@ require = function() {
                         }
                         pevs && pevs.length > 0 && (this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs);
                     }
-                    if (joins.length > 0) {
+                    if (!isLocal && joins.length > 0) {
                         this._unfilteredJoinLeaves = [];
                         for (var i = 0; i < this._filters.length && joins && joins.length > 0; ++i) {
                             joins = this._filters[i].func(joins);
@@ -1356,7 +1356,7 @@ require = function() {
                         var currentAge = this._tickBuffer.currentAge;
                         if (currentAge <= targetAge && startPoint.frame < currentAge + this._jumpIgnoreThreshold) return;
                     }
-                    this._clock.frameTrigger.remove(this._eventBuffer.processEvents, this._eventBuffer);
+                    this._clock.frameTrigger.remove(this._onEventsProcessed, this);
                     this._skipping && this._stopSkipping();
                     this._tickBuffer.setCurrentAge(startPoint.frame);
                     this._currentTime = startPoint.timestamp || startPoint.data.timestamp || 0;
@@ -1371,9 +1371,12 @@ require = function() {
             GameLoop.prototype._onGameStarted = function() {
                 this._clock.frameTrigger.add({
                     index: 0,
-                    owner: this._eventBuffer,
-                    func: this._eventBuffer.processEvents
+                    owner: this,
+                    func: this._onEventsProcessed
                 });
+            };
+            GameLoop.prototype._onEventsProcessed = function() {
+                this._eventBuffer.processEvents(this._sceneLocalMode === g.LocalTickMode.FullLocal);
             };
             GameLoop.prototype._setLoopRenderMode = function(mode) {
                 if (mode !== this._loopRenderMode) {
