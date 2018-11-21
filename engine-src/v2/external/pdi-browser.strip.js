@@ -723,6 +723,13 @@ require = function e(t, n, r) {
                 return _this;
             }
             __extends(CanvasSurface, _super);
+            CanvasSurface.prototype.destroy = function() {
+                this.canvas.width = 1;
+                this.canvas.height = 1;
+                this.canvas = null;
+                this._renderer = null;
+                _super.prototype.destroy.call(this);
+            };
             CanvasSurface.prototype.getHTMLElement = function() {
                 return this.canvas;
             };
