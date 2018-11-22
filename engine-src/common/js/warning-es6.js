@@ -6,7 +6,7 @@ function warningEs6OnConsole() {
 			"cosh", "sinh", "tanh", "acosh", "asinh", "atanh", "hypot", "trunc", "sign", "cbrt"],
 		"Number": ["isNaN", "isFinite", "isInteger", "parseInt", "parseFloat",
 			"EPSILON", "MAX_SAFE_INTEGER", "MIN_SAFE_INTEGER", "isSafeInteger"],
-		"Object": ["is", "setPrototypeOf", "assign", "getOwnPropertySymbols", "values", "entries", "getOwnPropertyDescriptors"],
+		"Object": ["is", "assign", "getOwnPropertySymbols", "values", "entries", "getOwnPropertyDescriptors"],
 		"String": ["fromCodePoint", "raw"]
 	};
 	var methodNames = {
