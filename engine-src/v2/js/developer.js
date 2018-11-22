@@ -169,7 +169,7 @@ function setupDeveloperMenu(param) {
 					Object.keys(props.game.audio).forEach(function(key) {props.game.audio[key].stopAll();});
 				}
 				props.driver.stopGame();
-				// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示
+				// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示する。
 				data.isStopGame = true;
 				data.showMenu = true;
 				var elements = document.getElementsByClassName("dev-menu-view");
