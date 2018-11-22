@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased Changes
+## 0.13.40
 * コンテンツに対してランキングモードの開始g.MessageEventを送ることができるよう対応
 * ストレージタブをメニューから削除
 

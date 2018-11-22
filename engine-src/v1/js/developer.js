@@ -5,7 +5,7 @@
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
-	var defaultTotalTimeLimit = 60; // 60秒をデフォルトの制限時間としてあつかう。
+	var defaultTotalTimeLimit = 85; // 85秒をデフォルトの制限時間としてあつかう。
 
 	// loocalStorageにメニューの位置、サイズを保存している
 	var config = {};
@@ -115,7 +115,8 @@ function setupDeveloperMenu(param) {
 			playThreshold: "N/A",
 			clearThreshold: "N/A"
 		},
-		remainingTime: "N/A"
+		remainingTime: "N/A",
+		isStopGame: false
 };
 
 	if (config.autoJoin && !param.isReplay) {
@@ -168,9 +169,17 @@ function setupDeveloperMenu(param) {
 					Object.keys(props.game.audio).forEach(function(key) {props.game.audio[key].stopAll();});
 				}
 				props.driver.stopGame();
-				console.log("ランキング対応テストの機能を用いてゲームを停止しました。");
+				// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示
+				data.isStopGame = true;
+				data.showMenu = true;
+				var elements = document.getElementsByClassName("dev-menu-view");
+				for (var i = 0; i < elements.length; i++) {
+					var element = elements[i];
+					data.views[element.id].show = element.id === "niconico-view";
+					element.style.display = data.views[element.id].show ? "block" : "none";
+				}
 			}
-		}, totalTimeLimit * 1000 + 2000); // コンテンツがイベントの送信を受けてから制限時間を設定する関係上、制限時間についてコンテンツと1秒弱程度のズレがあるので2秒のバッファを設けた。
+		}, totalTimeLimit * 1000);
 	}
 
 	// 歯車ボタン

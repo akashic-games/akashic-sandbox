@@ -258,6 +258,7 @@
 								<input id="stop-game" type="checkbox" v-bind:disabled="!isRankingContent || !config.rankingMode" v-model="config.stopsGameOnTimeout" v-on:change="onStopGameChanged">
 								<span>制限時間経過後にゲームを停止</span> (残り{{remainingTime}}秒)
 							</label>
+							<p v-if="isStopGame" style="color:red; font-weight:bold">ゲームを停止しました。</p>
 						</fieldset>
 					</form>
 					<h3>ランキングモードで参照される値</h3>
