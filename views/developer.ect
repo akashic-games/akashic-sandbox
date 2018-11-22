@@ -195,6 +195,7 @@
 				</table>
 			</div>
 		</div>
+
 		<div class="dev-menu-view" id="e-view">
 			<div class="dev-menu-scroll-contents dev-entity-tree {{ config.isPositionRight ? 'dev-entity-tree-horizontal' : 'dev-entity-tree-vertical' }}">
 				<h2>現在のシーンに属するE</h2>
@@ -232,42 +233,61 @@
 				<p>opacity: {{ targetEntity.opacity }}</p>
 			</div>
 		</div>
-		<div class="dev-menu-view" id="snapshot-view">
-			<div class="dev-menu-contents {{ config.isPositionRight ? 'dev-entity-tree-horizontal' : 'dev-entity-tree-vertical' }}">
-				<h2>スナップショット</h2>
-				<form class="pure-form">
-					<fieldset>
-						<a class="pure-button-primary pure-button" v-on:click="saveSnapshot">スナップショット保存の要求</a>
-						<div>
-					</fieldset>
-				</form>
-				<h2>スナップショット一覧</h2>
-				<form class="pure-form">
-					<ul class="dev-snapshot-list">
-						<li v-for="s in snapshots">
-							<span>{{s.name}}</span>
-							<a class="pure-button" v-on:click="previewSnapshot($index, s.name)">プレビュー</a>
-							<a class="pure-button" v-on:click="loadSnapshot(s.name)">復元</a>
-							<a class="pure-button button-error" v-on:click="removeSnapshot(s.name)">削除</a>
-						</li>
-					</ul>
-				</form>
-			</div>
-			<div class="dev-menu-contents {{ config.isPositionRight ? 'dev-entity-property-horizontal' : 'dev-entity-property-vertical' }}">
-				<h2>プレビュー: {{snapshotPreview.name}}</h2>
-				<pre class="dev-snapshot-preview {{ config.isPositionRight ? '' : 'dev-snapshot-preview-vertical' }}">{{snapshotPreview.data}}</pre>
-			</div>
-		</div>
-		<div class="dev-menu-view" id="storage-view">
+
+		<div class="dev-menu-view" id="niconico-view">
 			<div class="dev-menu-contents">
-				<h2>ストレージ</h2>
-				<form class="pure-form">
-					<fieldset>
-						<a class="button-error pure-button" v-on:click="clearStorageData">データクリア</a>
-					</fieldset>
-				</form>
+				<h2>ランキング対応テスト</h2>
+				<p v-if="!isRankingContent">
+					ランキング非対応コンテンツです。
+					ランキングに対応させるためには、game.json の environment フィールドに値を追加する必要があります。
+					詳細は<a href="https://akashic-games.github.io/guide/ranking.html" target="_blank">Webサイト</a>を参照してください。
+				</p>
+				<div class="{{ isRankingContent ? '': 'disabled' }}">
+					<form class="pure-form">
+						<fieldset>
+							<label>
+								<input id="ranking-mode" type="checkbox" v-bind:disabled="!isRankingContent" v-model="config.rankingMode" v-on:change="onRankingModeChanged">
+								<span>ランキングモードの開始イベントを送る(要リロード)</span>
+							</label>
+						</fieldset>
+						<div>
+							totalTimeLimit (秒) <input type="text" v-bind:disabled="!isRankingContent || !config.rankingMode" v-model="config.totalTimeLimit" v-on:change="onTotalTimeLimitChanged">
+						</div>
+						<fieldset>
+							<label>
+								<input id="stop-game" type="checkbox" v-bind:disabled="!isRankingContent || !config.rankingMode" v-model="config.stopsGameOnTimeout" v-on:change="onStopGameChanged">
+								<span>制限時間経過後にゲームを停止</span> (残り{{remainingTime}}秒)
+							</label>
+							<p v-if="isStopGame" style="color:red; font-weight:bold">ゲームを停止しました。</p>
+						</fieldset>
+					</form>
+					<h3>ランキングモードで参照される値</h3>
+					<table class="pure-table">
+						<thead>
+							<tr>
+								<th>g.game.vars.gameState</th>
+								<th>value</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>score</td>
+								<td>{{ rankingGameState.score }}</td>
+							</tr>
+							<tr>
+								<td>playThreshold</td>
+								<td>{{ rankingGameState.playThreshold }}</td>
+							</tr>
+							<tr>
+								<td>clearThreshold</td>
+								<td>{{ rankingGameState.clearThreshold }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
+
 		<div class="dev-menu-view" id="playlog-view">
 			<div class="dev-menu-contents">
 				<form class="pure-form">
@@ -308,6 +328,32 @@
 						<input type="file" id="load-playlog-handler">
 					</fieldset>
 				</form>
+			</div>
+		</div>
+
+		<div class="dev-menu-view" id="snapshot-view">
+			<div class="dev-menu-contents {{ config.isPositionRight ? 'dev-entity-tree-horizontal' : 'dev-entity-tree-vertical' }}">
+				<h2>スナップショット</h2>
+				<form class="pure-form">
+					<fieldset>
+						<a class="pure-button-primary pure-button" v-on:click="saveSnapshot">スナップショット保存の要求</a>
+					</fieldset>
+				</form>
+				<h2>スナップショット一覧</h2>
+				<form class="pure-form">
+					<ul class="dev-snapshot-list">
+						<li v-for="s in snapshots">
+							<span>{{s.name}}</span>
+							<a class="pure-button" v-on:click="previewSnapshot($index, s.name)">プレビュー</a>
+							<a class="pure-button" v-on:click="loadSnapshot(s.name)">復元</a>
+							<a class="pure-button button-error" v-on:click="removeSnapshot(s.name)">削除</a>
+						</li>
+					</ul>
+				</form>
+			</div>
+			<div class="dev-menu-contents {{ config.isPositionRight ? 'dev-entity-property-horizontal' : 'dev-entity-property-vertical' }}">
+				<h2>プレビュー: {{snapshotPreview.name}}</h2>
+				<pre class="dev-snapshot-preview {{ config.isPositionRight ? '' : 'dev-snapshot-preview-vertical' }}">{{snapshotPreview.data}}</pre>
 			</div>
 		</div>
 	</div>

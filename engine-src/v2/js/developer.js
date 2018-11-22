@@ -5,6 +5,7 @@
  */
 function setupDeveloperMenu(param) {
 	var gdr = require("@akashic/game-driver");
+	var defaultTotalTimeLimit = 85; // 85秒をデフォルトの制限時間としてあつかう。
 
 	// loocalStorageにメニューの位置、サイズを保存している
 	var config = {};
@@ -28,6 +29,9 @@ function setupDeveloperMenu(param) {
 	}
 	if (config.omitInterpolatedTick == null) {
 		config.omitInterpolatedTick = false;
+	}
+	if (isNaN(parseInt(config.totalTimeLimit, 10))) {
+		config.totalTimeLimit = defaultTotalTimeLimit;
 	}
 	if (config.warningEs6 == null) {
 		config.warningEs6 = true;
@@ -58,9 +62,9 @@ function setupDeveloperMenu(param) {
 		'events-view': {title: "Events", show: false},
 		'camera-view': {title: "Cameras", show: false},
 		'e-view': {title: "E", show: false},
-		'snapshot-view': {title: "Snapshot", show: false},
-		'storage-view': {title: "Storage", show: false},
-		'playlog-view': {title: "Replay", show: false}
+		'niconico-view': {title: "Niconico", show: false},
+		'playlog-view': {title: "Replay", show: false},
+		'snapshot-view': {title: "Snapshot", show: false}
 	};
 
 	// vue.jsにバインドするデータ
@@ -99,7 +103,23 @@ function setupDeveloperMenu(param) {
 		playlog: {
 			list: [] // {name: string, url: string}
 		},
-		views: views
+		views: views,
+		isRankingContent: function() {
+			var environment = props.game._configuration.environment;
+			if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
+				return false;
+			}
+			return environment.niconico.supportedModes.some(function (mode) {
+				return mode === "ranking";
+			});
+		}(),
+		rankingGameState: {
+			score: "N/A",
+			playThreshold: "N/A",
+			clearThreshold: "N/A"
+		},
+		remainingTime: "N/A",
+		isStopGame: false
 	};
 
 	if (config.autoJoin && !param.isReplay) {
@@ -116,6 +136,50 @@ function setupDeveloperMenu(param) {
 		props.game._loaded.addOnce(function () {
 			sendEvents();
 		});
+	}
+
+	if (data.isRankingContent && config.rankingMode && !param.isReplay) {
+		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
+
+		if (isNaN(totalTimeLimit)) {
+			totalTimeLimit = defaultTotalTimeLimit;
+		}
+		// ランキング用イベントを送信する。
+		props.game._loaded.addOnce(function () {
+			amflow.sendEvent([0x20, 0, "dummy", {
+				"type": "start",
+				"parameters": {
+					"totalTimeLimit": totalTimeLimit,
+					// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので、互換性のためにtotalTimeLimitと一緒に送っておく。
+					"gameTimeLimit": totalTimeLimit - 25
+				}
+			}]);
+		});
+		var gameStartTime = Date.now();
+		var intervalId = setInterval(function() {
+			var currentRemainingTime = totalTimeLimit - (Date.now() - gameStartTime) / 1000;
+			data.remainingTime = currentRemainingTime > 0 ? Math.ceil(currentRemainingTime) : 0;
+		}, 1000/props.game.fps);
+		setTimeout(function() {
+			data.remainingTime = 0;
+			clearInterval(intervalId);
+			if (config.stopsGameOnTimeout) {
+				if (props.game && props.game.audio) {
+					// 音を明示的に止める。
+					Object.keys(props.game.audio).forEach(function(key) {props.game.audio[key].stopAll();});
+				}
+				props.driver.stopGame();
+				// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示する。
+				data.isStopGame = true;
+				data.showMenu = true;
+				var elements = document.getElementsByClassName("dev-menu-view");
+				for (var i = 0; i < elements.length; i++) {
+					var element = elements[i];
+					data.views[element.id].show = element.id === "niconico-view";
+					element.style.display = data.views[element.id].show ? "block" : "none";
+				}
+			}
+		}, totalTimeLimit * 1000);
 	}
 
 	// 歯車ボタン
@@ -172,12 +236,6 @@ function setupDeveloperMenu(param) {
 		data.inputPlayerId = data.inputPlayerName = null;
 		amflow.sendEvent([0 /* Join */,  3, playerId, playerName, null ]);
 	}
-
-	// ストレージデータをクリアする関数
-	function clearStorageData() {
-		props.gameStorage.clearAll();
-		alert("ストレージのデータをクリアしました。");
-	};
 
 	// プロファイラーの各種設定
 	// この値は次回の redrawProfilerCanvas() 呼び出し時に適用される
@@ -367,6 +425,18 @@ function setupDeveloperMenu(param) {
 		profilerCheckBox.checked = data.profiler.show;
 		redrawProfilerCanvas();
 	}
+
+	// g.Game.tickを上書きする。
+	var originalTickFunc = props.game.tick;
+	props.game.tick = function (advanceAge, omittedTickCount) {
+		if (data.isRankingContent && props.game.vars && props.game.vars.gameState) {
+			// ユーザーに値の型も意識させるため、JSON.stringifyを使用する。
+			data.rankingGameState.score = getJsonStringifiedValue(props.game.vars.gameState.score);
+			data.rankingGameState.playThreshold = getJsonStringifiedValue(props.game.vars.gameState.playThreshold);
+			data.rankingGameState.clearThreshold = getJsonStringifiedValue(props.game.vars.gameState.clearThreshold);
+		}
+		return originalTickFunc.apply(props.game, arguments);
+	};
 
 	// g.Camera2Dを上書き
 	/**
@@ -881,6 +951,15 @@ function setupDeveloperMenu(param) {
 	}
 	data.playlog.list = playlogList;
 
+	function getJsonStringifiedValue(value) {
+		try {
+			var stringifiedValue = JSON.stringify(value);
+			return stringifiedValue === undefined ? "undefined" : stringifiedValue;
+		} catch (e) {
+			return "N/A (circular reference)";
+		}
+	}
+
 	Vue.component("entity-list-item", {
 		template: "#entity-list-item-template",
 		props: {
@@ -1017,7 +1096,6 @@ function setupDeveloperMenu(param) {
 					data: snapshotsList[index].data
 				};
 			},
-			clearStorageData: clearStorageData,
 			savePlaylog: savePlaylog,
 			reloadPlaylog: reloadPlaylog,
 			rewindReplay: rewindReplay,
@@ -1056,6 +1134,15 @@ function setupDeveloperMenu(param) {
 			sendEvents: sendEvents,
 			sendEventsWithValue: sendEventsWithValue,
 			onAutoJoinChanged: function() {
+				saveConfig();
+			},
+			onRankingModeChanged: function() {
+				saveConfig();
+			},
+			onTotalTimeLimitChanged: function() {
+				saveConfig();
+			},
+			onStopGameChanged: function() {
 				saveConfig();
 			},
 			toggleGrid: toggleGrid,

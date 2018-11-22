@@ -1,8 +1,14 @@
 
 progress[value]::-webkit-progress-bar {
-	background-color: #eee;
-	border-radius: 2px;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+  background-color: #eee;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+.disabled {
+  opacity: 0.3;
+  user-select: none;
+  cursor: default;
 }
 
 .button-success,
@@ -127,6 +133,7 @@ progress[value]::-webkit-progress-bar {
 
 .dev-menu-view {
   height: 100%;
+  padding: 0 1ex;
 }
 
 .dev-menu-contents {
