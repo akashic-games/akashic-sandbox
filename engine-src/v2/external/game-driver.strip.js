@@ -1530,7 +1530,6 @@ require = function() {
         !function(PdiUtil) {
             function makeLoadConfigurationFunc(pf) {
                 function loadResolvedConfiguration(url, assetBase, configurationBase, callback) {
-                    null != configurationBase && (url = g.PathUtil.resolvePath(configurationBase, url));
                     pf.loadGameConfiguration(url, function(err, conf) {
                         if (err) callback(err, null); else {
                             try {
@@ -1541,7 +1540,12 @@ require = function() {
                             }
                             if (conf.definitions) {
                                 var defs = conf.definitions.map(function(def) {
-                                    return "string" == typeof def ? promisifiedLoad(def, assetBase, configurationBase) : promisifiedLoad(def.url, def.basePath, configurationBase);
+                                    if ("string" == typeof def) {
+                                        var resolvedUrl = null != configurationBase ? g.PathUtil.resolvePath(configurationBase, def) : def;
+                                        return promisifiedLoad(resolvedUrl, assetBase, configurationBase);
+                                    }
+                                    var resolvedUrl = null != configurationBase ? g.PathUtil.resolvePath(configurationBase, def.url) : def.url;
+                                    return promisifiedLoad(resolvedUrl, def.basePath, configurationBase);
                                 });
                                 es6_promise_1.Promise.all(defs).then(function(confs) {
                                     return callback(null, confs.reduce(PdiUtil._mergeGameConfiguration));

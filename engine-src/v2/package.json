@@ -5,10 +5,10 @@
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
   "devDependencies": {
-    "@akashic/akashic-engine": "2.4.4"
+    "@akashic/akashic-engine": "2.4.5"
   },
   "optionalDependencies": {
-    "@akashic/game-driver": "1.4.6",
+    "@akashic/game-driver": "1.4.7",
     "@akashic/game-storage": "0.0.6",
     "@akashic/pdi-browser": "1.5.1"
   },
