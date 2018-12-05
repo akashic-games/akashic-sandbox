@@ -281,11 +281,11 @@ require = function() {
                         this._unfilteredLocalEvents = [];
                         this._localBuffer = this._localBuffer ? this._localBuffer.concat(lpevs) : lpevs;
                     }
-                    if (pevs.length > 0) {
+                    if (!isLocal && pevs.length > 0) {
                         this._unfilteredEvents = [];
                         this._buffer = this._buffer ? this._buffer.concat(pevs) : pevs;
                     }
-                    if (joins.length > 0) {
+                    if (!isLocal && joins.length > 0) {
                         this._unfilteredJoinLeaves = [];
                         this._joinLeaveBuffer = this._joinLeaveBuffer ? this._joinLeaveBuffer.concat(joins) : joins;
                     }
