@@ -622,7 +622,7 @@ require = function e(t, n, r) {
         }(g.ScriptAsset);
         exports.XHRScriptAsset = XHRScriptAsset;
     }, {
-        "../utils/XHRLoader": 44,
+        "../utils/XHRLoader": 48,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     11: [ function(require, module, exports) {
@@ -666,7 +666,7 @@ require = function e(t, n, r) {
         }(g.TextAsset);
         exports.XHRTextAsset = XHRTextAsset;
     }, {
-        "../utils/XHRLoader": 44,
+        "../utils/XHRLoader": 48,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
     12: [ function(require, module, exports) {
@@ -2422,7 +2422,7 @@ require = function e(t, n, r) {
         exports.InputAbstractHandler = InputAbstractHandler;
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine",
-        "@akashic/akashic-pdi": 45
+        "@akashic/akashic-pdi": 49
     } ],
     31: [ function(require, module, exports) {
         "use strict";
@@ -2976,6 +2976,206 @@ require = function e(t, n, r) {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         });
+        var g = require("@akashic/akashic-engine"), PostMessageAudioPlugin_1 = require("./PostMessageAudioPlugin"), PostMessageAudioAsset = function(_super) {
+            function PostMessageAudioAsset() {
+                return null !== _super && _super.apply(this, arguments) || this;
+            }
+            __extends(PostMessageAudioAsset, _super);
+            PostMessageAudioAsset.prototype._load = function(loader) {
+                var _this = this, param = {
+                    id: this.id,
+                    assetPath: this.path,
+                    duration: this.duration,
+                    loop: this.loop,
+                    hint: this.hint
+                };
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioAsset#_load", param);
+                setTimeout(function() {
+                    return loader._onAssetLoad(_this);
+                });
+            };
+            PostMessageAudioAsset.prototype.destroy = function() {
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioAsset#destroy", {
+                    id: this.id
+                });
+                _super.prototype.destroy.call(this);
+            };
+            return PostMessageAudioAsset;
+        }(g.AudioAsset);
+        exports.PostMessageAudioAsset = PostMessageAudioAsset;
+    }, {
+        "./PostMessageAudioPlugin": 41,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    40: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), PostMessageAudioPlugin_1 = require("./PostMessageAudioPlugin"), PostMessageAudioPlayer = function(_super) {
+            function PostMessageAudioPlayer(system, manager, id) {
+                var _this = _super.call(this, system) || this;
+                _this._manager = manager;
+                _this.id = id;
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#new", {
+                    id: id
+                });
+                return _this;
+            }
+            __extends(PostMessageAudioPlayer, _super);
+            PostMessageAudioPlayer.prototype.play = function(asset) {
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#play", {
+                    id: this.id,
+                    assetId: asset.id
+                });
+            };
+            PostMessageAudioPlayer.prototype.stop = function() {
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#stop", {
+                    id: this.id
+                });
+            };
+            PostMessageAudioPlayer.prototype.changeVolume = function(volume) {
+                _super.prototype.changeVolume.call(this, volume);
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#changeVolume", {
+                    id: this.id,
+                    volume: this._calculateVolume()
+                });
+            };
+            PostMessageAudioPlayer.prototype._changeMuted = function(muted) {
+                _super.prototype._changeMuted.call(this, muted);
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#changeVolume", {
+                    id: this.id,
+                    volume: this._calculateVolume()
+                });
+            };
+            PostMessageAudioPlayer.prototype._changePlaybackRate = function(rate) {
+                _super.prototype._changePlaybackRate.call(this, rate);
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#changePlaybackRate", {
+                    id: this.id,
+                    rate: rate
+                });
+            };
+            PostMessageAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
+                PostMessageAudioPlugin_1.PostMessageAudioPlugin.send("akashic:AudioPlayer#changeVolume", {
+                    id: this.id,
+                    volume: this._calculateVolume()
+                });
+            };
+            PostMessageAudioPlayer.prototype._calculateVolume = function() {
+                return this._muted ? 0 : this.volume * this._system.volume * this._manager.getMasterVolume();
+            };
+            return PostMessageAudioPlayer;
+        }(g.AudioPlayer);
+        exports.PostMessageAudioPlayer = PostMessageAudioPlayer;
+    }, {
+        "./PostMessageAudioPlugin": 41,
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    41: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var postMessageHandler, PostMessageAudioAsset_1 = require("./PostMessageAudioAsset"), PostMessageAudioPlayer_1 = require("./PostMessageAudioPlayer"), PostMessageHandler_1 = require("./PostMessageHandler"), PostMessageAudioPlugin = function() {
+            function PostMessageAudioPlugin() {
+                this.supportedFormats = void 0;
+                this._playerIdx = 0;
+            }
+            PostMessageAudioPlugin.isSupported = function() {
+                return "undefined" != typeof window && !!window.postMessage;
+            };
+            PostMessageAudioPlugin.initialize = function(targetWindow, targetOrigin) {
+                postMessageHandler = new PostMessageHandler_1.PostMessageHandler(targetWindow, targetOrigin);
+                postMessageHandler.start();
+                return postMessageHandler;
+            };
+            PostMessageAudioPlugin.send = function(type, parameters) {
+                postMessageHandler.send({
+                    type: type,
+                    parameters: parameters
+                });
+            };
+            PostMessageAudioPlugin.prototype.createAsset = function(id, assetPath, duration, system, loop, hint) {
+                return new PostMessageAudioAsset_1.PostMessageAudioAsset(id, assetPath, duration, system, loop, hint);
+            };
+            PostMessageAudioPlugin.prototype.createPlayer = function(system, manager) {
+                return new PostMessageAudioPlayer_1.PostMessageAudioPlayer(system, manager, "" + this._playerIdx++);
+            };
+            return PostMessageAudioPlugin;
+        }();
+        exports.PostMessageAudioPlugin = PostMessageAudioPlugin;
+    }, {
+        "./PostMessageAudioAsset": 39,
+        "./PostMessageAudioPlayer": 40,
+        "./PostMessageHandler": 42
+    } ],
+    42: [ function(require, module, exports) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
+        var g = require("@akashic/akashic-engine"), PostMessageHandler = function() {
+            function PostMessageHandler(targetWindow, targetOrigin) {
+                this.message = new g.Trigger();
+                this.targetWindow = targetWindow;
+                this.targetOrigin = targetOrigin;
+                this.onMessage_bound = this.onMessage.bind(this);
+            }
+            PostMessageHandler.prototype.start = function() {
+                window.addEventListener("message", this.onMessage_bound);
+            };
+            PostMessageHandler.prototype.stop = function() {
+                window.removeEventListener("message", this.onMessage_bound);
+            };
+            PostMessageHandler.prototype.send = function(message) {
+                this.targetWindow.postMessage(message, this.targetOrigin);
+            };
+            PostMessageHandler.prototype.onMessage = function(message) {
+                message.origin === this.targetOrigin && this.message.fire(message.data);
+            };
+            return PostMessageHandler;
+        }();
+        exports.PostMessageHandler = PostMessageHandler;
+    }, {
+        "@akashic/akashic-engine": "@akashic/akashic-engine"
+    } ],
+    43: [ function(require, module, exports) {
+        "use strict";
+        var __extends = this && this.__extends || function() {
+            var extendStatics = Object.setPrototypeOf || {
+                __proto__: []
+            } instanceof Array && function(d, b) {
+                d.__proto__ = b;
+            } || function(d, b) {
+                for (var p in b) b.hasOwnProperty(p) && (d[p] = b[p]);
+            };
+            return function(d, b) {
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b);
+                d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
+            };
+        }();
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        });
         var g = require("@akashic/akashic-engine"), XHRLoader_1 = require("../../utils/XHRLoader"), helper = require("./WebAudioHelper"), WebAudioAsset = function(_super) {
             function WebAudioAsset() {
                 return null !== _super && _super.apply(this, arguments) || this;
@@ -3019,11 +3219,11 @@ require = function e(t, n, r) {
         }(g.AudioAsset);
         exports.WebAudioAsset = WebAudioAsset;
     }, {
-        "../../utils/XHRLoader": 44,
-        "./WebAudioHelper": 41,
+        "../../utils/XHRLoader": 48,
+        "./WebAudioHelper": 45,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    40: [ function(require, module, exports) {
+    44: [ function(require, module, exports) {
         "use strict";
         function resumeHandler() {
             var context = helper.getAudioContext();
@@ -3059,9 +3259,9 @@ require = function e(t, n, r) {
         }(WebAudioAutoplayHelper || (WebAudioAutoplayHelper = {}));
         module.exports = WebAudioAutoplayHelper;
     }, {
-        "./WebAudioHelper": 41
+        "./WebAudioHelper": 45
     } ],
-    41: [ function(require, module, exports) {
+    45: [ function(require, module, exports) {
         "use strict";
         var WebAudioHelper, AudioContext = window.AudioContext || window.webkitAudioContext, singleContext = null;
         !function(WebAudioHelper) {
@@ -3095,7 +3295,7 @@ require = function e(t, n, r) {
         }(WebAudioHelper || (WebAudioHelper = {}));
         module.exports = WebAudioHelper;
     }, {} ],
-    42: [ function(require, module, exports) {
+    46: [ function(require, module, exports) {
         "use strict";
         var __extends = this && this.__extends || function() {
             var extendStatics = Object.setPrototypeOf || {
@@ -3181,10 +3381,10 @@ require = function e(t, n, r) {
         }(g.AudioPlayer);
         exports.WebAudioPlayer = WebAudioPlayer;
     }, {
-        "./WebAudioHelper": 41,
+        "./WebAudioHelper": 45,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    43: [ function(require, module, exports) {
+    47: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -3229,11 +3429,11 @@ require = function e(t, n, r) {
         }();
         exports.WebAudioPlugin = WebAudioPlugin;
     }, {
-        "./WebAudioAsset": 39,
-        "./WebAudioAutoplayHelper": 40,
-        "./WebAudioPlayer": 42
+        "./WebAudioAsset": 43,
+        "./WebAudioAutoplayHelper": 44,
+        "./WebAudioPlayer": 46
     } ],
-    44: [ function(require, module, exports) {
+    48: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -3280,7 +3480,7 @@ require = function e(t, n, r) {
     }, {
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ],
-    45: [ function(require, module, exports) {
+    49: [ function(require, module, exports) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
@@ -3305,13 +3505,16 @@ require = function e(t, n, r) {
         exports.HTMLAudioPlugin = HTMLAudioPlugin_1.HTMLAudioPlugin;
         var WebAudioPlugin_1 = require("./plugin/WebAudioPlugin/WebAudioPlugin");
         exports.WebAudioPlugin = WebAudioPlugin_1.WebAudioPlugin;
+        var PostMessageAudioPlugin_1 = require("./plugin/PostMessageAudioPlugin/PostMessageAudioPlugin");
+        exports.PostMessageAudioPlugin = PostMessageAudioPlugin_1.PostMessageAudioPlugin;
     }, {
         "./Platform": 4,
         "./ResourceFactory": 6,
         "./plugin/AudioPluginManager": 33,
         "./plugin/AudioPluginRegistry": 34,
         "./plugin/HTMLAudioPlugin/HTMLAudioPlugin": 38,
-        "./plugin/WebAudioPlugin/WebAudioPlugin": 43,
+        "./plugin/PostMessageAudioPlugin/PostMessageAudioPlugin": 41,
+        "./plugin/WebAudioPlugin/WebAudioPlugin": 47,
         "@akashic/akashic-engine": "@akashic/akashic-engine"
     } ]
 }, {}, []);
