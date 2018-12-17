@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased changes
+* 「ランキング対応テスト」を「ニコニコ新市場対応テスト」に表記変更
+* ニコニコ新市場対応テストで、セッションパラメーターとして mode を送ることができるよう対応
+
 ## 0.13.46
 * 内部コンポーネントの更新
   * v1(akashic-engine@1.13.0, game-driver@0.11.16, pdi-browser@0.10.12)
