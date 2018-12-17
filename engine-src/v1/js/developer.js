@@ -142,7 +142,7 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	if (data.isIchibaContent && config.mode === "ranking" && !param.isReplay) {
+	if (data.isIchibaContent && !param.isReplay) {
 		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
