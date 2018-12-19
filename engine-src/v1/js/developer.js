@@ -160,7 +160,7 @@ function setupDeveloperMenu(param) {
 		props.game._loaded.handle(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
 				"type": "start",
-				"sessionParameters": sessionParameters
+				"parameters": sessionParameters
 			}]);
 			return true;
 		});

@@ -161,7 +161,7 @@ function setupDeveloperMenu(param) {
 		props.game._loaded.addOnce(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
 				"type": "start",
-				"sessionParameters": sessionParameters
+				"parameters": sessionParameters
 			}]);
 		});
 		if (config.mode === "ranking") {
