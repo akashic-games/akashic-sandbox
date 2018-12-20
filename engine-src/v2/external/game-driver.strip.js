@@ -1542,7 +1542,7 @@ require = function() {
                                 var defs = conf.definitions.map(function(def) {
                                     if ("string" == typeof def) {
                                         var resolvedUrl = null != configurationBase ? g.PathUtil.resolvePath(configurationBase, def) : def;
-                                        return promisifiedLoad(resolvedUrl, assetBase, configurationBase);
+                                        return promisifiedLoad(resolvedUrl, void 0, configurationBase);
                                     }
                                     var resolvedUrl = null != configurationBase ? g.PathUtil.resolvePath(configurationBase, def.url) : def.url;
                                     return promisifiedLoad(resolvedUrl, def.basePath, configurationBase);
