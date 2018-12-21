@@ -36,6 +36,9 @@ function setupDeveloperMenu(param) {
 	if (config.warningEs6 == null) {
 		config.warningEs6 = true;
 	}
+	if (config.sendMode == null) {
+		config.sendMode = false;
+	}
 	if (config.mode == null) {
 		config.mode = "single";
 	}
@@ -122,8 +125,8 @@ function setupDeveloperMenu(param) {
 		remainingTime: "N/A",
 		isStopGame: false,
 		modeList: [
-			{text: "ひとりで遊ぶ", value: "single"},
-			{text: "ランキング", value: "ranking"}
+			{text: "ひとりで遊ぶ(single)", value: "single"},
+			{text: "ランキング(ranking)", value: "ranking"}
 		]
 	};
 
@@ -143,7 +146,7 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	if (data.isIchibaContent && !param.isReplay) {
+	if (config.sendMode && data.isIchibaContent && !param.isReplay) {
 		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
@@ -1147,6 +1150,9 @@ function setupDeveloperMenu(param) {
 			sendEvents: sendEvents,
 			sendEventsWithValue: sendEventsWithValue,
 			onAutoJoinChanged: function() {
+				saveConfig();
+			},
+			onSendModeChanged: function() {
 				saveConfig();
 			},
 			onModeChanged: function() {

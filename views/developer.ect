@@ -243,15 +243,18 @@
 					詳細は<a href="https://akashic-games.github.io/guide/ranking.html" target="_blank">Webサイト</a>を参照してください。
 				</p>
 				<div class="{{ isIchibaContent ? '': 'disabled' }}">
-					<form class="pure-form">
+				    <input id="send-mode" type="checkbox" v-bind:disabled="!isIchibaContent" v-model="config.sendMode" v-on:change="onSendModeChanged">
+				        セッションパラメータを送る(要リロード)
+				    </input>
+					<form class="pure-form" v-show="config.sendMode">
 						<fieldset>
 							<label>
+							    <span>mode</span>
 								<select v-bind:disabled="!isIchibaContent" v-model="config.mode" v-on:change="onModeChanged" style="height:auto">
 									<option v-for="mode in modeList" v-bind:value="mode.value">
 										{{ mode.text }}
 									</option>
 								</select>
-								<span>セッションパラメータのモード選択(要リロード)</span>
 							</label>
 						</fieldset>
 						<div>
