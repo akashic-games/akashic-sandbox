@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.13.48
+* 内部コンポーネントの更新
+  * v1(akashic-engine@1.13.0, game-driver@0.11.17, pdi-browser@0.10.12)
+  * v2(akashic-engine@2.4.8, game-driver@1.4.9, pdi-browser@1.5.3)
+
 ## 0.13.47
 * 内部コンポーネントの更新
   * v1(akashic-engine@1.13.0, game-driver@0.11.17, pdi-browser@0.10.12)
