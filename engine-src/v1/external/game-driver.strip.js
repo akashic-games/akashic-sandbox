@@ -1120,17 +1120,17 @@ require = function() {
                 if (this._sceneLocalMode !== localMode || this._sceneTickMode !== tickMode) {
                     this._sceneLocalMode = localMode;
                     this._sceneTickMode = tickMode;
+                    this._clock.frameTrigger.remove(this, this._onFrame);
+                    this._clock.frameTrigger.remove(this, this._onLocalFrame);
                     switch (localMode) {
                       case g.LocalTickMode.FullLocal:
                         this._tickController.stopTick();
-                        this._clock.frameTrigger.remove(this, this._onFrame);
                         this._clock.frameTrigger.handle(this, this._onLocalFrame);
                         break;
 
                       case g.LocalTickMode.NonLocal:
                       case g.LocalTickMode.InterpolateLocal:
                         tickMode === g.TickGenerationMode.ByClock ? this._tickController.startTick() : this._tickController.startTickOnce();
-                        this._clock.frameTrigger.remove(this, this._onLocalFrame);
                         this._clock.frameTrigger.handle(this, this._onFrame);
                         break;
 
@@ -1232,7 +1232,7 @@ require = function() {
                     } else ageGap > this._skipThreshold && this._startSkipping();
                     if (ageGap <= 0) {
                         if (0 === ageGap) {
-                            this._sceneTickMode !== g.TickGenerationMode.Manual && this._loopMode !== LoopMode_1.default.Replay || 0 !== this._tickBuffer.currentAge || this._tickBuffer.requestTicks();
+                            0 === this._tickBuffer.currentAge && this._tickBuffer.requestTicks();
                             this._startWaitingNextTick();
                         }
                         this._sceneLocalMode === g.LocalTickMode.InterpolateLocal && this._doLocalTick();
