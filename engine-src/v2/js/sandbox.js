@@ -187,7 +187,6 @@ window.addEventListener("load", function() {
 		var timeKeeper = new TimeKeeper(replayDuration);
 
 		driver.gameCreatedTrigger.add(function (game) {
-			enableLogger(game);
 			window.sandboxDeveloperProps.game = game;
 			window.sandboxDeveloperProps.driver = driver;
 			window.sandboxDeveloperProps.amflow = amflowClient;
