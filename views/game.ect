@@ -15,7 +15,9 @@ window.g = require("@akashic/akashic-engine");
 <script type="text/javascript" src="/js/TimeKeeper.js"></script>
 <script type="text/javascript" src="/js/SandboxScriptAsset.js"></script>
 <script type="text/javascript" src="/js/game-storage.strip.js"></script>
+<% if @version == "1" : %>
 <script type="text/javascript" src="/js/v<%= @version %>/logger.js"></script>
+<% end %>
 <script type="text/javascript" src="/js/v<%= @version %>/sandbox.js"></script>
 <% if @devMode : %>
 <link rel="stylesheet" href="/thirdparty/css/pure-min.css">
