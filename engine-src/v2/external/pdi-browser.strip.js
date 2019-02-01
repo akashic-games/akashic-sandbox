@@ -3244,7 +3244,7 @@ require = function e(t, n, r) {
         !function(WebAudioAutoplayHelper) {
             function setupChromeMEIWorkaround() {
                 var context = helper.getAudioContext();
-                if (!context || "function" != typeof context.resume) {
+                if (!context || "function" == typeof context.resume) {
                     var gain = helper.createGainNode(context), osc = context.createOscillator();
                     osc.type = "sawtooth";
                     osc.frequency.value = 440;
