@@ -244,10 +244,10 @@
 				</p>
 				<div class="{{ isIchibaContent ? '': 'disabled' }}">
 					<label>
-						<input id="send-mode" type="checkbox" v-bind:disabled="!isIchibaContent" v-model="config.sendMode" v-on:change="onSendModeChanged" />
+						<input id="send-mode" type="checkbox" v-bind:disabled="!isIchibaContent" v-model="config.sendsSessionParameter" v-on:change="onSendsSessionParameterChanged" />
 						セッションパラメータを送る(要リロード)
 					</label>
-					<table class="pure-table" v-show="config.sendMode" style="width: 100%">
+					<table class="pure-table" v-show="config.sendsSessionParameter" style="width: 100%">
 						<thead>
 							<tr>
 								<th>property</th>

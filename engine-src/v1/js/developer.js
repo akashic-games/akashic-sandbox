@@ -33,8 +33,8 @@ function setupDeveloperMenu(param) {
 	if (config.warningEs6 == null) {
 		config.warningEs6 = true;
 	}
-	if (config.sendMode == null) {
-		config.sendMode = false;
+	if (config.sendsSessionParameter == null) {
+		config.sendsSessionParameter = false;
 	}
 	if (config.mode == null) {
 		config.mode = "single";
@@ -145,7 +145,7 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	if (config.sendMode && data.isIchibaContent && !param.isReplay) {
+	if (config.sendsSessionParameter && data.isIchibaContent && !param.isReplay) {
 		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
@@ -1138,7 +1138,7 @@ function setupDeveloperMenu(param) {
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},
-			onSendModeChanged: function() {
+			onSendsSessionParameterChanged: function() {
 				saveConfig();
 			},
 			onModeChanged: function() {
