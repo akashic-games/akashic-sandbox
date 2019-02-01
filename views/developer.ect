@@ -243,33 +243,43 @@
 					詳細は<a href="https://akashic-games.github.io/guide/ranking.html" target="_blank">Webサイト</a>を参照してください。
 				</p>
 				<div class="{{ isIchibaContent ? '': 'disabled' }}">
-				    <input id="send-mode" type="checkbox" v-bind:disabled="!isIchibaContent" v-model="config.sendMode" v-on:change="onSendModeChanged">
-				        セッションパラメータを送る(要リロード)
-				    </input>
-					<form class="pure-form" v-show="config.sendMode">
-						<fieldset>
-							<label>
-							    <span>mode</span>
-								<select v-bind:disabled="!isIchibaContent" v-model="config.mode" v-on:change="onModeChanged" style="height:auto">
+					<label>
+						<input id="send-mode" type="checkbox" v-bind:disabled="!isIchibaContent" v-model="config.sendMode" v-on:change="onSendModeChanged" />
+						セッションパラメータを送る(要リロード)
+					</label>
+					<table class="pure-table" v-show="config.sendMode" style="width: 100%">
+						<thead>
+							<tr>
+								<th>property</th>
+								<th>content</th>
+							</tr>
+						</thead>
+						<tr>
+							<td>mode</td>
+							<td>
+								<select v-bind:disabled="!isIchibaContent" v-model="config.mode" v-on:change="onModeChanged">
 									<option v-for="mode in modeList" v-bind:value="mode.value">
 										{{ mode.text }}
 									</option>
 								</select>
-							</label>
-						</fieldset>
-						<div>
-							totalTimeLimit (秒) <input type="text" v-bind:disabled="!isIchibaContent || config.mode !== 'ranking'" v-model="config.totalTimeLimit" v-on:change="onTotalTimeLimitChanged">
-						</div>
-						<fieldset>
-							<label>
-								<input id="stop-game" type="checkbox" v-bind:disabled="!isIchibaContent || config.mode !== 'ranking'" v-model="config.stopsGameOnTimeout" v-on:change="onStopGameChanged">
-								<span>制限時間経過後にゲームを停止</span> (残り{{remainingTime}}秒)
-							</label>
-							<p v-if="isStopGame" style="color:red; font-weight:bold">ゲームを停止しました。</p>
-						</fieldset>
-					</form>
+							</td>
+						</tr>
+						<tr v-bind:style="{ color: (isIchibaContent && config.mode === 'ranking') ? undefined : 'silver' }" >
+							<td>totalTimeLimit</td>
+							<td>
+								<div>
+									<input type="text" v-model="config.totalTimeLimit" v-on:change="onTotalTimeLimitChanged" />
+								</div>
+								<label>
+									<input id="stop-game" type="checkbox" v-bind:disabled="!(isIchibaContent && config.mode === 'ranking')" v-model="config.stopsGameOnTimeout" v-on:change="onStopGameChanged" />
+									<span>時間経過後にゲームを停止</span> (残{{remainingTime}}秒)
+								</label>
+								<p v-if="isStopGame" style="color:red; font-weight:bold">ゲームを停止しました。</p>
+							</td>
+						</tr>
+					</table>
 					<h3>ランキングモードで参照される値</h3>
-					<table class="pure-table">
+					<table class="pure-table" style="width: 100%">
 						<thead>
 							<tr>
 								<th>g.game.vars.gameState</th>
