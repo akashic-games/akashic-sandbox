@@ -696,6 +696,13 @@ require = function e(t, n, r) {
                 return _this;
             }
             __extends(CanvasSurface, _super);
+            CanvasSurface.prototype.destroy = function() {
+                this.canvas.width = 1;
+                this.canvas.height = 1;
+                this.canvas = null;
+                this._renderer = null;
+                _super.prototype.destroy.call(this);
+            };
             CanvasSurface.prototype.renderer = function() {
                 this._renderer || (this._renderer = new Context2DRenderer_1.Context2DRenderer(this, this._context));
                 return this._renderer;
@@ -2028,10 +2035,6 @@ require = function e(t, n, r) {
     } ],
     32: [ function(require, module, exports) {
         "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: !0
-        });
-        exports.PointType = rpe.PointType;
     }, {} ],
     "@akashic/pdi-browser": [ function(require, module, exports) {
         "use strict";
