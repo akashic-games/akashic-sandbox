@@ -33,6 +33,12 @@ function setupDeveloperMenu(param) {
 	if (config.warningEs6 == null) {
 		config.warningEs6 = true;
 	}
+	if (config.sendsSessionParameter == null) {
+		config.sendsSessionParameter = false;
+	}
+	if (config.mode == null) {
+		config.mode = "single";
+	}
 	// ES6以降でサポートされるオブジェクトが使われている場合警告を出す。
 	if (config.warningEs6) {
 		warningEs6OnConsole();
@@ -101,14 +107,12 @@ function setupDeveloperMenu(param) {
 			list: [] // {name: string, url: string}
 		},
 		views: views,
-		isRankingContent: function() {
+		isIchibaContent: function() {
 			var environment = props.game._configuration.environment;
 			if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
 				return false;
 			}
-			return environment.niconico.supportedModes.some(function (mode) {
-				return mode === "ranking";
-			});
+			return environment.niconico.supportedModes.length > 0;
 		}(),
 		rankingGameState: {
 			score: "N/A",
@@ -116,8 +120,12 @@ function setupDeveloperMenu(param) {
 			clearThreshold: "N/A"
 		},
 		remainingTime: "N/A",
-		isStopGame: false
-};
+		isStopGame: false,
+		modeList: [
+			{text: "ひとりで遊ぶ(single)", value: "single"},
+			{text: "ランキング(ranking)", value: "ranking"}
+		]
+	};
 
 	if (config.autoJoin && !param.isReplay) {
 		// NOTE: この時点でgame._loadedにgame._start()がハンドルされている必要がある
@@ -137,49 +145,57 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	if (data.isRankingContent && config.rankingMode && !param.isReplay) {
+	if (config.sendsSessionParameter && data.isIchibaContent && !param.isReplay) {
 		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
 			totalTimeLimit = defaultTotalTimeLimit;
 		}
 		// ランキング用イベントを送信する。
+		var sessionParameters = {
+			"mode": config.mode
+		};
+		if (config.mode === "ranking") {
+			sessionParameters["totalTimeLimit"] = totalTimeLimit;
+			// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので、互換性のためにtotalTimeLimitと一緒に送っておく。
+			sessionParameters["gameTimeLimit"] = totalTimeLimit - 25;
+		}
 		props.game._loaded.handle(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
 				"type": "start",
-				"parameters": {
-					"totalTimeLimit": totalTimeLimit,
-					// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので、互換性のためにtotalTimeLimitと一緒に送っておく。
-					"gameTimeLimit": totalTimeLimit - 25
-				}
+				"parameters": sessionParameters
 			}]);
 			return true;
 		});
-		var gameStartTime = Date.now();
-		var intervalId = setInterval(function() {
-			var currentRemainingTime = totalTimeLimit - (Date.now() - gameStartTime) / 1000;
-			data.remainingTime = currentRemainingTime > 0 ? Math.ceil(currentRemainingTime) : 0;
-		}, 1000/props.game.fps);
-		setTimeout(function() {
-			data.remainingTime = 0;
-			clearInterval(intervalId);
-			if (config.stopsGameOnTimeout) {
-				if (props.game && props.game.audio) {
-					// 音を明示的に止める。
-					Object.keys(props.game.audio).forEach(function(key) {props.game.audio[key].stopAll();});
+		if (config.mode === "ranking") {
+			var gameStartTime = Date.now();
+			var intervalId = setInterval(function () {
+				var currentRemainingTime = totalTimeLimit - (Date.now() - gameStartTime) / 1000;
+				data.remainingTime = currentRemainingTime > 0 ? Math.ceil(currentRemainingTime) : 0;
+			}, 1000 / props.game.fps);
+			setTimeout(function () {
+				data.remainingTime = 0;
+				clearInterval(intervalId);
+				if (config.stopsGameOnTimeout) {
+					if (props.game && props.game.audio) {
+						// 音を明示的に止める。
+						Object.keys(props.game.audio).forEach(function (key) {
+							props.game.audio[key].stopAll();
+						});
+					}
+					props.driver.stopGame();
+					// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示する。
+					data.isStopGame = true;
+					data.showMenu = true;
+					var elements = document.getElementsByClassName("dev-menu-view");
+					for (var i = 0; i < elements.length; i++) {
+						var element = elements[i];
+						data.views[element.id].show = element.id === "niconico-view";
+						element.style.display = data.views[element.id].show ? "block" : "none";
+					}
 				}
-				props.driver.stopGame();
-				// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示する。
-				data.isStopGame = true;
-				data.showMenu = true;
-				var elements = document.getElementsByClassName("dev-menu-view");
-				for (var i = 0; i < elements.length; i++) {
-					var element = elements[i];
-					data.views[element.id].show = element.id === "niconico-view";
-					element.style.display = data.views[element.id].show ? "block" : "none";
-				}
-			}
-		}, totalTimeLimit * 1000);
+			}, totalTimeLimit * 1000);
+		}
 	}
 
 	// 歯車ボタン
@@ -428,7 +444,7 @@ function setupDeveloperMenu(param) {
 	// g.Game.tickを上書きする。
 	var originalTickFunc = props.game.tick;
 	props.game.tick = function (advanceAge, omittedTickCount) {
-		if (data.isRankingContent && props.game.vars && props.game.vars.gameState) {
+		if (data.isIchibaContent && props.game.vars && props.game.vars.gameState) {
 			// ユーザーに値の型も意識させるため、JSON.stringifyを使用する。
 			data.rankingGameState.score = getJsonStringifiedValue(props.game.vars.gameState.score);
 			data.rankingGameState.playThreshold = getJsonStringifiedValue(props.game.vars.gameState.playThreshold);
@@ -1122,7 +1138,10 @@ function setupDeveloperMenu(param) {
 			onAutoJoinChanged: function() {
 				saveConfig();
 			},
-			onRankingModeChanged: function() {
+			onSendsSessionParameterChanged: function() {
+				saveConfig();
+			},
+			onModeChanged: function() {
 				saveConfig();
 			},
 			onTotalTimeLimitChanged: function() {
