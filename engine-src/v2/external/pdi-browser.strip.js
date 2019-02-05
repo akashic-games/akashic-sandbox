@@ -2859,7 +2859,7 @@ require = function e(t, n, r) {
                         this._audioInstance = null;
                     }
                     _super.prototype.stop.call(this);
-                }
+                } else _super.prototype.stop.call(this);
             };
             HTMLAudioPlayer.prototype.changeVolume = function(volume) {
                 _super.prototype.changeVolume.call(this, volume);
@@ -3358,7 +3358,7 @@ require = function e(t, n, r) {
                     this._clearEndedEventHandler();
                     this._sourceNode && this._sourceNode.stop(0);
                     _super.prototype.stop.call(this);
-                }
+                } else _super.prototype.stop.call(this);
             };
             WebAudioPlayer.prototype.notifyMasterVolumeChanged = function() {
                 this._gainNode.gain.value = this._calculateVolume();
