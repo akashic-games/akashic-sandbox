@@ -164,12 +164,12 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.type("application/json");
 		var externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
 		externals = Array.isArray(externals) ? externals : [externals];
-		var versionsJson = require("./variableNames.json");
+		var versionsJson = require("./engineFilesVersion.json");
 		res.render("engine", {
 			host: host,
 			version: version,
 			externals: JSON.stringify(externals),
-			engineFilesVariable: versionsJson[`v${version}`]
+			engineFilesVariable: `engineFilesV${versionsJson[`v${version}`].replace(/\./g, "_")}`
 		});
 	});
 

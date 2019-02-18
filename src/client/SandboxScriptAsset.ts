@@ -2,6 +2,7 @@ interface Window {
 	gScriptContainer: {[key: string]: Function};
 }
 
+// ビルド時はnode_modules下のakashic-engineモジュールのgを参照しているが、実際に利用するgはjs下のengineFilesV*_*_*.jsのものなので、本来なら実行時に参照するgを動的に決定できるようにすべき
 class SandboxScriptAsset extends g.ScriptAsset {
 	loading: boolean;
 	script: string;
