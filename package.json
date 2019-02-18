@@ -6,7 +6,7 @@
   "scripts": {
     "prepublish": "npm run build && node ./build/checkAkashicVersions",
     "start": "npm run build && node bin/run",
-    "build": "npm run copy:common && npm run build:v1 && npm run build:v2 && npm run build:client && npm run build:server && cpx ./server/variableNames.json ./lib",
+    "build": "npm run copy:common && npm run build:v1 && npm run build:v2 && npm run build:client && npm run build:server && cpx ./src/server/variableNames.json ./lib",
     "copy:common": "cpx ./engine-src/common/js/**/*.js ./js && cpx ./engine-src/common/external/**/*.js ./js",
     "build:v1": "cd ./engine-src/v1 && npm install && cd ../.. && npm run copy:v1",
     "copy:v1": "cpx ./engine-src/v1/js/**/*.js ./js/v1 && cpx ./engine-src/v1/external/**/*.js ./js/v1",
