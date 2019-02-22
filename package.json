@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.13.54",
+  "version": "0.13.55",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
