@@ -4,7 +4,7 @@
  * param.timeKeeper: TimeKeeper
  */
 function setupDeveloperMenu(param) {
-	var gdr = require("@akashic/game-driver");
+	var gdr = engineFiles.gameDriver;
 	var defaultTotalTimeLimit = 85; // 85秒をデフォルトの制限時間としてあつかう。
 
 	// loocalStorageにメニューの位置、サイズを保存している

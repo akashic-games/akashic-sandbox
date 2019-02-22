@@ -28,18 +28,7 @@ function minify(filepath) {
 			sequences: false
 		}
 	});
-};
-
-var files = [
-	"node_modules/@akashic/game-driver/build/game-driver.js",
-	"node_modules/@akashic/pdi-browser/build/pdi-browser.js"
-];
-
-files.forEach(filepath => {
-	const inputPath = path.resolve(__dirname + "/../engine-src/" + version, filepath);
-	const outputPath = path.resolve(__dirname + "/../engine-src/" + version + "/external/", path.basename(filepath, ".js") + ".strip.js");
-	fs.writeFileSync(outputPath, minify(inputPath).code);
-});
+}
 
 var files_common = [
 	"node_modules/@akashic/game-storage/build/game-storage.js"

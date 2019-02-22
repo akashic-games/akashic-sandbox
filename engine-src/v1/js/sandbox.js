@@ -114,8 +114,8 @@ window.addEventListener("load", function() {
 			}
 		}
 
-		var pdiBrowser = require("@akashic/pdi-browser");
-		var gdr = require("@akashic/game-driver");
+		var pdiBrowser = engineFiles.pdiBrowser;
+		var gdr = engineFiles.gameDriver;
 
 		// var executionMode = gdr.ExecutionMode.Active;
 		var playlogName = getParameterByName("playlog");

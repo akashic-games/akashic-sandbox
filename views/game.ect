@@ -5,12 +5,21 @@
 <title><%= @title %></title>
 <script type="text/javascript" src="/thirdparty/js/md5.min.js"></script>
 <script type="text/javascript" src="/sandboxconfig/"></script>
-<script type="text/javascript" src="/js/v<%= @version %>/akashic-engine.js"></script>
-
-<script type="text/javascript" src="/js/v<%= @version %>/game-driver.strip.js"></script>
-<script type="text/javascript" src="/js/v<%= @version %>/pdi-browser.strip.js"></script>
+<script type="text/javascript" src="/js/v<%= @version %>/<%= @engineFilesVariable %>.js"></script>
 <script>
-window.g = require("@akashic/akashic-engine");
+window.engineFiles = <%= @engineFilesVariable %>;
+window.g = engineFiles.akashicEngine;
+(function() {
+    var originalRequire = window.require;
+    window.require = function(moduleName) {
+        switch(moduleName) {
+            case "@akashic/akashic-engine":
+                return engineFiles.akashicEngine;
+            default:
+                return this.call(this, moduleName);
+        }
+    };
+})();
 </script>
 <script type="text/javascript" src="/js/TimeKeeper.js"></script>
 <script type="text/javascript" src="/js/SandboxScriptAsset.js"></script>
