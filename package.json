@@ -17,7 +17,7 @@
     "lint": "tslint -p src/client/ -c tslint.json src/client/**/*.ts && tslint -p src/server/ -c tslint.json src/client/**/*.js",
     "test": "npm run test:jasmine && npm run lint",
     "test:jasmine": "jasmine ./spec/**/*[sS]pec.js",
-    "update": "npm run update:v1 && npm run update:v2 && node ./build/generateFilesAboutEngineFiles.js",
+    "update": "npm run update:v1 && npm run update:v2 && node ./build/updateEngineFiles.js",
     "update:v1": "node ./build/generateAkashicVersionsFile v1 && node ./build/copyfiles v1 && npm run copy:v1 && npm run copy:common",
     "update:v2": "node ./build/generateAkashicVersionsFile v2 && node ./build/copyfiles v2 && npm run copy:v2 && npm run copy:common"
   },

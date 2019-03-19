@@ -9,7 +9,7 @@ var controller: express.RequestHandler = (req: express.Request, res: express.Res
 		title: "game",
 		version: version,
 		devMode: devMode,
-		engineFilesVariable: `engineFilesV${versionsJson[`v${version}`].replace(/\./g, "_")}`
+		engineFilesVariable: versionsJson[`v${version}`].variable
 	});
 };
 
