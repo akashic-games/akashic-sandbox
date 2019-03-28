@@ -169,7 +169,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 			host: host,
 			version: version,
 			externals: JSON.stringify(externals),
-			engineFilesVariable: `engineFilesV${versionsJson[`v${version}`].replace(/\./g, "_")}`
+			engineFilesVariable: versionsJson[`v${version}`].variable
 		});
 	});
 
