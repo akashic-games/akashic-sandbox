@@ -147,6 +147,56 @@ progress[value]::-webkit-progress-bar {
   box-sizing: border-box;
 }
 
+/* error-dialog */
+
+.error-dialog-main {
+  position: fixed;
+  z-index: 10000;
+  width: 450px;
+  padding: 12px;
+  bottom: 0;
+  right: 0;
+  opacity: 1;
+  background-color: #fee;
+  color: #666;
+  font-size: 16px;
+  box-sizing: border-box;
+  box-shadow: 5px 5px;
+  transition: .3s ease-out;
+}
+
+.error-dialog-main-hide {
+  right: -450px;
+  opacity: 0;
+  transition: .3s ease-out;
+}
+
+.error-dialog-title {
+  font-weight: bold;
+  color: #222;
+  font-size: 20px;
+  margin: 3px 0;
+}
+
+.error-dialog-name {
+  margin: 4px 10px;
+  color: #f33;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.error-dialog-body {
+  margin: 4px 10px;
+  color: #333;
+}
+
+.error-dialog-close-btn {
+  position: absolute;
+  cursor: pointer;
+  top: 10px;
+  right: 10px;
+}
+
 /* e-view */
 
 .dev-entity-tree ul {
