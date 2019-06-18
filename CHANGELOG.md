@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.14.0
+* スクリプトファイルに "use strict" 宣言を付けるように
+* デバッグビルド版 engine-files を利用するように
+
 ## 0.13.70
 * 内部コンポーネントの更新
   * v1(engine-files@1.1.9, game-storage@0.0.6)
