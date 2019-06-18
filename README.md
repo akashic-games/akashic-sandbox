@@ -85,24 +85,26 @@ npm install
 npm run build # src/以下をビルド
 ```
 
-### 内部モジュールの更新方法
+## 内部モジュールの更新方法
 
 akashic-sandbox は、以下の内部モジュールのコードをリポジトリ内に直接保持しています。
-* @akashic/game-driver
-* @akashic/pdi-browser
+* @akashic/engine-files
 * @akashic/game-storage
 
 また、これらのコードには Akashic Engine v1 系と v2 系が存在します。
 
-akashic-sandbox の開発者がこれらのコードを更新する場合、enigne-src/v1/ などの package.json を更新して、取り込み用のコマンドを実行する必要があります。
-v1 系の game-driver を vX.X.X に更新する場合は、次のコマンドを実行してください。
+akashic-sandbox の開発者がこれらのコードを更新するには次のコマンドを実行してください。
 
 ```sh
-cd engine-src/v1/
-npm i -D @akashic/game-driver@X.X.X
-cd ../../
-npm run update:v1
+npm run update
 ```
+
+## 内部モジュールの動作確認方法
+
+akashic-sandbox を用いて内部モジュール (とくに [engine-files](https://github.com/akashic-games/engine-files)) の動作確認を行いたい場合、以下の手順を行ってください。
+
+* 別で生成した engine-files のビルド成果物 `engineFilesV{version}.js` を `./js/v2/` または `./js/v1` にコピーします。
+  * バージョンが異なる場合は `./engine-src/engineFilesVersion.json` をビルドした engine-files に合わせてください。
 
 ## テスト方法
 

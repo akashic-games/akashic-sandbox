@@ -35,8 +35,9 @@ var versions = {
 var promises = Object.keys(versions).filter(v => versions[v].version !== currentVersions[v].version).map(v => {
 	var version = versions[v].version;
 	var fileName = `${versions[v].variable}.js`;
+	var releasedfileName = `${versions[v].variable}.debug.js`;
 	console.log(`start to download engineFiles (v${version})`);
-	return fetch(`https://github.com/akashic-games/engine-files/releases/download/v${version}/${fileName}`).then(res => {
+	return fetch(`https://github.com/akashic-games/engine-files/releases/download/v${version}/${releasedfileName}`).then(res => {
 		if (res.status >= 400) {
 			throw new Error(`failed to get engine-files. status:${res.status}.`);
 		}

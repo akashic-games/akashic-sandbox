@@ -1,8 +1,10 @@
 script:
-- npm install
-- npm test
+  - npm install
+  - npm test
 language: node_js
 node_js:
-- 6.10
-- 8.11
-- 10.6
+  - 8
+  - 10
+os:
+  - windows
+  - linux

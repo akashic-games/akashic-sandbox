@@ -36,7 +36,9 @@ function completeConfigParams(c: SandboxConfig): SandboxConfig {
 }
 
 function createLoadingScript(content: any): string {
-	return "window.sandboxDeveloperProps = window.sandboxDeveloperProps || {};window.sandboxDeveloperProps.sandboxConfig = " + JSON.stringify(content);
+	return `window.sandboxDeveloperProps = window.sandboxDeveloperProps || {};
+window.sandboxDeveloperProps.sandboxConfig = ${JSON.stringify(content)};
+`;
 }
 
 interface SandboxConfig {

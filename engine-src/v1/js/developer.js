@@ -124,8 +124,27 @@ function setupDeveloperMenu(param) {
 		modeList: [
 			{text: "ひとりで遊ぶ(single)", value: "single"},
 			{text: "ランキング(ranking)", value: "ranking"}
-		]
+		],
+		isShowingErrorDialog: false,
+		errorMessage: null
 	};
+
+	function showErrorDialog(err) {
+		data.isShowingErrorDialog = true;
+		data.errorMessage = err.message;
+	}
+
+	function hideErrorDialog() {
+		data.isShowingErrorDialog = false;
+	}
+
+	window.addEventListener("error", function(ev) {
+		showErrorDialog(ev.error);
+	});
+
+	window.addEventListener("onunhandledrejection", function(ev) {
+		showErrorDialog(ev.error);
+	});
 
 	if (config.autoJoin && !param.isReplay) {
 		// NOTE: この時点でgame._loadedにgame._start()がハンドルされている必要がある
@@ -998,12 +1017,12 @@ function setupDeveloperMenu(param) {
 	});
 
 	var vm = new Vue({
-		el: "#dev-menu",
+		el: "#dev-container",
 		data: data,
 		ready: function(v) {
 			// v-show/v-ifだと一瞬メニューが見えてしまうため、".dev-menu-hide"を初期状態で付けている
 			// それを外して表示制御をv-showに任せる
-			var e = this.$el;
+			var e = document.getElementById("dev-menu");
 			e.className = e.className.replace(/dev-menu-hide/g, "");
 			// interact.js によるリサイズ処理
 			interact("#dev-menu")
@@ -1151,7 +1170,8 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			toggleGrid: toggleGrid,
-			toggleOmitInterpolatedTick: toggleOmitInterpolatedTick
+			toggleOmitInterpolatedTick: toggleOmitInterpolatedTick,
+			hideErrorDialog: hideErrorDialog
 		}
 	});
 };
