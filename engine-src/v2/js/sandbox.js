@@ -236,6 +236,7 @@ window.addEventListener("load", function() {
 				jumpTryThreshold: Number.MAX_VALUE,
 				targetTimeFunc: timeKeeper.now.bind(timeKeeper),
 				originDate: replayStartTime,
+				omitInterpolatedTickOnReplay: false
 			} : {
 				loopMode: gdr.LoopMode.Realtime
 			},
