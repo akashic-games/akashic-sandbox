@@ -145,6 +145,7 @@ window.addEventListener("load", function() {
 		var isReplay = !!playlog;
 		var replayDuration = null;
 		if (isReplay) {
+			var fps = playlog.startPoints[0].data.fps;
 			var replayLastTime = null;
 			var replayLastAge = playlog.tickList[1];
 			var ticksWithEvents = playlog.tickList[2];
@@ -153,12 +154,12 @@ window.addEventListener("load", function() {
 				var pevs = tick[1];
 				for (var j = 0; j < pevs.length; ++j) {
 					if (pevs[j][0] === 2) { // TimestampEvent
-						replayLastTime = (pevs[j][3] /* Timestamp */) + (replayLastAge - tick[0]) * 1000 / playlog.fps;
+						replayLastTime = (pevs[j][3] /* Timestamp */) + (replayLastAge - tick[0]) * 1000 / fps;
 						break loop;
 					}
 				}
 			}
-			replayDuration = (replayLastTime == null) ? (replayLastAge * 1000 / playlog.fps) : replayLastTime;
+			replayDuration = (replayLastTime == null) ? (replayLastAge * 1000 / fps) : replayLastTime;
 		}
 
 		var pf = new pdiBrowser.Platform({
