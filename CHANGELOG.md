@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## 0.14.1
-* LocalStorageに保存するプレイログデータのJSON形式を修正
+* LocalStorageに保存するプレイログデータを修正
 
 ## 0.14.0
 * スクリプトファイルに "use strict" 宣言を付けるように
