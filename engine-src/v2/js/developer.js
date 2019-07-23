@@ -854,8 +854,7 @@ function setupDeveloperMenu(param) {
 		var dump = amflow.dump();
 		var jsonData = JSON.stringify({
 			tickList: dump.tickList,
-			startPoints: dump.startPoints,
-			fps: props.game.fps
+			startPoints: dump.startPoints
 		});
 		if (localStorage.getItem(PLAYLOG_PREFIX + name)) {
 			if (!window.confirm("同名のリプレイ情報がすでに存在します。上書きしてもよろしいでしょうか？")) {

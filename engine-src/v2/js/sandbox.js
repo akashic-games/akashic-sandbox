@@ -147,6 +147,7 @@ window.addEventListener("load", function() {
 		var replayStartTime = null;
 		var replayDuration = null;
 		if (isReplay) {
+			var fps = playlog.startPoints[0].data.fps;
 			var replayLastTime = null;
 			var replayLastAge = playlog.tickList[1];
 			var ticksWithEvents = playlog.tickList[2];
@@ -158,12 +159,12 @@ window.addEventListener("load", function() {
 					if (pevs[j][0] === 2) { // TimestampEvent
 						var timestamp = (pevs[j][3] /* Timestamp */);
 						// Timestamp の時刻がゲームの開始時刻より小さかった場合は相対時刻とみなす
-						replayLastTime = (timestamp < replayStartTime ? timestamp + replayStartTime : timestamp) + (replayLastAge - tick[0]) * 1000 / playlog.fps;
+						replayLastTime = (timestamp < replayStartTime ? timestamp + replayStartTime : timestamp) + (replayLastAge - tick[0]) * 1000 / fps;
 						break loop;
 					}
 				}
 			}
-			replayDuration = (replayLastTime == null) ? (replayLastAge * 1000 / playlog.fps) : (replayLastTime - replayStartTime);
+			replayDuration = (replayLastTime == null) ? (replayLastAge * 1000 / fps) : (replayLastTime - replayStartTime);
 		}
 
 		var pf = new pdiBrowser.Platform({
