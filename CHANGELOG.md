@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.15.1
+* engineFiles更新スクリプトの修正
+* 内部コンポーネント更新
+  * v1(engine-files@1.1.10, game-storage@0.0.6)
+  * v2(engine-files@2.1.21, game-storage@0.0.6)
+
 ## 0.15.0
 * LocalStorageに保存するプレイログデータを修正
 
