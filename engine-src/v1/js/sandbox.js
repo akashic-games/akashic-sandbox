@@ -59,13 +59,11 @@ window.addEventListener("load", function() {
 			height: Math.floor(game.height * gameScale)
 		};
 		pf.containerController.changeScale(gameScale, gameScale);
-		if (!!center) {
-			var gameOffset = {
-				x: Math.floor((viewportSize.width - gameSize.width) / 2),
-				y: Math.floor((viewportSize.height - gameSize.height) / 2)
-			};
-			pf.containerController.inputHandlerLayer.setOffset(gameOffset);
-		}
+		var gameOffset = {
+			x: !!center ? Math.floor((viewportSize.width - gameSize.width) / 2) : 0,
+			y: !!center ? Math.floor((viewportSize.height - gameSize.height) / 2) : 0
+		};
+		pf.containerController.inputHandlerLayer.setOffset(gameOffset);
 	}
 
 	function start(gamePath) {

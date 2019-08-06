@@ -773,6 +773,8 @@ function setupDeveloperMenu(param) {
 		var node = container.lastChild.firstChild;
 		gridCanvas.style.transformOrigin = node.style.transformOrigin;
 		gridCanvas.style.transform = node.style.transform;
+		gridCanvas.style.left = node.parentElement.style.left;
+		gridCanvas.style.top = node.parentElement.style.top;
 	}
 	function drawGrid() {
 		var context = gridCanvas.getContext("2d");
