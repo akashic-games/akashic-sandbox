@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.15.2
+* `fit to Window` から `default size` でサイズを戻すとコンテンツの位置がずれる問題を修正
+
 ## 0.15.1
 * engineFiles更新スクリプトの修正
 * 内部コンポーネント更新
