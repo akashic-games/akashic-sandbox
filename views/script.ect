@@ -3,6 +3,15 @@ if (! ("gScriptContainer" in window)) {
 	window.gScriptContainer = {};
 }
 gScriptContainer["<%- @id %>"] = function(g) {
+	// Akashicコンテンツで利用に注意が必要な使われている場合警告を出すよう、実体を差し替える。
+	if ("localStorage" in window) {
+		var saved = JSON.parse(localStorage.getItem("akashic-sandbox-config"));
+		if (saved && saved.warningMeddlingAkashic) {
+			console.log("replace");
+			var Date = window.MeddlingDate;
+		}
+	}
+
 	(function(exports, require, module, __filename, __dirname) {
 		<%- @scriptContent %>
 

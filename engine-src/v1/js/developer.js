@@ -33,6 +33,9 @@ function setupDeveloperMenu(param) {
 	if (config.warningEs6 == null) {
 		config.warningEs6 = true;
 	}
+	if (config.warningMeddlingAkashic == null) {
+		config.warningMeddlingAkashic = true;
+	}
 	if (config.sendsSessionParameter == null) {
 		config.sendsSessionParameter = false;
 	}
@@ -1072,6 +1075,10 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			toggleWarningEs6: function() {
+				saveConfig();
+			},
+
+			toggleWarningMeddlingAkashic: function() {
 				saveConfig();
 			},
 			toggleProfiler: toggleProfiler,
