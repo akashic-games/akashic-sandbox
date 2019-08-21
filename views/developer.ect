@@ -387,8 +387,8 @@
 	</div>
 	<div class="error-dialog-main error-dialog-main-hide" v-bind:class="{'error-dialog-main-hide': !isShowingErrorDialog}">
 		<a class="error-dialog-close-btn" title="close" v-on:click="hideErrorDialog"><i class="fa fa-times"></i></a>
-		<div class="error-dialog-title">エラーが発生しました</div>
-		<div class="error-dialog-name">{{errorMessage}}</div>
+		<div class="error-dialog-title">{{dialogTitle}}</div>
+		<div class="error-dialog-name">{{dialogMessage}}</div>
 		<div class="error-dialog-body">Developer Tool などでエラー内容を確認の上修正してください。</div>
 	</div>
 </div>

@@ -50,7 +50,7 @@
     "serve-favicon": "^2.2.0"
   },
   "devDependencies": {
-    "@akashic/akashic-engine": "~2.4.15",
+    "@akashic/akashic-engine": "~2.5.0",
     "@types/express": "~4.0.39",
     "@types/express-session": "~1.15.6",
     "@types/jasmine": "~2.8.2",

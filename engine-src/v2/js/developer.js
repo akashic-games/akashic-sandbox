@@ -132,12 +132,20 @@ function setupDeveloperMenu(param) {
 			{text: "ランキング(ranking)", value: "ranking"}
 		],
 		isShowingErrorDialog: false,
-		errorMessage: ""
+		dialogMessage: "",
+		dialogTitle: ""
 	};
 
 	function showErrorDialog(err) {
 		data.isShowingErrorDialog = true;
-		data.errorMessage = err.message;
+		data.dialogTitle = "エラーが発生しました";
+		data.dialogMessage = err.message;
+	}
+
+	function showAkashicWarnDialog(message) {
+		data.isShowingErrorDialog = true;
+		data.dialogTitle = "Akashic非推奨機能が使用されました";
+		data.dialogMessage = message;
 	}
 
 	function hideErrorDialog() {
@@ -146,6 +154,10 @@ function setupDeveloperMenu(param) {
 
 	window.addEventListener("error", function(ev) {
 		showErrorDialog(ev.error);
+	});
+
+	window.addEventListener("akashicWarning", function(ev) {
+		showAkashicWarnDialog(ev.message);
 	});
 
 	window.addEventListener("onunhandledrejection", function(ev) {

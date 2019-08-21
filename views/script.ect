@@ -5,10 +5,19 @@ if (! ("gScriptContainer" in window)) {
 gScriptContainer["<%- @id %>"] = function(g) {
 	// Akashicコンテンツで利用に注意が必要な使われている場合警告を出すよう、実体を差し替える。
 	if ("localStorage" in window) {
+		// ieではProxy未対応なので差し替えない
+		var agent = window.navigator.userAgent;
+		if ((agent.indexOf('msie 9.') !== -1) || (agent.indexOf('trident/7') !== -1)) return;
+
 		var saved = JSON.parse(localStorage.getItem("akashic-sandbox-config"));
+		var Date;
+		var Math;
 		if (saved && saved.warningMeddlingAkashic) {
-			console.log("replace");
-			var Date = window.MeddlingDate;
+			Date = window.MeddlingDate;
+			Math = window.MeddlingMath;
+		} else {
+			Date = window.Date;
+			Math = window.Math;
 		}
 	}
 
