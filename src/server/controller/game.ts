@@ -5,8 +5,10 @@ var controller: express.RequestHandler = (req: express.Request, res: express.Res
 	var environment = res.locals.environment;
 	var version = environment && environment["sandbox-runtime"] ? environment["sandbox-runtime"] : "1";
 	var versionsJson = require("../engineFilesVersion.json");
+	var pkgJson = require("../../package.json");
+
 	res.render("game", {
-		title: "game",
+		title: `akashic-sandbox v${pkgJson.version}`,
 		version: version,
 		devMode: devMode,
 		engineFilesVariable: versionsJson[`v${version}`].variable

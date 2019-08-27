@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased changes
+* プレイログ出力時のファイル拡張子を `.json`へ修正
+* バージョン情報をタイトルに表示するよう対応
+
 ## 0.15.4
 * 内部コンポーネントの更新
   * v1(engine-files@1.1.11, game-storage@0.0.6)
