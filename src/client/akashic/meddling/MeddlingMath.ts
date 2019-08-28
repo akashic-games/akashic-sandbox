@@ -1,7 +1,6 @@
-var MeddlingMath
+var MeddlingMath;
 
-
-(function () {
+(function (): void {
 	MeddlingMath = new Proxy(Math, {
 		get: (target, prop, receiver) => {
 			if (prop === "random") {
@@ -12,7 +11,7 @@ var MeddlingMath
 			}
 			return (target as any)[prop];
 		}
-	});	
+	});
 })();
 
 (window as any).MeddlingMath = MeddlingMath;
