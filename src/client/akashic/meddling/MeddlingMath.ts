@@ -11,7 +11,10 @@ var MeddlingMath;
 				if (prop === "random") {
 					console.warn("Math.random()が実行されました。Akashicコンテンツではこの機能に依存してゲームの実行状態が変わらないようにしてください。");
 					window.dispatchEvent(new ErrorEvent("akashicWarning", {
-						message: "Math.random()が実行されました。Akashicコンテンツではこの機能に依存してゲームの実行状態が変わらないようにしてください。"
+						error: {
+							message: "Math.random()が実行されました。Akashicコンテンツではこの機能に依存してゲームの実行状態が変わらないようにしてください。",
+							referenceUrl: "https://akashic-games.github.io/guide/common-pitfalls.html#Math.random()%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%97%E3%81%BE%E3%81%86"
+						}
 					}));
 				}
 				return (target as any)[prop];
