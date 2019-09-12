@@ -343,7 +343,7 @@
 								<li v-for="p in playlog.list">
 									<span>{{p.name}}</span>
 									<a class="pure-button" v-on:click="reloadPlaylog(p.name)">再生</a>
-									<a class="pure-button" href="{{p.url}}" download="{{p.name}}">ファイル出力</a>
+									<a class="pure-button" href="{{p.url}}" download="{{p.name}}.json">ファイル出力</a>
 									<a class="pure-button button-error" v-on:click="removePlaylog(p.name)">削除</a>
 								</li>
 							</ul>
