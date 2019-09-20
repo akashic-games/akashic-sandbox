@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.15.9
+* 内部コンポーネントの更新
+  * v1(engine-files@1.1.12, game-storage@0.0.6)
+  * v2(engine-files@2.1.25, game-storage@0.0.6)
+
 ## 0.15.8
 * 内部コンポーネントの更新
   * v1(engine-files@1.1.12, game-storage@0.0.6)
