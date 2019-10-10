@@ -2,8 +2,7 @@ var MeddlingDate;
 
 (function (): void {
 	// ieではProxy未対応なので差し替えない
-	var agent = window.navigator.userAgent;
-	if ((agent.indexOf("msie 9.") !== -1) || (agent.indexOf("trident/7") !== -1)) {
+	if (typeof Proxy !== "function") {
 		MeddlingDate = Date;
 	} else {
 		MeddlingDate = new Proxy(Date, {
