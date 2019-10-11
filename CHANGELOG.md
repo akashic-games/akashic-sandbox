@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.15.15
+* コンテンツの中で `Date.now()` `Math.random()` が利用されていた場合、警告を表示する
+
 ## 0.15.14
 * 内部コンポーネントの更新
   * v1(engine-files@1.1.12, game-storage@0.0.6)

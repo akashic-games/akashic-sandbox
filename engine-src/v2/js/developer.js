@@ -36,6 +36,9 @@ function setupDeveloperMenu(param) {
 	if (config.warningEs6 == null) {
 		config.warningEs6 = true;
 	}
+	if (config.warningMeddlingAkashic == null) {
+		config.warningMeddlingAkashic = true;
+	}
 	if (config.sendsSessionParameter == null) {
 		config.sendsSessionParameter = false;
 	}
@@ -129,12 +132,22 @@ function setupDeveloperMenu(param) {
 			{text: "ランキング(ranking)", value: "ranking"}
 		],
 		isShowingErrorDialog: false,
-		errorMessage: ""
+		dialogMessage: "",
+		dialogTitle: "",
+		dialogReferenceUrl: null
 	};
 
 	function showErrorDialog(err) {
 		data.isShowingErrorDialog = true;
-		data.errorMessage = err.message;
+		data.dialogTitle = "エラーが発生しました";
+		data.dialogMessage = err.message;
+	}
+
+	function showAkashicWarnDialog(err) {
+		data.isShowingErrorDialog = true;
+		data.dialogTitle = "Akashic非推奨機能が使用されました";
+		data.dialogMessage = err.message;
+		data.dialogReferenceUrl = err.referenceUrl;
 	}
 
 	function hideErrorDialog() {
@@ -143,6 +156,10 @@ function setupDeveloperMenu(param) {
 
 	window.addEventListener("error", function(ev) {
 		showErrorDialog(ev.error);
+	});
+
+	window.addEventListener("akashicWarning", function(ev) {
+		showAkashicWarnDialog(ev.error);
 	});
 
 	window.addEventListener("onunhandledrejection", function(ev) {
@@ -1086,6 +1103,9 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			toggleWarningEs6: function() {
+				saveConfig();
+			},
+			toggleWarningMeddlingAkashic: function() {
 				saveConfig();
 			},
 			toggleProfiler: toggleProfiler,

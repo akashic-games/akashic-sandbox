@@ -82,23 +82,32 @@
 								</label>
 							</div>
 							<div>
+								<a class="pure-button" v-on:click="fitToWindow">fit to window</a>
+								<a class="pure-button" v-on:click="revertSize">default size</a>
+								<a class="pure-button" v-on:click="captureScreen" download="screen.png">スクリーンショット</a>
+							</div>
+						</fieldset>
+					</form>
+					<h2>オプション(リロードで適用)</h2>
+					<form class="pure-form">
+						<fieldset>
+							<div>
 								<label for="toggle-preventDefault">
 									<input id="toggle-preventDefault" type="checkbox" value="" v-model="config.disablePreventDefault" v-on:change="togglePreventDefault">
-									canvas要素上で発生したDOMイベントの伝搬をキャンセルしない(リロードで適用)
+									canvas要素上で発生したDOMイベントの伝搬をキャンセルしない
 								</label>
 							</div>
 							<div>
 								<label for="warning-es6">
 									<input id="warning-es6" type="checkbox" v-model="config.warningEs6" v-on:change="toggleWarningEs6">
-									ES5でサポートされない機能が使用された場合警告を出力(リロードで適用)
+									ES5でサポートされない機能が使用された場合警告を出力
 								</label>
 							</div>
 							<div>
-								<a class="pure-button" v-on:click="fitToWindow">fit to window</a>
-								<a class="pure-button" v-on:click="revertSize">default size</a>
-							</div>
-							<div>
-								<a class="pure-button" v-on:click="captureScreen" download="screen.png">スクリーンショット</a>
+								<label for="warning-medding-akashic">
+									<input id="warning-meddling-akashic" type="checkbox" v-model="config.warningMeddlingAkashic" v-on:change="toggleWarningMeddlingAkashic">
+									Akashicコンテンツで使用すべきでない機能が使用された場合警告を出力
+								</label>
 							</div>
 						</fieldset>
 					</form>
@@ -378,8 +387,11 @@
 	</div>
 	<div class="error-dialog-main error-dialog-main-hide" v-bind:class="{'error-dialog-main-hide': !isShowingErrorDialog}">
 		<a class="error-dialog-close-btn" title="close" v-on:click="hideErrorDialog"><i class="fa fa-times"></i></a>
-		<div class="error-dialog-title">エラーが発生しました</div>
-		<div class="error-dialog-name">{{errorMessage}}</div>
+		<div class="error-dialog-title">{{dialogTitle}}</div>
+		<div class="error-dialog-name">{{dialogMessage}}</div>
 		<div class="error-dialog-body">Developer Tool などでエラー内容を確認の上修正してください。</div>
+		<% if @dialogReferenceUrl : %>
+			<a href="{{dialogReferenceUrl}}" target="_blank">参考リンク</a>
+		<% end %>
 	</div>
 </div>

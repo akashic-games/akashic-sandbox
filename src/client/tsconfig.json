@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "noLib": false,
+    "lib": ["es2015", "dom"],
     "noImplicitAny": true,
     "module": "commonjs",
     "outDir": "../../js"
@@ -9,6 +9,8 @@
   "files": [
     "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",
-    "./SandboxScriptAsset.ts"
+    "./SandboxScriptAsset.ts",
+    "./akashic/meddling/MeddlingDate.ts",
+    "./akashic/meddling/MeddlingMath.ts"
   ]
 }
