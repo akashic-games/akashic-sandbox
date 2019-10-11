@@ -390,7 +390,7 @@
 		<div class="error-dialog-title">{{dialogTitle}}</div>
 		<div class="error-dialog-name">{{dialogMessage}}</div>
 		<div class="error-dialog-body">Developer Tool などでエラー内容を確認の上修正してください。</div>
-		<% if @dialogReferenceUrl ? : %>
+		<% if @dialogReferenceUrl : %>
 			<a href="{{dialogReferenceUrl}}" target="_blank">参考リンク</a>
 		<% end %>
 	</div>
