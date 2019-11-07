@@ -3,7 +3,6 @@ import session = require("express-session");
 // import favicon = require("serve-favicon");
 import fs = require("fs");
 import path = require("path");
-import ECT = require("ect");
 import jsRoute = require("./routes/js");
 import gameRoute = require("./routes/game");
 import testRoute = require("./routes/test");
@@ -111,8 +110,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	});
 
 	app.set("views", path.join(__dirname, "..", "views"));
-	app.engine("ect", ECT({watch: isDev, root: path.join(__dirname, "..", "views"), ext: ".ect"}).render);
-	app.set("view engine", "ect");
+	app.set("view engine", "ejs");
 
 	app.use("^\/$", (req: express.Request, res: express.Response, next: Function) => {
 		res.redirect("/game/");

@@ -52,7 +52,7 @@
 					</div>
 					<div class="pure-g">
 						<div class="pure-u-1-5">Sandbox Runtime Version:</div>
-						<div class="pure-u-4-5">v<%= @version %></div>
+						<div class="pure-u-4-5">v<%= version %></div>
 					</div>
 					<h2>オプション</h2>
 					<form class="pure-form">
@@ -390,8 +390,6 @@
 		<div class="error-dialog-title">{{dialogTitle}}</div>
 		<div class="error-dialog-name">{{dialogMessage}}</div>
 		<div class="error-dialog-body">Developer Tool などでエラー内容を確認の上修正してください。</div>
-		<% if @dialogReferenceUrl : %>
-			<a href="{{dialogReferenceUrl}}" target="_blank">参考リンク</a>
-		<% end %>
+		<a v-if="!!dialogReferenceUrl" href="{{dialogReferenceUrl}}" target="_blank" {{}}>参考リンク</a>
 	</div>
 </div>

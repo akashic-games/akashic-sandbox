@@ -6,7 +6,7 @@ if (! ("gScriptContainer" in window)) {
 	window._warningMeddlingAkashic = true;
 	if (window._savedConfig && !window._savedConfig.warningMeddlingAkashic) window._warningMeddlingAkashic = false;
 }
-gScriptContainer["<%- @id %>"] = function(g) {
+gScriptContainer["<%- id %>"] = function(g) {
 	// Akashicコンテンツで利用に注意が必要な機能が使われている場合に警告を出すよう、実体を差し替える。
 	var Date = window.Date;;
 	var Math = window.Math;
@@ -16,7 +16,7 @@ gScriptContainer["<%- @id %>"] = function(g) {
 	}
 
 	(function(exports, require, module, __filename, __dirname) {
-		<%- @scriptContent %>
+		<%- scriptContent %>
 
 	})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);
 }
