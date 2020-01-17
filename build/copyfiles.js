@@ -3,10 +3,11 @@ if (typeof process.argv[2] !== "undefined") {
 	switch (process.argv[2]) {
 		case "v1":
 		case "v2":
+		case "v3":
 			version = process.argv[2];
 			break;
 		default:
-			console.log("please designate version(v1 or v2)");
+			console.log("please designate version(v1, v2, or v3)");
 			console.log("ex: node copyfiles.js v2");
 			return;
 	}

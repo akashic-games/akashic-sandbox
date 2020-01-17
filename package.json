@@ -3,15 +3,17 @@
   "version": "0.15.22",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
-  "scripts":   {
+  "scripts": {
     "prepublish": "npm run build && node ./build/checkAkashicVersions",
     "start": "npm run build && node bin/run",
-    "build": "npm run copy:common && npm run build:v1 && npm run build:v2 && npm run build:client && npm run build:server && cpx ./engine-src/engineFilesVersion.json ./lib",
+    "build": "npm run copy:common && npm run build:v1 && npm run build:v2 && npm run build:v3 && npm run build:client && npm run build:server && cpx ./engine-src/engineFilesVersion.json ./lib",
     "copy:common": "cpx ./engine-src/common/js/**/*.js ./js && cpx ./engine-src/common/external/**/*.js ./js",
     "build:v1": "cd ./engine-src/v1 && npm install && cd ../.. && npm run copy:v1",
     "copy:v1": "cpx ./engine-src/v1/js/**/*.js ./js/v1 && cpx ./engine-src/v1/external/**/*.js ./js/v1",
     "build:v2": "cd ./engine-src/v2 && npm install && cd ../.. && npm run copy:v2",
     "copy:v2": "cpx ./engine-src/v2/js/**/*.js ./js/v2 && cpx ./engine-src/v2/external/**/*.js ./js/v2",
+    "build:v3": "cd ./engine-src/v3 && npm install && cd ../.. && npm run copy:v3",
+    "copy:v3": "cpx ./engine-src/v3/js/**/*.js ./js/v3 && cpx ./engine-src/v3/external/**/*.js ./js/v3",
     "build:client": "tsc -p src/client",
     "build:server": "tsc -p src/server",
     "lint": "tslint -p src/client/ -c tslint.json src/client/**/*.ts && tslint -p src/server/ -c tslint.json src/client/**/*.js",
@@ -19,12 +21,15 @@
     "test:jasmine": "jasmine ./spec/**/*[sS]pec.js",
     "update": "npm run update:v1 && npm run update:v2 && node ./build/updateEngineFiles.js",
     "update:v1": "node ./build/generateAkashicVersionsFile v1 && node ./build/copyfiles v1 && npm run copy:v1 && npm run copy:common",
-    "update:v2": "node ./build/generateAkashicVersionsFile v2 && node ./build/copyfiles v2 && npm run copy:v2 && npm run copy:common"
+    "update:v2": "node ./build/generateAkashicVersionsFile v2 && node ./build/copyfiles v2 && npm run copy:v2 && npm run copy:common",
+    "update:v3": "node ./build/generateAkashicVersionsFile v3 && node ./build/copyfiles v3 && npm run copy:v3 && npm run copy:common"
   },
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
-  "bin": {"akashic-sandbox": "./bin/run"},
-  "files":   [
+  "bin": {
+    "akashic-sandbox": "./bin/run"
+  },
+  "files": [
     "bin",
     "lib",
     "js",
@@ -32,12 +37,14 @@
     "views",
     "thirdparty"
   ],
-  "repository":   {
+  "repository": {
     "type": "git",
     "url": "https://github.com/akashic-games/akashic-sandbox.git"
   },
-  "publishConfig": {"@akashic:registry": "https://registry.npmjs.org/"},
-  "dependencies":   {
+  "publishConfig": {
+    "@akashic:registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
     "commander": "^2.8.0",
     "debug": "^2.1.3",
     "ejs": "~2.7.1",
@@ -45,8 +52,8 @@
     "express-session": "^1.11.3",
     "serve-favicon": "^2.2.0"
   },
-  "devDependencies":   {
-    "@akashic/akashic-engine": "~2.6.1",
+  "devDependencies": {
+    "@akashic/akashic-engine": "3.0.0-beta.2",
     "@types/ejs": "~2.6.3",
     "@types/express": "~4.0.39",
     "@types/express-session": "~1.15.6",
