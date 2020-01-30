@@ -7,7 +7,7 @@
     "outDir": "../../js"
   },
   "files": [
-    "../../node_modules/@akashic/akashic-engine/index.runtime.d.ts",
+    "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",
     "./SandboxScriptAsset.ts",
     "./akashic/meddling/MeddlingDate.ts",

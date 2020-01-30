@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["es2015", "dom"],
+    "noLib": true,
     "noImplicitAny": true,
     "module": "commonjs",
     "outDir": "../../lib"
   },
   "filesGlob": [
+    "../../node_modules/typescript/lib/lib.es6.d.ts",
     "./**/*.ts"
   ],
   "files": [
+    "../../node_modules/typescript/lib/lib.es6.d.ts",
     "../../typings/ect.d.ts",
     "../../typings/extend.express.d.ts",
     "./app.ts",

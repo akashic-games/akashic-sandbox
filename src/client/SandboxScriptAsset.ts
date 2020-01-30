@@ -44,7 +44,7 @@ class SandboxScriptAsset extends g.ScriptAsset {
 		setTimeout(waitLoader, this.loading ? 100 : 0);
 	}
 
-	execute(execEnv: g.ScriptAssetRuntimeValue): any {
+	execute(execEnv: g.ScriptAssetExecuteEnvironment): any {
 		window.gScriptContainer[this.id](execEnv);
 		return execEnv.module.exports;
 	}
