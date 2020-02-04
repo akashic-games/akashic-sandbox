@@ -79,7 +79,7 @@ function setupDeveloperMenu(param) {
 	// game.jsonの情報
 	var environment = props.game._configuration.environment;
 	const preferredTotalTimeLimit = !environment || !environment.niconico || !environment.niconico.preferredSessionParameters || !environment.niconico.preferredSessionParameters.totalTimeLimit
-									? defaultTotalTimeLimit : environment.niconico.preferredSessionParameters.totalTimeLimit;
+		? defaultTotalTimeLimit : environment.niconico.preferredSessionParameters.totalTimeLimit;
 
 	// vue.jsにバインドするデータ
 	var data = {
