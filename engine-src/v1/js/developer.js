@@ -73,6 +73,11 @@ function setupDeveloperMenu(param) {
 		'snapshot-view': {title: "Snapshot", show: false}
 	};
 
+	// game.jsonの情報
+	var environment = props.game._configuration.environment;
+	const preferredTotalTimeLimit = !environment || !environment.niconico || !environment.niconico.preferredSessionParameters
+									? defaultTotalTimeLimit : environment.niconico.preferredSessionParameters.totalTimeLimit;
+
 	// vue.jsにバインドするデータ
 	var data = {
 		showMenu: sandboxConfig.showMenu ? sandboxConfig.showMenu : false,
@@ -111,7 +116,6 @@ function setupDeveloperMenu(param) {
 		},
 		views: views,
 		isIchibaContent: function() {
-			var environment = props.game._configuration.environment;
 			if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
 				return false;
 			}
@@ -123,6 +127,7 @@ function setupDeveloperMenu(param) {
 			clearThreshold: "N/A"
 		},
 		remainingTime: "N/A",
+		preferredTotalTimeLimit: preferredTotalTimeLimit,
 		isStopGame: false,
 		modeList: [
 			{text: "ひとりで遊ぶ(single)", value: "single"},
@@ -182,7 +187,7 @@ function setupDeveloperMenu(param) {
 	}
 
 	if (config.sendsSessionParameter && data.isIchibaContent && !param.isReplay) {
-		var totalTimeLimit = parseInt(config.totalTimeLimit, 10);
+		var totalTimeLimit = config.usePreferredTotalTimeLimit ? data.preferredTotalTimeLimit : parseInt(config.totalTimeLimit, 10);
 
 		if (isNaN(totalTimeLimit)) {
 			totalTimeLimit = defaultTotalTimeLimit;
@@ -1189,6 +1194,9 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onStopGameChanged: function() {
+				saveConfig();
+			},
+			onUsePreferredTotalTimeLimitChanged: function () {
 				saveConfig();
 			},
 			toggleGrid: toggleGrid,
