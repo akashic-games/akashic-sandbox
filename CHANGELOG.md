@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.15.23
+* `game.json`の`preferredSessionParameters.TotalTimeLimit`の値を利用するUIを、`DevTool`の`niconico`タブへ追加。
+
 ## 0.15.22
 * 内部コンポーネントの更新
   * v1(engine-files@1.1.13, game-storage@0.0.6)

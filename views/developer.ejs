@@ -278,7 +278,17 @@
 								<td>totalTimeLimit</td>
 								<td>
 									<div>
-										<input type="text" v-model="config.totalTimeLimit" v-on:change="onTotalTimeLimitChanged" />
+										<div v-bind:style="{ color: config.usePreferredTotalTimeLimit ? 'silver' : undefined }">
+											<input type="text" v-model="config.totalTimeLimit" v-on:change="onTotalTimeLimitChanged"
+												v-bind:disabled="config.usePreferredTotalTimeLimit" />
+										</div>
+										<label>
+											<input type="checkbox"
+												v-bind:disabled="!(isIchibaContent && config.mode === 'ranking')"
+												v-model="config.usePreferredTotalTimeLimit"
+												v-on:change="onUsePreferredTotalTimeLimitChanged" />
+											<span>game.jsonのpreferredSessionParametersの値を利用する({{preferredTotalTimeLimit}}秒)</span>
+										</label>
 									</div>
 									<label>
 										<input id="stop-game" type="checkbox" v-bind:disabled="!(isIchibaContent && config.mode === 'ranking')" v-model="config.stopsGameOnTimeout" v-on:change="onStopGameChanged" />
