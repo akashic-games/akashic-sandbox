@@ -191,7 +191,7 @@ describe("app", function () {
     });
 
 	describe("soundbox-runtime value is invalid", function () {
-		it("error occurs if the value is 3", function (done) {
+		it("error occurs if the value is 4", function (done) {
 			var errMsg = "";
 			try {
 				var gameBase = path.join(__dirname, "../fixtures/games/errRuntimeValue");
@@ -201,7 +201,7 @@ describe("app", function () {
 				errMsg = e.toString().trim();
 
 			} finally {
-				expect(errMsg).toBe("Error: sandbox-runtime value is invalid. Please set the environment. sandbox-runtime value of game.json to 1 or 2.");
+				expect(errMsg).toBe("Error: sandbox-runtime value is invalid. Please set the environment. sandbox-runtime value of game.json to 1, 2, or 3.");
 				done();
 			}
 		});
