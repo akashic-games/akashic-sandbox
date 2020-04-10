@@ -5,3 +5,4 @@ lib/*
 js/**/*.js
 engine-src/v1/node_modules
 engine-src/v2/node_modules
+engine-src/v3/node_modules

@@ -172,9 +172,9 @@ function setupDeveloperMenu(param) {
 	});
 
 	if (config.autoJoin && !param.isReplay) {
-		// NOTE: この時点でgame._loadedにgame._start()がハンドルされている必要がある
+		// NOTE: この時点でgame._onLoadにgame._start()がハンドルされている必要がある
 		// スナップショットから復元時はloadedが発火しないのでJOINは行われない
-		props.game._loaded.addOnce(function() {
+		props.game._onLoad.addOnce(function() {
 			var p = props.sandboxPlayer;
 			data.players.push({player: {id: p.id, name: p.name}, self: true});
 			amflow.sendEvent([0 /* Join */,  3, p.id, p.name, null ]);
@@ -182,7 +182,7 @@ function setupDeveloperMenu(param) {
 	}
 
 	if (config.autoSendEvents && !param.isReplay) {
-		props.game._loaded.addOnce(function () {
+		props.game._onLoad.addOnce(function () {
 			sendEvents();
 		});
 	}
@@ -202,7 +202,7 @@ function setupDeveloperMenu(param) {
 			// 前の仕様ではtotalTimeLimitより25秒程度短いgameTimeLimitが送られていたので、互換性のためにtotalTimeLimitと一緒に送っておく。
 			sessionParameters["gameTimeLimit"] = totalTimeLimit - 25;
 		}
-		props.game._loaded.addOnce(function () {
+		props.game._onLoad.addOnce(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
 				"type": "start",
 				"parameters": sessionParameters
@@ -506,22 +506,25 @@ function setupDeveloperMenu(param) {
 		data.cameras.push({id: cam.id, name: cam.name, local: cam.local});
 		cameras.push(cam);
 	}
-	g.Camera2D = function () {
+
+	var baseG = window.sandboxDeveloperProps.game._runtimeValueBase;
+
+	baseG.Camera2D = function () {
 		camera2D.apply(this, arguments);
 		registerCamera(this);
 	};
 	// staticメンバを再現
 	Object.keys(camera2D).forEach(function (key) {
-		g.Camera2D[key] = camera2D[key];
+		baseG.Camera2D[key] = camera2D[key];
 	});
 	// staticメンバを再現してもデシリアライズは正常に動作しない
 	// (オリジナルのコンストラクタを使ってしまう)のでさらに無理やり上書きする。
-	g.Camera2D.deserialize = function (ser, game) {
+	baseG.Camera2D.deserialize = function (ser, game) {
 		var ret = camera2D.deserialize(ser, game);
 		registerCamera(ret);
 		return ret;
 	};
-	g.Camera2D.prototype = camera2D.prototype;
+	baseG.Camera2D.prototype = camera2D.prototype;
 
 	// g.Game#focusingCameraをsetter/getter化することで、コンテンツ側からのfocusingCameraの変更を感知
 	Object.defineProperty(props.game, "focusingCamera", {
@@ -858,7 +861,7 @@ function setupDeveloperMenu(param) {
 	function updateCurrentTime() {
 		data.currentTime = param.timeKeeper.now();
 	}
-	props.game._sceneChanged.add(function (scene) {
+	props.game._onSceneChange.add(function (scene) {
 		if (!scene.update.contains(updateCurrentTime)) {
 			scene.update.add(updateCurrentTime);
 		}
@@ -1130,8 +1133,8 @@ function setupDeveloperMenu(param) {
 			joinGame: joinGame,
 			saveSnapshot: function() {
 				// スナップショット要求の発火
-				if (props.game.snapshotRequest) {
-					props.game.snapshotRequest.fire();
+				if (props.game.onSnapshotRequest) {
+					props.game.onSnapshotRequest.fire();
 				}
 			},
 			removeSnapshot: removeSnapshot,
