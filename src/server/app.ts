@@ -162,7 +162,10 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.type("application/json");
 
 		// renderに渡すexternalsはQueryとQuery[]を想定しないのでエラー扱いにする
-		if (typeof req.query.externals !== "string" || (req.query.externals[0] !== "undefined" && typeof req.query.externals[0] !== "string"))
+		if (!(
+			typeof req.query.externals === "string"
+				|| (Array.isArray(req.query.externals)
+					&& (typeof req.query.externals[0] === "string" || typeof req.query.externals[0] === "undefined"))))
 			throw Error("Invalid externals type");
 
 		var externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
