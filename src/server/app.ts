@@ -161,16 +161,12 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		var host = req.protocol + "://" + req.get("host");
 		res.type("application/json");
 
-		// renderに渡すexternalsはQueryとQuery[]を想定しないのでエラー扱いにする
-		if (!(
-			typeof req.query.externals === "string"
-				|| (Array.isArray(req.query.externals)
-					&& (typeof req.query.externals[0] === "string" || typeof req.query.externals[0] === "undefined"))))
-			throw Error("Invalid externals type");
-
 		var externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
 
-		externals = Array.isArray(externals) ? externals : [externals];
+		externals = Array.isArray(externals) ? externals : [externals] as string[];
+
+		if (typeof externals[0] !== "string" && externals[0] != null) throw new Error("Invalid externals type");
+
 		var versionsJson = require("./engineFilesVersion.json");
 		res.render("engine", {
 			host: host,
