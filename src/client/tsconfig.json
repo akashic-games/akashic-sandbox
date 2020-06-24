@@ -10,6 +10,7 @@
     "../../node_modules/@akashic/akashic-engine/lib/main.d.ts",
     "./TimeKeeper.ts",
     "./SandboxScriptAsset.ts",
+    "./SandboxScriptAssetV3.ts",
     "./akashic/meddling/MeddlingDate.ts",
     "./akashic/meddling/MeddlingMath.ts"
   ]

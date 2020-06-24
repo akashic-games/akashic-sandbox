@@ -22,7 +22,14 @@ window.g = engineFiles.akashicEngine;
 })();
 </script>
 <script type="text/javascript" src="/js/TimeKeeper.js"></script>
+<% if (version === "3") { %>
+<script type="text/javascript" src="/js/SandboxScriptAssetV3.js"></script>
+<script>
+    window.SandboxScriptAsset = window.SandboxScriptAssetV3;
+</script>
+<% } else { %>
 <script type="text/javascript" src="/js/SandboxScriptAsset.js"></script>
+<% } %>
 <script type="text/javascript" src="/js/akashic/meddling/MeddlingDate.js"></script>
 <script type="text/javascript" src="/js/akashic/meddling/MeddlingMath.js"></script>
 <script type="text/javascript" src="/js/game-storage.strip.js"></script>
