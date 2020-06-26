@@ -68,8 +68,7 @@ class SandboxScriptAssetV3 {
 			if (this.script !== undefined) {
 				loader._onAssetLoad(this);
 			} else {
-				// v3系とv2系で第2引数に渡す型が異なるので、無理矢理辻褄を合わせるためにanyに変換している
-				loader._onAssetError(this, { name: "AssetLoadError", retriable: false, message: "can not load script" } as any);
+				loader._onAssetError(this, g.ExceptionFactory.createAssetLoadError("can not load script"));
 			}
 		};
 		setTimeout(waitLoader, this.loading ? 100 : 0);
