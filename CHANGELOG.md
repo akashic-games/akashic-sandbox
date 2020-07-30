@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.16.14
+* 内部コンポーネントの更新
+* v1(engine-files@1.1.15, game-storage@0.0.6)
+* v2(engine-files@2.1.42, game-storage@0.0.6)
+* v3(engine-files@3.0.0-beta.7)
+
 ## 0.16.13
 * 最新のengine-filesを導入した時にv3系のコンテンツを実行できなくなる不具合の修正
 * 内部コンポーネントの更新
