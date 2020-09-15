@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.16.20
+* コンテンツのsandbox.config.jsでES6機能警告表示の設定が行われていたらそちらの設定を優先するよう対応
+
 ## 0.16.19
 * 内部コンポーネントの更新
 * v1(engine-files@1.1.16, game-storage@0.0.6)
