@@ -30,7 +30,8 @@ function completeConfigParams(c: SandboxConfig): SandboxConfig {
 	var config = {
 		autoSendEventName: c.autoSendEventName ? c.autoSendEventName : "",
 		events: c.events ? c.events : {},
-		showMenu: !!c.showMenu
+		showMenu: !!c.showMenu,
+		warn: c.warn ? c.warn : {}
 	};
 	return config;
 }
@@ -50,4 +51,10 @@ interface SandboxConfig {
 
 	/** ページ読み込み時にデベロッパーメニューを開く */
 	showMenu?: boolean;
+
+	/** 各種警告表示設定 */
+	warn?: {
+		/** ES6以降でサポートされるオブジェクトが使われている場合警告を出すかどうか */
+		es6?: boolean;
+	}
 }

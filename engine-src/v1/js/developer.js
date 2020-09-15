@@ -42,12 +42,21 @@ function setupDeveloperMenu(param) {
 	if (config.mode == null) {
 		config.mode = "single";
 	}
+
+	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
+
+	// sandbox.config.jsで設定が記述されていたら、対象のチェックボックスを押せないようにする
+	if (sandboxConfig.warn && sandboxConfig.warn.es6 !== undefined) {
+		config.disableWarningEs6 = true;
+		config.warningEs6 = !!sandboxConfig.warn.es6;
+	} else {
+		config.disableWarningEs6 = false;
+	}
+
 	// ES6以降でサポートされるオブジェクトが使われている場合警告を出す。
 	if (config.warningEs6) {
 		warningEs6OnConsole();
 	}
-
-	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
 	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
 	config.eventsToSend = !!sandboxConfig.autoSendEventName ? JSON.stringify(sandboxConfig.events[sandboxConfig.autoSendEventName]) : config.eventsToSend;
