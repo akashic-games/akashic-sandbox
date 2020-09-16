@@ -67,7 +67,7 @@
     "browserify": "^13.0.0",
     "cpx": "^1.5.0",
     "jasmine": "^2.1.1",
-    "node-fetch": "~2.3.0",
+    "node-fetch": "~2.6.1",
     "supertest": "^1.2.0",
     "tslint": "^5.4.3",
     "typescript": "^2.1.6",
