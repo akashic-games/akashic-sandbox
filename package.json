@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.16.20",
+  "version": "0.16.21",
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
@@ -59,7 +59,7 @@
     "@types/express-session": "~1.15.6",
     "@types/jasmine": "~2.8.2",
     "@types/mime": "~2.0.0",
-    "@types/node": "~8.0.53",
+    "@types/node": "~14.11.2",
     "@types/serve-favicon": "~2.2.30",
     "@types/serve-static": "~1.13.1",
     "@types/superagent": "~3.5.6",
@@ -70,7 +70,7 @@
     "node-fetch": "~2.6.1",
     "supertest": "^1.2.0",
     "tslint": "^5.4.3",
-    "typescript": "^2.1.6",
+    "typescript": "~3.9.7",
     "uglify-js": "2.7.5",
     "uglify-save-license": "^0.4.1",
     "vinyl-source-stream": "^1.1.0"
