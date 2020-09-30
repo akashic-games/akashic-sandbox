@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "noLib": true,
+    "lib": ["es6"],
     "noImplicitAny": true,
     "module": "commonjs",
+    "types": ["express", "express-session"],
     "outDir": "../../lib"
   },
   "filesGlob": [
-    "../../node_modules/typescript/lib/lib.es6.d.ts",
     "./**/*.ts"
   ],
   "files": [
-    "../../node_modules/typescript/lib/lib.es6.d.ts",
     "../../typings/ect.d.ts",
     "../../typings/extend.express.d.ts",
     "./app.ts",
