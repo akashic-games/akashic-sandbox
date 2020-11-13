@@ -78,13 +78,11 @@ window.addEventListener("load", function() {
 		var sandboxGameId = md5(gamePath);
 		var sandboxPlayer = { id: "9999", name: "sandbox-player" };
 		var sandboxPlayId = "sandboxDummyPlayId";
-		var storage = new gameStorage.GameStorage(window.localStorage, { gameId: sandboxGameId });
 
 		window.sandboxDeveloperProps = {
 			game: null,
 			driver: null,
 			amflow: null,
-			gameStorage: storage,
 			gameId: sandboxGameId,
 			path: gamePath,
 			sandboxPlayer: sandboxPlayer,
@@ -131,13 +129,6 @@ window.addEventListener("load", function() {
 
 		var amflowClient = new gdr.MemoryAmflowClient({
 			playId: sandboxPlayId,
-			putStorageDataSyncFunc: storage.set.bind(storage),
-			getStorageDataSyncFunc: function (readKeys) {
-				var svs = storage.load(readKeys);
-				// StorageValue[][]からStorageData[]に変換する
-				// TODO: StorageValue[][]が返ってくる必然性はない。game-storage側の仕様を変えるべき。
-				return readKeys.map(function (k, i) { return { readKey: k, values: svs[i] }; });
-			},
 			tickList:  playlog ? playlog.tickList : null,
 			startPoints: playlog ? playlog.startPoints : null
 		});

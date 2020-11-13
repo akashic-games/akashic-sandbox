@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased changes
+* `@akashic/game-storage` への依存を切る対応
+
 ## 0.16.24
 * 内部コンポーネントの更新
 * v1(engine-files@1.1.16, game-storage@0.0.6)

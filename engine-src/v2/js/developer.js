@@ -262,21 +262,6 @@ function setupDeveloperMenu(param) {
 		}
 	}
 
-	// プレイヤーのStorageValueStoreを生成する
-	function createStorageValueStore(playerId, keys) {
-		var convertedKeys = [];
-		keys.forEach(function(key) {
-			var ck = {};
-			for (var k in key) {
-				ck[k] = key[k];
-			}
-			ck.userId = playerId;
-			convertedKeys.push(ck);
-		});
-		var values = props.gameStorage.load(convertedKeys);
-		return new g.StorageValueStore(convertedKeys, values);
-	}
-
 	// プレイヤーをジョインさせる関数
 	function joinGame() {
 		var playerId = data.inputPlayerId;

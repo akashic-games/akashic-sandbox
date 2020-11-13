@@ -89,7 +89,6 @@ npm run build # src/以下をビルド
 
 akashic-sandbox は、以下の内部モジュールのコードをリポジトリ内に直接保持しています。
 * @akashic/engine-files
-* @akashic/game-storage
 
 また、これらのコードには Akashic Engine v1 系と v2 系が存在します。
 
