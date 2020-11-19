@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased changes
+## 0.17.0
 * `@akashic/game-storage` への依存を切る対応
 
 ## 0.16.25
