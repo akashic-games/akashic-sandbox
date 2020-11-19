@@ -4,8 +4,5 @@
   "description": "To build akashic-sandbox to run the contents of akashic-engine v2",
   "author": "DWANGO Co., Ltd.",
   "license": "MIT",
-  "optionalDependencies": {
-    "@akashic/game-storage": "0.0.6"
-  },
   "private": true
 }
