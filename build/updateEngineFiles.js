@@ -24,8 +24,8 @@ if (fs.existsSync(jsonPath)) {
 }
 //TODO: v3本格運用されたら指定しているタグを修正する
 var v1Version = execSync(`npm info @akashic/engine-files@for_ae1x version`).toString().replace("\n", "");
-var v2Version = execSync(`npm info @akashic/engine-files@latest version`).toString().replace("\n", "");
-var v3Version = execSync(`npm info @akashic/engine-files@next version`).toString().replace("\n", "");
+var v2Version = execSync(`npm info @akashic/engine-files@for_ae2x version`).toString().replace("\n", "");
+var v3Version = execSync(`npm info @akashic/engine-files@latest version`).toString().replace("\n", "");
 var versions = {
 	v1: {
 		version: v1Version,
