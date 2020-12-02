@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.17.1
+* 内部コンポーネントの更新
+* v1(engine-files@1.1.16)
+* v2(engine-files@2.1.50)
+* v3(engine-files@3.0.1)
+
 ## 0.17.0
 * `@akashic/game-storage` への依存を切る対応
 
