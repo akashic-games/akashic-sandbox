@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased changes
+* ニコニコ新市場対応テストでv3コンテンツを停止する時にエラーになる問題を修正
+
 ## 0.17.2
 * 内部コンポーネントの更新
 * v1(engine-files@1.1.16)

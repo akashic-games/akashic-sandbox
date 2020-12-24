@@ -229,9 +229,7 @@ function setupDeveloperMenu(param) {
 				if (config.stopsGameOnTimeout) {
 					if (props.game && props.game.audio) {
 						// 音を明示的に止める。
-						Object.keys(props.game.audio).forEach(function (key) {
-							props.game.audio[key].stopAll();
-						});
+						props.game.audio.stopAll();
 					}
 					props.driver.stopGame();
 					// akashic-sandboxがゲームを止めたことをユーザーに明示するために、強制的にメニューを開いてメッセージを表示する。
