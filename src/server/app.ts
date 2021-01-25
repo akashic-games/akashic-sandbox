@@ -1,13 +1,13 @@
+import fs = require("fs");
+import path = require("path");
 import express = require("express");
 import session = require("express-session");
 // import favicon = require("serve-favicon");
-import fs = require("fs");
-import path = require("path");
-import jsRoute = require("./routes/js");
-import gameRoute = require("./routes/game");
-import testRoute = require("./routes/test");
 import sr = require("./request/ScriptRequest");
+import gameRoute = require("./routes/game");
+import jsRoute = require("./routes/js");
 import sandboxConfigRoute = require("./routes/sandboxConfig");
+import testRoute = require("./routes/test");
 
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
@@ -215,11 +215,10 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		console.log("you arrived at 'finish'");
 
 		res.render("finish", {
-				"resultjson": JSON.stringify(ssn.results),
-				"resultcsv": result2csv(ssn.results),
-				"title": "finish"
-			}
-		);
+			"resultjson": JSON.stringify(ssn.results),
+			"resultcsv": result2csv(ssn.results),
+			"title": "finish"
+		});
 	});
 	app.use("/test", <express.RequestHandler>jsRoute);
 	app.use("/test", (req: express.Request, res: express.Response, next: express.NextFunction) => {

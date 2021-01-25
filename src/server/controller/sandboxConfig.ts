@@ -1,6 +1,6 @@
-import express = require("express");
 import fs = require("fs");
 import path = require("path");
+import express = require("express");
 import sr = require("../request/ScriptRequest");
 
 
@@ -56,5 +56,5 @@ interface SandboxConfig {
 	warn?: {
 		/** ES6以降でサポートされるオブジェクトが使われている場合警告を出すかどうか */
 		es6?: boolean;
-	}
+	};
 }
