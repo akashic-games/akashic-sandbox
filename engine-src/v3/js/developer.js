@@ -213,7 +213,7 @@ function setupDeveloperMenu(param) {
 		}
 		props.game._onLoad.addOnce(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
-				"type": "start",
+				"type": "dummy",
 				"parameters": sessionParameters
 			}]);
 		});
