@@ -188,6 +188,16 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
+	if (!data.isIchibaContent) {
+		config.sendsSessionParameter = false
+	}
+	// Events タブの "ゲーム開始時にEventを自動送信" と NicoNico タブの "セッションパラメータを送る" が両方有効になった場合
+	// エラーを出力し、Eventタブの "ゲーム開始時にEventを自動送信" を無効とする。
+	if (config.autoSendEvents && config.sendsSessionParameter) {
+		console.error("Events タブのゲーム開始時にEventを自動送信が有効になっています。無効にして実行します。");
+		config.autoSendEvents = false;
+	}
+
 	if (config.autoSendEvents && !param.isReplay) {
 		props.game._loaded.handle(function () {
 			sendEvents();
@@ -212,7 +222,7 @@ function setupDeveloperMenu(param) {
 		}
 		props.game._loaded.handle(function () {
 			amflow.sendEvent([0x20, 0, "dummy", {
-				"type": "dummy",
+				"type": "start",
 				"parameters": sessionParameters
 			}]);
 			return true;
@@ -1170,6 +1180,7 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onAutoSendEventsChanged: function() {
+				config.sendsSessionParameter = false; //NicoNico タブのセッションパラメータを送るを無効化
 				saveConfig();
 			},
 			insertEventString: insertEventString,
@@ -1179,6 +1190,7 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onSendsSessionParameterChanged: function() {
+				config.autoSendEvents = false; // Events タブのゲーム開始時にEventを自動送信を無効化
 				saveConfig();
 			},
 			onModeChanged: function() {
