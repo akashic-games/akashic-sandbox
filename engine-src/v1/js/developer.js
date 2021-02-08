@@ -145,12 +145,14 @@ function setupDeveloperMenu(param) {
 		isShowingErrorDialog: false,
 		dialogMessage: null,
 		dialogTitle: null,
+		dialogBody: true,
 		dialogReferenceUrl: null
 	};
 
 	function showErrorDialog(err) {
 		data.isShowingErrorDialog = true;
-		data.dialogTitle = "エラーが発生しました";
+		data.dialogTitle = !!err.isHideTitle ? "" : "エラーが発生しました";
+		data.dialogBody = !!err.isHideBody ? false : true;
 		data.dialogMessage = err.message;
 	}
 
@@ -188,13 +190,15 @@ function setupDeveloperMenu(param) {
 		});
 	}
 
-	if (!data.isIchibaContent) {
-		config.sendsSessionParameter = false
-	}
 	// Events タブの "ゲーム開始時にEventを自動送信" と NicoNico タブの "セッションパラメータを送る" が両方有効になった場合
 	// エラーを出力し、Eventタブの "ゲーム開始時にEventを自動送信" を無効とする。
-	if (config.autoSendEvents && config.sendsSessionParameter) {
-		console.error("Events タブのゲーム開始時にEventを自動送信が有効になっています。無効にして実行します。");
+	if (config.autoSendEvents && (config.sendsSessionParameter && data.isIchibaContent)) {
+		var err = {
+			message: `Events タブのゲーム開始時にEventを自動送信が有効になっています。無効にして実行します。`,
+			isHideTitle: true,
+			isHideBody: true
+		}
+		showErrorDialog(err);
 		config.autoSendEvents = false;
 	}
 
@@ -1180,7 +1184,15 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onAutoSendEventsChanged: function() {
-				config.sendsSessionParameter = false; //NicoNico タブのセッションパラメータを送るを無効化
+				if (config.sendsSessionParameter && data.isIchibaContent) {
+					config.sendsSessionParameter = false; //NicoNico タブのセッションパラメータを送るを無効化
+					var err = {
+						message: `NicoNicoタブの "セッションパラメータを送る" 機能を無効にしました。`,
+						isHideTitle: true,
+						isHideBody: true
+					}
+					showErrorDialog(err);
+				}
 				saveConfig();
 			},
 			insertEventString: insertEventString,
@@ -1190,6 +1202,14 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onSendsSessionParameterChanged: function() {
+				if (config.autoSendEvents && config.eventsToSend) {
+					var err = {
+						message: `Eventsタブの "ゲーム開始時にEventを自動送信" 機能を無効にしました。`,
+						isHideTitle: true,
+						isHideBody: true
+					}
+					showErrorDialog(err);
+				}
 				config.autoSendEvents = false; // Events タブのゲーム開始時にEventを自動送信を無効化
 				saveConfig();
 			},

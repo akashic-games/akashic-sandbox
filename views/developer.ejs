@@ -152,7 +152,8 @@
 					<h2>イベント送信(Advanced)</h2>
 					<form class="pure-form">
 						<input id="auto-send" type="checkbox" v-model="config.autoSendEvents" v-on:change="onAutoSendEventsChanged">
-						ゲーム開始時にEventを自動送信
+						ゲーム開始時にEventを自動送信<br/>
+						(有効にすると、NicoNicoタブの "セッションパラメータを送る" 機能は無効になります)
 						<textarea style="width:90%; min-height:200px" v-model="config.eventsToSend" v-on:change="onEventsToSendChanged" placeholder="Events to Send (Should be an array of events)"></textarea>
 						<submit class="pure-button pure-button-primary" v-on:click="sendEvents">Send Events</submit>
 					</form>
@@ -255,7 +256,8 @@
 					<div class="{{ isIchibaContent ? '': 'disabled' }}">
 						<label>
 							<input id="send-mode" type="checkbox" v-bind:disabled="!isIchibaContent" v-model="config.sendsSessionParameter" v-on:change="onSendsSessionParameterChanged" />
-							セッションパラメータを送る(要リロード)
+							セッションパラメータを送る(要リロード)<br/>
+							(有効にすると、Eventsタブの "ゲーム開始時にEventを自動送信" 機能は無効になります)
 						</label>
 						<table class="pure-table" v-show="config.sendsSessionParameter" style="width: 100%">
 							<thead>
@@ -399,7 +401,7 @@
 		<a class="error-dialog-close-btn" title="close" v-on:click="hideErrorDialog"><i class="fa fa-times"></i></a>
 		<div class="error-dialog-title">{{dialogTitle}}</div>
 		<div class="error-dialog-name">{{dialogMessage}}</div>
-		<div class="error-dialog-body">Developer Tool などでエラー内容を確認の上修正してください。</div>
+		<div v-if="dialogBody" class="error-dialog-body">Developer Tool などでエラー内容を確認の上修正してください。</div>
 		<a v-if="!!dialogReferenceUrl" href="{{dialogReferenceUrl}}" target="_blank" {{}}>参考リンク</a>
 	</div>
 </div>
