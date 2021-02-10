@@ -14,8 +14,8 @@
     "build:client": "tsc -p src/client",
     "build:server": "tsc -p src/server",
     "lint": "npm run lint:client && npm run lint:server",
-    "lint:client": "eslint src/client/**/*.ts --fix",
-    "lint:server": "eslint src/server/**/*.ts --fix",
+    "lint:client": "eslint src/client/*.ts src/client/**/*.ts --fix",
+    "lint:server": "eslint src/server/*.ts src/server/**/*.ts --fix",
     "test": "npm run test:jasmine && npm run lint",
     "test:jasmine": "jasmine ./spec/**/*[sS]pec.js",
     "update": "node ./build/updateEngineFiles.js"
