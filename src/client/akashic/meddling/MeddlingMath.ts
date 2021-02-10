@@ -1,3 +1,5 @@
+// window 配下のObjectとなるため、命名規則のlintエラーを抑止
+// eslint-disable-next-line @typescript-eslint/naming-convention
 var MeddlingMath;
 
 (function (): void {
@@ -6,7 +8,7 @@ var MeddlingMath;
 		MeddlingMath = Math;
 	} else {
 		MeddlingMath = new Proxy(Math, {
-			get: (target, prop, receiver) => {
+			get: (target, prop, _receiver) => {
 				if (prop === "random") {
 					console.warn("Math.random()が実行されました。Akashicコンテンツではこの機能に依存してゲームの実行状態が変わらないようにしてください。");
 					window.dispatchEvent(new ErrorEvent("akashicWarning", {

@@ -4,7 +4,7 @@ import express = require("express");
 import sr = require("../request/ScriptRequest");
 
 
-var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+var controller: express.RequestHandler = (req: sr.ScriptRequest, res: express.Response, _next: Function) => {
 	var scriptPath = path.resolve(path.join(req.baseDir, "sandbox.config.js"));
 
 	if (! fs.existsSync(scriptPath)) {

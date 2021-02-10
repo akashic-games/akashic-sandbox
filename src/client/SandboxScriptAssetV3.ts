@@ -1,8 +1,12 @@
+// Windowオブジェクトの定義のため、未使用の lint エラーを抑止
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Window {
 	gScriptContainer: {[key: string]: Function};
 }
 
 // 本来であればv3系のg.ScriptAssetをimplementsすべきだが、ビルド時に使用しているakashic-engineはv2系なので一からクラス定義している
+// game.ejs で参照されるため、未使用の lint エラーを抑止
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class SandboxScriptAssetV3 {
 	type: string = "script";
 	script: string;
@@ -60,7 +64,7 @@ class SandboxScriptAssetV3 {
 	}
 
 	_load(loader: g.AssetLoadHandler): void {
-		var waitLoader = () => {
+		var waitLoader = (): void => {
 			if (this.loading) {
 				setTimeout(waitLoader, 100);
 				return;

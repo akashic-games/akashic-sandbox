@@ -3,7 +3,7 @@ import path = require("path");
 import express = require("express");
 import sr = require("../request/ScriptRequest");
 
-var controller = (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+var controller = (req: sr.ScriptRequest, res: express.Response, next: Function): void => {
 	var scriptPath = path.join(req.baseDir, req.params.scriptName);
 	// TODO: pathがbaseDir以下かの検査（scriptNameに..とか入れられるとたどれちゃう）
 	if (! fs.existsSync(scriptPath) || (! req.useRawScript && ! req.query.id)) {
