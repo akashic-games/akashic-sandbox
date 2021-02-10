@@ -160,6 +160,7 @@ function setupDeveloperMenu(param) {
 		data.isShowingErrorDialog = true;
 		data.dialogTitle = "Akashic非推奨機能が使用されました";
 		data.dialogMessage = err.message;
+		data.dialogBody = "Developer Tool などでエラー内容を確認の上修正してください。";
 		data.dialogReferenceUrl = err.referenceUrl;
 	}
 
