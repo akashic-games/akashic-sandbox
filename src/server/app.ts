@@ -1,13 +1,13 @@
+import fs = require("fs");
+import path = require("path");
 import express = require("express");
 import session = require("express-session");
 // import favicon = require("serve-favicon");
-import fs = require("fs");
-import path = require("path");
-import jsRoute = require("./routes/js");
-import gameRoute = require("./routes/game");
-import testRoute = require("./routes/test");
 import sr = require("./request/ScriptRequest");
+import gameRoute = require("./routes/game");
+import jsRoute = require("./routes/js");
 import sandboxConfigRoute = require("./routes/sandboxConfig");
+import testRoute = require("./routes/test");
 
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
@@ -80,7 +80,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		secret: "to eat or no  to eat"
 	}));
 
-	app.use((req, res, next) => {
+	app.use((_req, res, next) => {
 		res.header("Access-Control-Allow-Origin", "*");
 		res.locals.environment = environment;
 		next();
@@ -90,20 +90,20 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.cascadeBases = cascadeBases;
 
 	// TODO: change to middleware
-	app.use("/game/*.js$", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+	app.use("/game/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		req.baseDir = app.gameBase;
 		next();
 	});
-	app.use("/raw_game/*.js$", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+	app.use("/raw_game/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		req.baseDir = app.gameBase;
 		req.useRawScript = true;
 		next();
 	});
-	app.use("/cascade/:index/*.js$", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+	app.use("/cascade/:index/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		req.baseDir = app.cascadeBases[Number(req.params.index)];
 		next();
 	});
-	app.use("/raw_cascade/:index/*.js$", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+	app.use("/raw_cascade/:index/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		req.baseDir = app.cascadeBases[Number(req.params.index)];
 		req.useRawScript = true;
 		next();
@@ -112,10 +112,10 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.set("views", path.join(__dirname, "..", "views"));
 	app.set("view engine", "ejs");
 
-	app.use("^\/$", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("^\/$", (_req: express.Request, res: express.Response, _next: Function) => {
 		res.redirect("/game/");
 	});
-	app.use("^\/game$", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("^\/game$", (_req: express.Request, res: express.Response, _next: Function) => {
 		res.redirect("/game/");
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
@@ -123,7 +123,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/css/", express.static(cssBase));
 	app.use("/thirdparty/", express.static(thridpartyBase));
 
-	app.use("/sandboxconfig/", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+	app.use("/sandboxconfig/", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		req.baseDir = app.gameBase;
 		next();
 	}, <express.RequestHandler>sandboxConfigRoute);
@@ -141,7 +141,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		app.use("/raw_cascade/" + i + "/", express.static(app.cascadeBases[i]));
 	}
 
-	app.use("/configuration/", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("/configuration/", (req: express.Request, res: express.Response, _next: Function) => {
 		var prefix = req.query.raw ? "/raw_" : "/";
 		if (app.cascadeBases.length === 0) {
 			res.redirect(prefix + "game/game.json");
@@ -153,11 +153,11 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.json({ definitions: defs });
 	});
 
-	app.use("/basepath/", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("/basepath/", (_req: express.Request, res: express.Response, _next: Function) => {
 		res.send(app.gameBase);
 	});
 
-	app.use("/engine", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("/engine", (req: express.Request, res: express.Response, _next: Function) => {
 		var host = req.protocol + "://" + req.get("host");
 		res.type("application/json");
 
@@ -166,7 +166,8 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		externals = Array.isArray(externals) ? externals : [externals] as string[];
 
 		if (typeof externals[0] !== "string" && externals[0] != null) throw new Error("Invalid externals type");
-
+		// json の読み込みのため require の lint エラーを抑止
+		/* eslint-disable @typescript-eslint/no-var-requires */
 		var versionsJson = require("./engineFilesVersion.json");
 		res.render("engine", {
 			host: host,
@@ -176,15 +177,15 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		});
 	});
 
-	app.use("^\/test$", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("^\/test$", (_req: express.Request, res: express.Response, _next: Function) => {
 		res.redirect("/test/");
 	});
-	app.use("/test/*.js$", (req: sr.ScriptRequest, res: express.Response, next: Function) => {
+	app.use("/test/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		var ssn: ASSession = req.session;
 		req.baseDir = app.scenario.benchmarks[ssn.cntr].target;
 		next();
 	});
-	app.use("/start/", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("/start/", (req: express.Request, res: express.Response, _next: Function) => {
 		var scenarioJSONString = fs.readFileSync(app.settings.scenarioPath).toString();
 		app.scenario = JSON.parse(scenarioJSONString);
 		var ssn: ASSession = req.session;
@@ -192,7 +193,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		ssn.results = [];
 		res.redirect("/test/");
 	});
-	app.use("/next/", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("/next/", (req: express.Request, res: express.Response, _next: Function) => {
 		var ssn: ASSession = req.session;
 
 		var elapse: number = Number(req.query.elapse);
@@ -210,16 +211,15 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 			res.redirect("/finish/");
 		}
 	});
-	app.use("/finish/", (req: express.Request, res: express.Response, next: Function) => {
+	app.use("/finish/", (req: express.Request, res: express.Response, _next: Function) => {
 		var ssn: ASSession = req.session;
 		console.log("you arrived at 'finish'");
 
 		res.render("finish", {
-				"resultjson": JSON.stringify(ssn.results),
-				"resultcsv": result2csv(ssn.results),
-				"title": "finish"
-			}
-		);
+			"resultjson": JSON.stringify(ssn.results),
+			"resultcsv": result2csv(ssn.results),
+			"title": "finish"
+		});
 	});
 	app.use("/test", <express.RequestHandler>jsRoute);
 	app.use("/test", (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -236,7 +236,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		express.static(app.scenario.benchmarks[ssn.cntr].target)(req, res, next);
 	});
 
-	app.use((req: express.Request, res: express.Response, next: Function) => {
+	app.use((_req: express.Request, _res: express.Response, next: Function) => {
 		var err = new Error("Not Found");
 		err.status = 404;
 		next(err);
@@ -244,7 +244,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 
 	var errorHandler: express.ErrorRequestHandler;
 	if (isDev) {
-		errorHandler = (err: any, req: express.Request, res: express.Response, next: Function): any => {
+		errorHandler = (err: any, _req: express.Request, res: express.Response, _next: Function): any => {
 			res.status(err.status || 500);
 			res.render("error", {
 				title: "error",
@@ -253,7 +253,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 			});
 		};
 	} else {
-		errorHandler = (err: any, req: express.Request, res: express.Response, next: Function): any => {
+		errorHandler = (err: any, _req: express.Request, res: express.Response, _next: Function): any => {
 			res.status(err.status || 500);
 			res.render("error", {
 				title: "error",

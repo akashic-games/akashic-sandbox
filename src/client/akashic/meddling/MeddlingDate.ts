@@ -1,3 +1,5 @@
+// window 配下のObjectとなるため、命名規則のlintエラーを抑止
+// eslint-disable-next-line @typescript-eslint/naming-convention
 var MeddlingDate;
 
 (function (): void {
@@ -6,7 +8,7 @@ var MeddlingDate;
 		MeddlingDate = Date;
 	} else {
 		MeddlingDate = new Proxy(Date, {
-			get: (target, prop, receiver) => {
+			get: (target, prop, _receiver) => {
 				if (prop === "now") {
 					console.warn("Date.now()が実行されました。Akashicコンテンツではこの機能に依存してゲームの実行状態が変わらないようにしてください。");
 					window.dispatchEvent(new ErrorEvent("akashicWarning", {
