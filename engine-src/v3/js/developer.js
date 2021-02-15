@@ -197,7 +197,7 @@ function setupDeveloperMenu(param) {
 	// エラーを出力し、Eventタブの "ゲーム開始時にEventを自動送信" を無効とする。
 	if (config.autoSendEvents && (config.sendsSessionParameter && data.isIchibaContent)) {
 		var err = {
-			message: `NicoNico タブの"セッションパラメータを送る"と Events タブの"ゲーム開始時にEventを自動送信"を両方同時に有効にすることはできません。Events タブの"ゲーム開始時にEventを自動送信"を無効にして実行します。`,
+			message: `NicoNico タブの"セッションパラメータを送る"と Events タブの"ゲーム開始時にEventを自動送信"を両方同時に有効にすることはできません。Events タブの"ゲーム開始時にEventを自動送信"を無効にしました。`,
 			isHideTitle: true,
 			isHideBody: true
 		}
@@ -1202,7 +1202,7 @@ function setupDeveloperMenu(param) {
 				if (config.sendsSessionParameter && data.isIchibaContent) {
 					config.sendsSessionParameter = false; //NicoNico タブのセッションパラメータを送るを無効化
 					var err = {
-						message: `Events タブの "ゲーム開始時にEventを自動送信" と NicoNico タブの "セッションパラメータを送る" を両方同時に有効にすることはできません。NicoNicoタブの "セッションパラメータを送る" 機能を無効にして実行します。`,
+						message: `Events タブの "ゲーム開始時にEventを自動送信" と NicoNico タブの "セッションパラメータを送る" を両方同時に有効にすることはできません。NicoNicoタブの "セッションパラメータを送る" 機能を無効にしました。`,
 						isHideTitle: true,
 						isHideBody: true
 					}
@@ -1220,7 +1220,7 @@ function setupDeveloperMenu(param) {
 				if (config.autoSendEvents && config.eventsToSend) {
 					config.autoSendEvents = false; // Events タブのゲーム開始時にEventを自動送信を無効化
 					var err = {
-						message: `NicoNico タブの "セッションパラメータを送る" と Events タブの "ゲーム開始時にEventを自動送信" を両方同時に有効にすることはできません。Eventsタブの "ゲーム開始時にEventを自動送信" 機能を無効にして実行します。`,
+						message: `NicoNico タブの "セッションパラメータを送る" と Events タブの "ゲーム開始時にEventを自動送信" を両方同時に有効にすることはできません。Eventsタブの "ゲーム開始時にEventを自動送信" 機能を無効にしました。`,
 						isHideTitle: true,
 						isHideBody: true
 					}
