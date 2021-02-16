@@ -145,12 +145,14 @@ function setupDeveloperMenu(param) {
 		isShowingErrorDialog: false,
 		dialogMessage: null,
 		dialogTitle: null,
+		dialogBody: "",
 		dialogReferenceUrl: null
 	};
 
 	function showErrorDialog(err) {
 		data.isShowingErrorDialog = true;
-		data.dialogTitle = "エラーが発生しました";
+		data.dialogTitle = !!err.isHideTitle ? "" : "エラーが発生しました";
+		data.dialogBody = !!err.isHideBody ? "" : "Developer Tool などでエラー内容を確認の上修正してください。";
 		data.dialogMessage = err.message;
 	}
 
@@ -158,6 +160,7 @@ function setupDeveloperMenu(param) {
 		data.isShowingErrorDialog = true;
 		data.dialogTitle = "Akashic非推奨機能が使用されました";
 		data.dialogMessage = err.message;
+		data.dialogBody = "Developer Tool などでエラー内容を確認の上修正してください。";
 		data.dialogReferenceUrl = err.referenceUrl;
 	}
 
@@ -186,6 +189,18 @@ function setupDeveloperMenu(param) {
 			amflow.sendEvent([0 /* Join */,  3, p.id, p.name, null ]);
 			return true;
 		});
+	}
+
+	// Events タブの "ゲーム開始時にEventを自動送信" と NicoNico タブの "セッションパラメータを送る" が両方有効になった場合
+	// エラーを出力し、Eventタブの "ゲーム開始時にEventを自動送信" を無効とする。
+	if (config.autoSendEvents && (config.sendsSessionParameter && data.isIchibaContent)) {
+		var err = {
+			message: `NicoNico タブの"セッションパラメータを送る"と Events タブの"ゲーム開始時にEventを自動送信"を両方同時に有効にすることはできません。Events タブの"ゲーム開始時にEventを自動送信"を無効にしました。`,
+			isHideTitle: true,
+			isHideBody: true
+		}
+		showErrorDialog(err);
+		config.autoSendEvents = false;
 	}
 
 	if (config.autoSendEvents && !param.isReplay) {
@@ -1170,6 +1185,15 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onAutoSendEventsChanged: function() {
+				if (config.sendsSessionParameter && data.isIchibaContent) {
+					config.sendsSessionParameter = false; //NicoNico タブのセッションパラメータを送るを無効化
+					var err = {
+						message: `Events タブの "ゲーム開始時にEventを自動送信" と NicoNico タブの "セッションパラメータを送る" を両方同時に有効にすることはできません。NicoNicoタブの "セッションパラメータを送る" 機能を無効にしました。`,
+						isHideTitle: true,
+						isHideBody: true
+					}
+					showErrorDialog(err);
+				}
 				saveConfig();
 			},
 			insertEventString: insertEventString,
@@ -1179,6 +1203,15 @@ function setupDeveloperMenu(param) {
 				saveConfig();
 			},
 			onSendsSessionParameterChanged: function() {
+				if (config.autoSendEvents && config.eventsToSend) {
+					config.autoSendEvents = false; // Events タブのゲーム開始時にEventを自動送信を無効化
+					var err = {
+						message: `NicoNico タブの "セッションパラメータを送る" と Events タブの "ゲーム開始時にEventを自動送信" を両方同時に有効にすることはできません。Eventsタブの "ゲーム開始時にEventを自動送信" 機能を無効にしました。`,
+						isHideTitle: true,
+						isHideBody: true
+					}
+					showErrorDialog(err);
+				}
 				saveConfig();
 			},
 			onModeChanged: function() {
