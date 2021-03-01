@@ -4,7 +4,7 @@
   "description": "Standalone runner for Akashic games",
   "main": "index.js",
   "scripts": {
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "start": "npm run build && node bin/run",
     "build": "npm run copy:common && npm run copy:v1 && npm run copy:v2 && npm run copy:v3 && npm run build:client && npm run build:server && cpx ./engine-src/engineFilesVersion.json ./lib",
     "copy:common": "cpx ./engine-src/common/js/**/*.js ./js && cpx ./engine-src/common/external/**/*.js ./js",
