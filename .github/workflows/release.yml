@@ -7,6 +7,7 @@ on:
 
 env:
   NODE_VERSION: 14
+  cache-version: v1
 
 jobs:
   release:
@@ -21,9 +22,21 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ env.cache-version }}-${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles("**/package-lock.json") }}
+          restore-keys: |
+            ${{ env.cache-version }}-${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ env.cache-version }}-${{ runner.os }}-build-
+            ${{ env.cache-version }}-${{ runner.os }}-
       - name: Run test
         run: |
-          npm install
+          npm ci --ignore-scripts
+          npm run build
           npm test
       - name: Publish and Release
         uses: akashic-games/actions/release@v1
