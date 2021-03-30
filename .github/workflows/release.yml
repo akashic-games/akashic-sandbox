@@ -33,7 +33,7 @@ jobs:
             ${{ env.cache-version }}-${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ env.cache-version }}-${{ runner.os }}-build-
             ${{ env.cache-version }}-${{ runner.os }}-
-      - name: Run test
+      - name: Prepare
         run: |
           npm ci --ignore-scripts
           npm run build
