@@ -743,7 +743,7 @@ function setupDeveloperMenu(param) {
 
 		var name = y + "-" + m + "-" + d + "-" + h + "-" + min + "-" + s;
 		var snapshot = {
-			driverSnapshot,
+			driverSnapshot: driverSnapshot,
 			players: data.players
 		};
 		addSnapshotsList(name, snapshot);
@@ -1144,7 +1144,9 @@ function setupDeveloperMenu(param) {
 				var snapshot = snapshots[name];
 
 				if (snapshot.driverSnapshot == null) {
-					console.error(`スナップショット ${name} をロードできません。v2以前のコンテンツで保存されたスナップショットです。akashic-sandbox のスナップショットツールは、v2以前とv3で保存形式に互換性がありません。`);
+					console.error(
+						"スナップショット " + name + " をロードできません。v2以前のコンテンツで保存されたスナップショットです。" +
+						"akashic-sandbox のスナップショットツールは、v2以前とv3で保存形式に互換性がありません。");
 					return;
 				}
 
