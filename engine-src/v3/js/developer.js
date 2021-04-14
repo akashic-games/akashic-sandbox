@@ -725,12 +725,8 @@ function setupDeveloperMenu(param) {
 	var snapshotsList = [];
 
 	// ゲームコンテンツからのスナップショット保存要求をハンドル
-	var saveSnapshotOriginal = props.game.saveSnapshot;
-	props.game.saveSnapshot = function(gameSnapshot) {
-		// browser-engineのGame#saveSnapshot()を実行
-		saveSnapshotOriginal.apply(props.game, arguments);
-
-		if (!gameSnapshot) return;
+	props.game.handlerSet.snapshotTrigger.add(function(driverSnapshot) {
+		if (!driverSnapshot) return;
 
 		var time = new Date();
 		var y = time.getFullYear();
@@ -747,16 +743,14 @@ function setupDeveloperMenu(param) {
 
 		var name = y + "-" + m + "-" + d + "-" + h + "-" + min + "-" + s;
 		var snapshot = {
-			age: props.game.age,
-			randGenSer: props.game.random[0].serialize(),
-			gameSnapshot: gameSnapshot,
+			driverSnapshot,
 			players: data.players
 		};
 		addSnapshotsList(name, snapshot);
 
 		// LocalStorageに保存
 		localStorage.setItem(SNAPSHOT_PREFIX + name, JSON.stringify(snapshot));
-	};
+	});
 
 	// LocalStorageに保存されているスナップショットの一覧
 	for (i in localStorage) {
@@ -1154,12 +1148,7 @@ function setupDeveloperMenu(param) {
 				cameras = [];
 				// プレイヤー情報を再現 (この復元はゲームコンテンツのプレイヤー情報の復元とは関係がない)
 				data.players = snapshot.players;
-
-				props.game._reset({
-					age: snapshot.age,
-					randGen: g.XorshiftRandomGenerator.deserialize(snapshot.randGenSer)
-				});
-				props.game._loadAndStart({ snapshot: snapshot.gameSnapshot });
+				props.game._restartWithSnapshot(snapshot.driverSnapshot);
 			},
 			previewSnapshot: function(index, name) {
 				data.snapshotPreview = {
