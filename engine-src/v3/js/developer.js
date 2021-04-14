@@ -1143,6 +1143,11 @@ function setupDeveloperMenu(param) {
 				console.log("snapshot loaded: " + name);
 				var snapshot = snapshots[name];
 
+				if (snapshot.driverSnapshot == null) {
+					console.error(`スナップショット ${name} をロードできません。v2以前のコンテンツで保存されたスナップショットです。akashic-sandbox のスナップショットツールは、v2以前とv3で保存形式に互換性がありません。`);
+					return;
+				}
+
 				// developerメニューの把握するカメラを全リセット
 				data.cameras = [];
 				cameras = [];
