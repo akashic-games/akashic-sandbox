@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.17.29",
+  "version": "0.17.30",
   "description": "Standalone runner for Akashic contents",
   "main": "index.js",
   "scripts": {
