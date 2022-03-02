@@ -163,6 +163,39 @@ window.addEventListener("load", function() {
 			return new SandboxScriptAsset(id, assetPath);
 		};
 
+		// 描画元の範囲が指定されたwidth,heightを超える値もしくは0以下が与えられた場合Safariでのみ描画されないという問題が発生するので、g.Surface#renderer()でエラーを投げる処理を差し込む
+		// funcにはg.Surfaceを返す関数が渡されることを想定している
+		function createMeddlingWrappedSurfaceFactory(func) {
+			return function() {
+				var surface = func.apply(this, arguments);
+				var originalRenderer = surface.renderer;
+				// drawImageメソッドの中で元のdrawImageメソッドを利用する実装のため、rendererをキャッシュしないとrenderer呼び出しの度にバリデーション処理が増えてしまう
+				// 本来なら前回のrendererの内容と比較してdiffがあるかを判定する対応にすべきだが、rendererの内容は不変なので単純にrendererをキャッシュするだけの対応としている
+				var rendererCache = null;
+				surface.renderer = function () {
+					if (rendererCache) {
+						return rendererCache;
+					}
+					var renderer = originalRenderer.apply(this);
+					var originalDrawImage = renderer.drawImage;
+					renderer.drawImage = function (surface, offsetX, offsetY, width, height) {
+						if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
+							throw new Error(`Please draw with following range. x: 0-${surface.width}, y: 0-${surface.height}.`);
+						}
+						if (width <= 0 || height <= 0) {
+							throw new Error(`Please set width and height to value higher than 0.`);
+						}
+						originalDrawImage.apply(this, arguments);
+					}
+					rendererCache = renderer;
+					return renderer;
+				}
+				return surface;
+			};
+		}
+		pf.getPrimarySurface = createMeddlingWrappedSurfaceFactory(pf.getPrimarySurface);
+		pf._resourceFactory.createSurface = createMeddlingWrappedSurfaceFactory(pf._resourceFactory.createSurface);
+
 		driver = new gdr.GameDriver({
 			platform: pf,
 			player: sandboxPlayer,
