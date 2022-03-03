@@ -163,31 +163,38 @@ window.addEventListener("load", function() {
 			return new SandboxScriptAsset(id, assetPath);
 		};
 
-		// 描画元の範囲が指定されたwidth,heightを超える値もしくは0以下が与えられた場合Safariでのみ描画されないという問題が発生するので、g.Surface#renderer()でエラーを投げる処理を差し込む
+		// 一部のエッジケースでSafariのみ描画されないという問題が発生するので、ゲーム開発者が開発中に気づけるようにg.Renderer#drawImage()でエラーを投げる処理を差し込む
 		// funcにはg.Surfaceを返す関数が渡されることを想定している
-		function createMeddlingWrappedSurfaceFactory(func) {
+		function createMeddlingWrappedSurfaceFactory (func) {
 			return function() {
 				var surface = func.apply(this, arguments);
 				var originalRenderer = surface.renderer;
-				// drawImageメソッドの中で元のdrawImageメソッドを利用する実装のため、rendererをキャッシュしないとrenderer呼び出しの度にバリデーション処理が増えてしまう
-				// 本来なら前回のrendererの内容と比較してdiffがあるかを判定する対応にすべきだが、rendererの内容は不変なので単純にrendererをキャッシュするだけの対応としている
-				var rendererCache = null;
+				var renderer = null;
 				surface.renderer = function () {
-					if (rendererCache) {
-						return rendererCache;
+					// surface.renderer() はコンテンツから描画のたびに呼び出されるが戻り値は現実的に固定なので、ここでの surface.renderer() の上書きは一度しか適用しない
+					if (renderer) {
+						return renderer;
 					}
-					var renderer = originalRenderer.apply(this);
+					renderer = originalRenderer.apply(this);
 					var originalDrawImage = renderer.drawImage;
-					renderer.drawImage = function (surface, offsetX, offsetY, width, height) {
+					renderer.drawImage = function (surface, offsetX, offsetY, width, height, _destOffsetX, _destOffsetY) {
 						if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
-							throw new Error(`Please draw with following range. x: 0-${surface.width}, y: 0-${surface.height}.`);
+							// ref. https://github.com/akashic-games/akashic-engine/issues/349
+							throw new Error("drawImage(): out of bounds."
+								+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
+								+ "This is not a bug but intentionally prohibited by akashic serve"
+								+ "to prevent platform-specific rendering trouble."
+							);
 						}
 						if (width <= 0 || height <= 0) {
-							throw new Error(`Please set width and height to value higher than 0.`);
+							throw new Error("drawImage(): nothing to draw."
+								+ "Either width or height is less than or equal to zero."
+								+ "This is not a bug but intentionally prohibited by akashic serve"
+								+ "to prevent platform-specific rendering trouble."
+							);
 						}
 						originalDrawImage.apply(this, arguments);
 					}
-					rendererCache = renderer;
 					return renderer;
 				}
 				return surface;
