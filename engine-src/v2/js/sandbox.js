@@ -168,6 +168,46 @@ window.addEventListener("load", function() {
 			return new SandboxScriptAsset(id, assetPath);
 		};
 
+		// 一部のエッジケースでSafariのみ描画されないという問題が発生するので、ゲーム開発者が開発中に気づけるようにg.Renderer#drawImage()でエラーを投げる処理を差し込む
+		// funcにはg.Surfaceを返す関数が渡されることを想定している
+		function createMeddlingWrappedSurfaceFactory (func) {
+			return function() {
+				var surface = func.apply(this, arguments);
+				var originalRenderer = surface.renderer;
+				var renderer = null;
+				surface.renderer = function () {
+					// surface.renderer() はコンテンツから描画のたびに呼び出されるが戻り値は現実的に固定なので、ここでの surface.renderer() の上書きは一度しか適用しない
+					if (renderer) {
+						return renderer;
+					}
+					renderer = originalRenderer.apply(this);
+					var originalDrawImage = renderer.drawImage;
+					renderer.drawImage = function (surface, offsetX, offsetY, width, height, _destOffsetX, _destOffsetY) {
+						if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
+							// ref. https://github.com/akashic-games/akashic-engine/issues/349
+							throw new Error("drawImage(): out of bounds."
+								+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
+								+ "This is not a bug but intentionally prohibited by akashic serve"
+								+ "to prevent platform-specific rendering trouble."
+							);
+						}
+						if (width <= 0 || height <= 0) {
+							throw new Error("drawImage(): nothing to draw."
+								+ "Either width or height is less than or equal to zero."
+								+ "This is not a bug but intentionally prohibited by akashic serve"
+								+ "to prevent platform-specific rendering trouble."
+							);
+						}
+						originalDrawImage.apply(this, arguments);
+					}
+					return renderer;
+				}
+				return surface;
+			};
+		}
+		pf.getPrimarySurface = createMeddlingWrappedSurfaceFactory(pf.getPrimarySurface);
+		pf._resourceFactory.createSurface = createMeddlingWrappedSurfaceFactory(pf._resourceFactory.createSurface);
+
 		driver = new gdr.GameDriver({
 			platform: pf,
 			player: sandboxPlayer,
