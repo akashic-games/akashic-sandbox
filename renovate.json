@@ -1,0 +1,32 @@
+{
+  "extends": [
+    "github>akashic-games/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@akashic/"],
+      "matchUpdateTypes": ["patch"],
+      "schedule": "at any time",
+      "groupName": "akashic packages patch",
+      "bumpVersion": "patch",
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["^@akashic/"],
+      "matchUpdateTypes": ["minor"],
+      "schedule": "at any time",
+      "groupName": "akashic packages minor",
+      "bumpVersion": "minor"
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "excludePackagePatterns": ["@akashic/"],
+      "groupName": "patch dependencies"
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "excludePackagePatterns": ["@akashic/"],
+      "groupName": "minor dependencies"
+    }
+  ]
+}
