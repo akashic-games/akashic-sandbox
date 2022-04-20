@@ -16,18 +16,19 @@
       "matchUpdateTypes": ["minor"],
       "schedule": "at any time",
       "groupName": "akashic packages minor",
-      "bumpVersion": "minor",
-      "automerge": false
+      "bumpVersion": "minor"
     },
     {
       "matchUpdateTypes": ["patch"],
       "excludePackagePatterns": ["@akashic/"],
-      "groupName": "patch dependencies"
+      "groupName": "patch dependencies",
+      "automerge": true
     },
     {
       "matchUpdateTypes": ["minor"],
       "excludePackagePatterns": ["@akashic/"],
-      "groupName": "minor dependencies"
+      "groupName": "minor dependencies",
+      "automerge": true
     }
   ]
 }
