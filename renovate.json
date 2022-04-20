@@ -16,7 +16,7 @@
       "matchUpdateTypes": ["minor"],
       "schedule": "at any time",
       "groupName": "akashic packages minor",
-      "bumpVersion": "minor"
+      "bumpVersion": "patch"
     },
     {
       "matchUpdateTypes": ["patch"],
