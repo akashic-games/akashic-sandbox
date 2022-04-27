@@ -49,7 +49,8 @@ class SandboxScriptAsset extends g.ScriptAsset {
 	}
 
 	execute(execEnv: g.ScriptAssetExecuteEnvironment): any {
-		window.gScriptContainer[this.id](execEnv);
+		const key = this.path.replace(/^\/game\//, "");
+		window.gScriptContainer[key](execEnv);
 		return execEnv.module.exports;
 	}
 }
