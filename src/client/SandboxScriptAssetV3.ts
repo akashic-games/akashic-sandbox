@@ -35,8 +35,7 @@ class SandboxScriptAssetV3 {
 		};
 		this.script = undefined;
 		this.loading = true;
-		// TODO: pathに?が入っていたりするとダメなやつ
-		script.src = this.path + "?id=" + encodeURIComponent(this.id);
+		script.src = this.path;
 		container.appendChild(script);
 	}
 
