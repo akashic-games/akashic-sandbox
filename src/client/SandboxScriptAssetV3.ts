@@ -59,8 +59,7 @@ class SandboxScriptAssetV3 {
 
 	// 引数の型はg.ScriptAssetRuntimeValueだが、v2系には無いものなのでanyを指定している
 	execute(execEnv: any): any {
-		const key = this.path.replace(/^\/game\//, "");
-		window.gScriptContainer[key](execEnv);
+		window.gScriptContainer[this.path](execEnv);
 		return execEnv.module.exports;
 	}
 

@@ -18,7 +18,7 @@ var controller = (req: sr.ScriptRequest, res: express.Response, next: Function):
 		res.send(content);
 	} else {
 		res.render("script", {
-			key: scriptPath,
+			key: `${req.baseUrl}/${scriptPath}`,
 			scriptContent: content,
 			scriptName: req.params.scriptName
 		});
