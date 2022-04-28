@@ -35,8 +35,7 @@ class SandboxScriptAssetV3 {
 		};
 		this.script = undefined;
 		this.loading = true;
-		// TODO: pathに?が入っていたりするとダメなやつ
-		script.src = this.path + "?id=" + encodeURIComponent(this.id);
+		script.src = this.path;
 		container.appendChild(script);
 	}
 
@@ -59,7 +58,7 @@ class SandboxScriptAssetV3 {
 
 	// 引数の型はg.ScriptAssetRuntimeValueだが、v2系には無いものなのでanyを指定している
 	execute(execEnv: any): any {
-		window.gScriptContainer[this.id](execEnv);
+		window.gScriptContainer[this.path](execEnv);
 		return execEnv.module.exports;
 	}
 

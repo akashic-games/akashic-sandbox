@@ -28,8 +28,7 @@ class SandboxScriptAsset extends g.ScriptAsset {
 		};
 		this.script = undefined;
 		this.loading = true;
-		// TODO: pathに?が入っていたりするとダメなやつ
-		script.src = this.path + "?id=" + encodeURIComponent(this.id);
+		script.src = this.path;
 		container.appendChild(script);
 	}
 
@@ -49,7 +48,7 @@ class SandboxScriptAsset extends g.ScriptAsset {
 	}
 
 	execute(execEnv: g.ScriptAssetExecuteEnvironment): any {
-		window.gScriptContainer[this.id](execEnv);
+		window.gScriptContainer[this.path](execEnv);
 		return execEnv.module.exports;
 	}
 }
