@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## 0.17.47
-* `gScriptContainer` のキーをアセット ID から相対 URL へ修正
+* スクリプトアセットの定義が重複するコンテンツで、`gScriptContainer` に重複して保持しないよう修正
 
 ## 0.17.46
 * 内部コンポーネントの更新
