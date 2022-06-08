@@ -89,7 +89,7 @@ npm run build # src/以下をビルド
 
 akashic-sandbox を用いて内部モジュール (とくに [engine-files](https://github.com/akashic-games/engine-files)) の動作確認を行いたい場合、以下の手順を行ってください。
 
-* package.json で engine-files のエイリアスの `aev1`, `aev2`, `aev3` に対象のバージョンを指定し `npm install` します。`npm install` 後に `npm run build` を行うことで engine-files が `./js/vX/` へコピーされ動作確認が行える状態となります。
+* package.json で engine-files のエイリアスの `aev1`, `aev2`, `aev3` に対象のバージョンを指定し `npm install` します。インストール後に `npm run copy:engine-files`  を実行することで engine-files が `./js/vX/` へ一括コピーされ動作確認が行える状態となります。
 
 ## テスト方法
 
