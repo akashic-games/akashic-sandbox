@@ -16,7 +16,7 @@ class TimeKeeper {
 	}
 
 	now(): number {
-		var time = (this.isPausing()) ? this._pausedTime : ((Date.now() - this._origin) * this._rate + this._offset);
+		const time = (this.isPausing()) ? this._pausedTime : ((Date.now() - this._origin) * this._rate + this._offset);
 		return Math.min(time, this._limit);
 	}
 
