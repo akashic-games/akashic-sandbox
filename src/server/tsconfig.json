@@ -14,6 +14,7 @@
     "../../typings/ect.d.ts",
     "../../typings/extend.express.d.ts",
     "./app.ts",
+    "./utils.ts",
     "./controller/game.ts",
     "./controller/js.ts",
     "./controller/test.ts",

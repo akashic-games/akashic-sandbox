@@ -1,4 +1,5 @@
 import express = require("express");
+import { resolveEngineFilesVariable } from "../utils";
 
 const controller: express.RequestHandler = (req: express.Request, res: express.Response, _next: Function) => {
 	const devMode = req.query.devmode !== "disable";
@@ -9,7 +10,7 @@ const controller: express.RequestHandler = (req: express.Request, res: express.R
 	const pkgJson = require("../../package.json");
 	const engineFilesPkgJson = require(`../../node_modules/aev${version}/package.json`);
 	/* eslint-enable */
-	const engineFilesVariable = `engineFilesV${engineFilesPkgJson.version.replace(/[\.-]/g, "_") }`;
+	const engineFilesVariable = resolveEngineFilesVariable(engineFilesPkgJson.version);
 
 	res.render("game", {
 		title: `akashic-sandbox v${pkgJson.version}`,

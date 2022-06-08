@@ -8,6 +8,7 @@ import gameRoute = require("./routes/game");
 import jsRoute = require("./routes/js");
 import sandboxConfigRoute = require("./routes/sandboxConfig");
 import testRoute = require("./routes/test");
+import { resolveEngineFilesVariable } from "./utils";
 
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
@@ -169,7 +170,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		// json の読み込みのため require の lint エラーを抑止
 		/* eslint-disable @typescript-eslint/no-var-requires */
 		const engineFilesPkgJson = require(`../node_modules/aev${version}/package.json`);
-		const engineFilesVariable = `engineFilesV${engineFilesPkgJson.version.replace(/[\.-]/g, "_")}`;
+		const engineFilesVariable = resolveEngineFilesVariable(engineFilesPkgJson.version);
 		res.render("engine", {
 			host: host,
 			version: version,
