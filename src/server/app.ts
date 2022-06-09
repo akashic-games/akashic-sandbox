@@ -167,10 +167,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		externals = Array.isArray(externals) ? externals : [externals] as string[];
 
 		if (typeof externals[0] !== "string" && externals[0] != null) throw new Error("Invalid externals type");
-		// json の読み込みのため require の lint エラーを抑止
-		/* eslint-disable @typescript-eslint/no-var-requires */
-		const engineFilesPkgJson = require(`../node_modules/aev${version}/package.json`);
-		const engineFilesVariable = resolveEngineFilesVariable(engineFilesPkgJson.version);
+		const engineFilesVariable = resolveEngineFilesVariable(version);
 		res.render("engine", {
 			host: host,
 			version: version,

@@ -8,9 +8,8 @@ const controller: express.RequestHandler = (req: express.Request, res: express.R
 	// json の読み込みのため require の lint エラーを抑止
 	/* eslint-disable @typescript-eslint/no-var-requires */
 	const pkgJson = require("../../package.json");
-	const engineFilesPkgJson = require(`../../node_modules/aev${version}/package.json`);
 	/* eslint-enable */
-	const engineFilesVariable = resolveEngineFilesVariable(engineFilesPkgJson.version);
+	const engineFilesVariable = resolveEngineFilesVariable(version);
 
 	res.render("game", {
 		title: `akashic-sandbox v${pkgJson.version}`,
