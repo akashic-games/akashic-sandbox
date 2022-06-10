@@ -22,10 +22,10 @@ class SandboxScriptAssetV3 {
 		this.path = this._assetPathFilter(path);
 		this.onDestroyed = new g.Trigger<g.Asset>();
 		// いきなり読んじゃう
-		var heads = document.getElementsByTagName("head");
-		var container: Node = (heads.length === 0) ? document.body : heads[0];
+		const heads = document.getElementsByTagName("head");
+		const container: Node = (heads.length === 0) ? document.body : heads[0];
 
-		var script = <HTMLScriptElement>document.createElement("script");
+		const script = <HTMLScriptElement>document.createElement("script");
 		script.onload = () => {
 			this.script = script.text; // TODO: とれない・・
 			this.loading = false;
@@ -63,7 +63,7 @@ class SandboxScriptAssetV3 {
 	}
 
 	_load(loader: g.AssetLoadHandler): void {
-		var waitLoader = (): void => {
+		const waitLoader = (): void => {
 			if (this.loading) {
 				setTimeout(waitLoader, 100);
 				return;

@@ -15,10 +15,10 @@ class SandboxScriptAsset extends g.ScriptAsset {
 	constructor(id: string, path: string) {
 		super(id, path);
 		// いきなり読んじゃう
-		var heads = document.getElementsByTagName("head");
-		var container: Node = (heads.length === 0) ? document.body : heads[0];
+		const heads = document.getElementsByTagName("head");
+		const container: Node = (heads.length === 0) ? document.body : heads[0];
 
-		var script = <HTMLScriptElement>document.createElement("script");
+		const script = <HTMLScriptElement>document.createElement("script");
 		script.onload = () => {
 			this.script = script.text; // TODO: とれない・・
 			this.loading = false;
@@ -33,7 +33,7 @@ class SandboxScriptAsset extends g.ScriptAsset {
 	}
 
 	_load(loader: g.AssetLoadHandler): void {
-		var waitLoader = (): void => {
+		const waitLoader = (): void => {
 			if (this.loading) {
 				setTimeout(waitLoader, 100);
 				return;

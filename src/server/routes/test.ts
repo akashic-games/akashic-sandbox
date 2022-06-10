@@ -1,6 +1,6 @@
 import express = require("express");
 import controller = require("../controller/test");
-var router = express.Router();
+const router = express.Router();
 
 router.get("/", <express.RequestHandler>controller);
 

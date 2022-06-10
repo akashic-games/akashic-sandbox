@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.17.48
+* 保持していた各バージョンの engine-files を削除し、package.json で管理するよう修正
+* 内部コンポーネントの更新
+  * @akashic/engine-files@1.2.1 に更新
+  * @akashic/engine-files@2.2.1 に更新
+  * @akashic/engine-files@3.2.1 に更新
+
 ## 0.17.47
 * ブラウザの開発者ツールでソースファイル名に余計なクエリパラメータがつかないように修正
 

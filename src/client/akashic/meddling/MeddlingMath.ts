@@ -1,6 +1,6 @@
 // window 配下のObjectとなるため、命名規則のlintエラーを抑止
 // eslint-disable-next-line @typescript-eslint/naming-convention
-var MeddlingMath;
+let MeddlingMath;
 
 (function (): void {
 	// ieではProxy未対応なので差し替えない

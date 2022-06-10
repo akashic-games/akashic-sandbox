@@ -4,19 +4,33 @@
   ],
   "packageRules": [
     {
+      "matchPackageNames": ["aev1"],
+      "allowedVersions": "<2.0"
+    },
+    {
+      "matchPackageNames": ["aev2"],
+      "allowedVersions": "<3.0"
+    },
+    {
+      "matchPackageNames": ["aev3"],
+      "allowedVersions": "<4.0"
+    },
+    {
       "matchPackagePatterns": ["^@akashic/"],
       "matchUpdateTypes": ["patch"],
       "schedule": "at any time",
       "groupName": "akashic packages patch",
       "bumpVersion": "patch",
-      "automerge": true
+      "automerge": true,
+      "excludePackagePatterns": ["@akashic/akashic-engine"]
     },
     {
       "matchPackagePatterns": ["^@akashic/"],
       "matchUpdateTypes": ["minor"],
       "schedule": "at any time",
       "groupName": "akashic packages minor",
-      "bumpVersion": "patch"
+      "bumpVersion": "patch",
+      "excludePackagePatterns": ["@akashic/akashic-engine"]
     },
     {
       "matchUpdateTypes": ["patch"],

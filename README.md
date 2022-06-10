@@ -85,25 +85,11 @@ npm install
 npm run build # src/以下をビルド
 ```
 
-## 内部モジュールの更新方法
-
-akashic-sandbox は、以下の内部モジュールのコードをリポジトリ内に直接保持しています。
-* @akashic/engine-files
-
-また、これらのコードには Akashic Engine v1 系と v2 系が存在します。
-
-akashic-sandbox の開発者がこれらのコードを更新するには次のコマンドを実行してください。
-
-```sh
-npm run update
-```
-
 ## 内部モジュールの動作確認方法
 
 akashic-sandbox を用いて内部モジュール (とくに [engine-files](https://github.com/akashic-games/engine-files)) の動作確認を行いたい場合、以下の手順を行ってください。
 
-* 別で生成した engine-files のビルド成果物 `engineFilesV{version}.js` を `./js/v2/` または `./js/v1` にコピーします。
-  * バージョンが異なる場合は `./engine-src/engineFilesVersion.json` をビルドした engine-files に合わせてください。
+* package.json で engine-files のエイリアスの `aev1`, `aev2`, `aev3` に対象のバージョンを指定し `npm install` します。インストール後に `npm run copy:engine-files`  を実行することで engine-files が `./js/vX/` へ一括コピーされ動作確認が行える状態となります。
 
 ## テスト方法
 
