@@ -42,9 +42,9 @@
       "groupName": "minor dependencies",
       "automerge": true
     },
-	{
-		"matchUpdateTypes": ["major"],
-		"excludePackagePatterns": ["@akashic/akashic-engine"]
-	}
+    {
+        "matchUpdateTypes": ["major"],
+        "excludePackagePatterns": ["@akashic/akashic-engine"]
+    }
   ]
 }
