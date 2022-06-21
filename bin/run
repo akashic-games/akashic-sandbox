@@ -18,23 +18,24 @@ commander
 	.option("-s, --scenario <scenario>", "scenario file")
 	.parse(process.argv);
 
+var opts = commander.opts();
 var gameBase = commander.args.length > 0 ? commander.args[0] : process.cwd();
-var app = require('../lib/app')({ gameBase: gameBase, cascadeBases: commander.cascade });
-var port = normalizePort(commander.port || process.env.PORT || 3000);
+var app = require('../lib/app')({ gameBase: gameBase, cascadeBases: opts.cascade });
+var port = normalizePort(opts.port || process.env.PORT || 3000);
 
 var path = require("path");
 var fs = require("fs");
 
-if (commander.scenario) {
-	if (! fs.existsSync(commander.scenario)) {
-		console.error("can not load " + commander.scenario);
+if (opts.scenario) {
+	if (!fs.existsSync(opts.scenario)) {
+		console.error("can not load " + opts.scenario);
 		return;
 	}
-	app.set('scenarioPath', commander.scenario);
+	app.set('scenarioPath', opts.scenario);
 }
 
 var gameJsonPath = path.join(app.gameBase, "game.json");
-if (! commander.scenario && ! fs.existsSync(gameJsonPath)) {
+if (!opts.scenario && ! fs.existsSync(gameJsonPath)) {
 	console.error("can not load " + path.join(app.gameBase, "game.json"));
 	return;
 }
