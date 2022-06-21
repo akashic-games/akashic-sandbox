@@ -1,8 +1,7 @@
 import fs = require("fs");
 import path = require("path");
 import express = require("express");
-import session = require("express-session");
-// import favicon = require("serve-favicon");
+import * as session  from "express-session";
 import sr = require("./request/ScriptRequest");
 import gameRoute = require("./routes/game");
 import jsRoute = require("./routes/js");
@@ -16,7 +15,7 @@ interface AkashicSandbox extends express.Express {
 	scenario?: any;
 }
 
-interface ASSession extends Express.Session {
+interface ASSession extends session.Session {
 	cntr?: number;
 	results?: any[];
 }

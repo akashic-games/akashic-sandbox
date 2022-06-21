@@ -21,16 +21,14 @@
       "schedule": "at any time",
       "groupName": "akashic packages patch",
       "bumpVersion": "patch",
-      "automerge": true,
-      "excludePackagePatterns": ["@akashic/akashic-engine"]
+      "automerge": true
     },
     {
       "matchPackagePatterns": ["^@akashic/"],
       "matchUpdateTypes": ["minor"],
       "schedule": "at any time",
       "groupName": "akashic packages minor",
-      "bumpVersion": "patch",
-      "excludePackagePatterns": ["@akashic/akashic-engine"]
+      "bumpVersion": "patch"
     },
     {
       "matchUpdateTypes": ["patch"],
@@ -43,6 +41,10 @@
       "excludePackagePatterns": ["@akashic/"],
       "groupName": "minor dependencies",
       "automerge": true
+    },
+    {
+        "matchUpdateTypes": ["major"],
+        "excludePackagePatterns": ["@akashic/akashic-engine"]
     }
   ]
 }
