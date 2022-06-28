@@ -43,7 +43,7 @@
   "dependencies": {
     "aev1": "npm:@akashic/engine-files@1.2.1",
     "aev2": "npm:@akashic/engine-files@2.2.1",
-    "aev3": "npm:@akashic/engine-files@3.2.1",
+    "aev3": "npm:@akashic/engine-files@3.2.2",
     "commander": "^9.0.0",
     "debug": "^4.0.0",
     "ejs": "~3.1.7",
