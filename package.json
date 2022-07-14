@@ -51,7 +51,7 @@
     "express-session": "^1.11.3"
   },
   "devDependencies": {
-    "@akashic/akashic-engine": "~2.6.6",
+    "@akashic/akashic-engine": "~3.4.0",
     "@akashic/eslint-config": "^1.1.0",
     "@types/ejs": "~3.1.0",
     "@types/express": "~4.17.0",
