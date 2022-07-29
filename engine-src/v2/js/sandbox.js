@@ -192,7 +192,7 @@ window.addEventListener("load", function() {
 							// ref. https://github.com/akashic-games/akashic-engine/issues/349
 							var message = "drawImage(): out of bounds."
 								+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
-								+ "This is not a bug but intentionally prohibited by akashic serve"
+								+ "This is not a bug but warned by akashic sandbox"
 								+ "to prevent platform-specific rendering trouble.";
 							console.warn(message);
 							window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
@@ -200,7 +200,7 @@ window.addEventListener("load", function() {
 						if (width <= 0 || height <= 0) {
 							var message = "drawImage(): nothing to draw."
 								+ "Either width or height is less than or equal to zero."
-								+ "This is not a bug but intentionally prohibited by akashic serve"
+								+ "This is not a bug but warned by akashic sandbox"
 								+ "to prevent platform-specific rendering trouble.";
 							console.warn(message);
 							window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
