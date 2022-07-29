@@ -169,7 +169,7 @@ window.addEventListener("load", function() {
 		function createMeddlingWrappedSurfaceFactory (func) {
 			return function() {
 				var surface = func.apply(this, arguments);
-				// surfaceがcanvasでなければ範囲外描画警告は行わない
+				// Safariで範囲外描画時に問題が発生するのはCanvas要素なので、surfaceがCanvasでなければ範囲外描画警告は行わない
 				if (surface._drawable.constructor.name !== "HTMLCanvasElement") {
 					return surface;
 				}
