@@ -16,7 +16,7 @@ const controller: express.RequestHandler = (req: express.Request, res: express.R
 		version: version,
 		devMode: devMode,
 		engineFilesVariable: engineFilesVariable,
-		engineFilesPath: `v${version}/engineFiles.js`
+		engineFilesPath: `js/v${version}/${engineFilesVariable}.js`
 	});
 };
 

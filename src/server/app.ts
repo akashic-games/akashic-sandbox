@@ -119,6 +119,20 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.redirect("/game/");
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
+	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
+		const version = req.params.version.replace("v", "");
+		const libName = `ae${req.params.version}`;
+		const engineFilesVariable = resolveEngineFilesVariable(version);
+		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesVariable}.js`);
+		if (!fs.existsSync(engineFilesPath)) {
+			const err = new Error(`Not Found engineFiles ${req.params.version}`);
+			err.status = 400;
+			next(err);
+		}
+		const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
+		res.contentType("text/javascript");
+		res.send(engineFilesSrc);
+	});
 	app.use("/js/", express.static(jsBase));
 	app.use("/css/", express.static(cssBase));
 	app.use("/thirdparty/", express.static(thridpartyBase));
@@ -169,7 +183,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.render("engine", {
 			host: host,
 			externals: JSON.stringify(externals),
-			engineFilesPath: `v${version}/engineFiles.js`
+			engineFilesPath: `js/v${version}/${resolveEngineFilesVariable(version)}.js`
 		});
 	});
 
@@ -230,20 +244,6 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/test/", (req: express.Request, res: express.Response, next: express.NextFunction) => {
 		const ssn: ASSession = req.session;
 		express.static(app.scenario.benchmarks[ssn.cntr].target)(req, res, next);
-	});
-	app.use("/:version/engineFiles.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		const version = req.params.version.replace("v", "");
-		const libName = `ae${req.params.version}`;
-		const engineFilesVariable = resolveEngineFilesVariable(version);
-		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesVariable}.js`);
-		if (!fs.existsSync(engineFilesPath)) {
-			const err = new Error(`Not Found engineFiles ${req.params.version}`);
-			err.status = 400;
-			next(err);
-		}
-		const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
-		res.contentType("text/javascript");
-		res.send(engineFilesSrc);
 	});
 
 	app.use((_req: express.Request, _res: express.Response, next: Function) => {
