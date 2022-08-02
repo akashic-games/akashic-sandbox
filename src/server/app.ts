@@ -120,18 +120,16 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
 	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		const version = req.params.version.replace("v", "");
 		const libName = `ae${req.params.version}`;
-		const engineFilesVariable = resolveEngineFilesVariable(version);
-		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesVariable}.js`);
-		if (!fs.existsSync(engineFilesPath)) {
-			const err = new Error(`Not Found engineFiles ${req.params.version}`);
-			err.status = 400;
-			next(err);
+		const engineFilesName = req.originalUrl.replace(`/js/${req.params.version}/`, "");
+		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}`);
+		if (fs.existsSync(engineFilesPath)) {
+			const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
+			res.contentType("text/javascript");
+			res.send(engineFilesSrc);
+		} else {
+			next();
 		}
-		const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
-		res.contentType("text/javascript");
-		res.send(engineFilesSrc);
 	});
 	app.use("/js/", express.static(jsBase));
 	app.use("/css/", express.static(cssBase));
