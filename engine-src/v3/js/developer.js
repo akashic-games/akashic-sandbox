@@ -516,10 +516,12 @@ function setupDeveloperMenu(param) {
 
 	var baseG = window.sandboxDeveloperProps.game._runtimeValueBase;
 
-	baseG.Camera2D = function () {
-		camera2D.apply(this, arguments);
-		registerCamera(this);
-	};
+	Object.defineProperty(baseG, "Camera2D", {
+		value: function() {
+			camera2D.apply(this, arguments);
+			registerCamera(this);
+		}
+	});
 	// staticメンバを再現
 	Object.keys(camera2D).forEach(function (key) {
 		baseG.Camera2D[key] = camera2D[key];
@@ -1179,8 +1181,7 @@ function setupDeveloperMenu(param) {
 				} else {
 					props.game.focusingCamera = undefined;
 				}
-				// TODO: GAMEDEV-2414, GAMEDEV-2415
-				props.game.modified = true;
+				props.game.modified();
 			},
 			updateEntityList: updateEntityList,
 			consoleDump: function() {
