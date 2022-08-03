@@ -119,6 +119,18 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.redirect("/game/");
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
+	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
+		const libName = `ae${req.params.version}`;
+		const engineFilesName = req.originalUrl.replace(`/js/${req.params.version}/`, "");
+		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}`);
+		if (fs.existsSync(engineFilesPath)) {
+			const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
+			res.contentType("text/javascript");
+			res.send(engineFilesSrc);
+		} else {
+			next();
+		}
+	});
 	app.use("/js/", express.static(jsBase));
 	app.use("/css/", express.static(cssBase));
 	app.use("/thirdparty/", express.static(thridpartyBase));
@@ -166,12 +178,10 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		externals = Array.isArray(externals) ? externals : [externals] as string[];
 
 		if (typeof externals[0] !== "string" && externals[0] != null) throw new Error("Invalid externals type");
-		const engineFilesVariable = resolveEngineFilesVariable(version);
 		res.render("engine", {
 			host: host,
-			version: version,
 			externals: JSON.stringify(externals),
-			engineFilesVariable: engineFilesVariable
+			engineFilesPath: `js/v${version}/${resolveEngineFilesVariable(version)}.js`
 		});
 	});
 
