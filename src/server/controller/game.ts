@@ -15,7 +15,8 @@ const controller: express.RequestHandler = (req: express.Request, res: express.R
 		title: `akashic-sandbox v${pkgJson.version}`,
 		version: version,
 		devMode: devMode,
-		engineFilesVariable: engineFilesVariable
+		engineFilesVariable: engineFilesVariable,
+		engineFilesPath: `js/v${version}/${engineFilesVariable}.js`
 	});
 };
 
