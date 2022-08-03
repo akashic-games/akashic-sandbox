@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.17.53
+* v3コンテンツで g.game.focusingCamera の指定が効かない問題を修正
+
 ## 0.17.52
 * engine-filesを直接ホストするように修正
 
