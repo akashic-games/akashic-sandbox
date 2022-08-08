@@ -1,8 +1,0 @@
-{
-  "name": "@akashic/akashic-sandbox-v3",
-  "version": "0.0.1",
-  "description": "To build akashic-sandbox to run the contents of akashic-engine v3",
-  "author": "DWANGO Co., Ltd.",
-  "license": "MIT",
-  "private": true
-}
