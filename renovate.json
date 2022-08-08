@@ -1,46 +1,76 @@
 {
   "extends": [
-    "github>akashic-games/renovate-config"
+    "github>akashic-games/renovate-config",
+    "github>akashic-games/renovate-config:groupPatchMinor",
+    "github>akashic-games/renovate-config:bumpAkashicPatch"
   ],
+  "automerge": true,
   "packageRules": [
     {
       "matchPackageNames": ["aev1"],
-      "allowedVersions": "<2.0"
+      "allowedVersions": "<2.0",
+      "groupName": "engine-files@1",
+      "schedule": "at any time"
     },
     {
-      "matchPackageNames": ["aev2"],
-      "allowedVersions": "<3.0"
-    },
-    {
-      "matchPackageNames": ["aev3"],
-      "allowedVersions": "<4.0"
-    },
-    {
-      "matchPackagePatterns": ["^@akashic/"],
+      "matchPackageNames": ["aev1"],
       "matchUpdateTypes": ["patch"],
-      "schedule": "at any time",
-      "groupName": "akashic packages patch",
-      "bumpVersion": "patch",
-      "automerge": true
-    },
-    {
-      "matchPackagePatterns": ["^@akashic/"],
-      "matchUpdateTypes": ["minor"],
-      "schedule": "at any time",
-      "groupName": "akashic packages minor",
       "bumpVersion": "patch"
     },
     {
+      "matchPackageNames": ["aev1"],
+      "matchUpdateTypes": ["minor"],
+      "bumpVersion": "minor"
+    },
+    {
+      "matchPackageNames": ["aev2"],
+      "allowedVersions": "<3.0",
+      "groupName": "engine-files@2",
+      "schedule": "at any time"
+    },
+    {
+      "matchPackageNames": ["aev2"],
       "matchUpdateTypes": ["patch"],
-      "excludePackagePatterns": ["@akashic/"],
-      "groupName": "patch dependencies",
-      "automerge": true
+      "bumpVersion": "patch"
+    },
+    {
+      "matchPackageNames": ["aev2"],
+      "matchUpdateTypes": ["minor"],
+      "bumpVersion": "minor"
+    },
+    {
+      "matchPackageNames": ["aev3"],
+      "allowedVersions": "<4.0",
+      "groupName": "engine-files@3",
+      "schedule": "at any time"
+    },
+    {
+      "matchPackageNames": ["aev3"],
+      "matchUpdateTypes": ["patch"],
+      "bumpVersion": "patch"
+    },
+    {
+      "matchPackageNames": ["aev3"],
+      "matchUpdateTypes": ["minor"],
+      "bumpVersion": "minor"
+    },
+    {
+      "matchPackagePatterns": ["eslint"],
+      "groupName": "eslint packages"
+    },
+    {
+      "matchPackagePatterns": ["jest"],
+      "groupName": "jest packages"
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "excludePackagePatterns": ["aev\\d+", "@akashic/", "eslint", "jest"],
+      "groupName": "patch dependencies"
     },
     {
       "matchUpdateTypes": ["minor"],
-      "excludePackagePatterns": ["@akashic/"],
-      "groupName": "minor dependencies",
-      "automerge": true
+      "excludePackagePatterns": ["aev\\d+", "@akashic/", "eslint", "jest"],
+      "groupName": "minor dependencies"
     },
     {
         "matchUpdateTypes": ["major"],
