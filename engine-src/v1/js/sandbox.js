@@ -77,6 +77,7 @@ window.addEventListener("load", function() {
 		var sandboxGameId = md5(gamePath);
 		var sandboxPlayer = { id: "9999", name: "sandbox-player" };
 		var sandboxPlayId = "sandboxDummyPlayId";
+		var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
 		window.sandboxDeveloperProps = {
 			game: null,
@@ -85,7 +86,7 @@ window.addEventListener("load", function() {
 			gameId: sandboxGameId,
 			path: gamePath,
 			sandboxPlayer: sandboxPlayer,
-			sandboxConfig: window.sandboxDeveloperProps.sandboxConfig,
+			sandboxConfig: sandboxConfig,
 			utils: {
 				fitToWindow: fitToWindow,
 				revertViewSize: revertViewSize,
@@ -168,6 +169,10 @@ window.addEventListener("load", function() {
 		function createMeddlingWrappedSurfaceFactory (func) {
 			return function() {
 				var surface = func.apply(this, arguments);
+				// Safariで範囲外描画時に問題が発生するのはCanvas要素なので、surfaceがCanvasでなければ範囲外描画警告は行わない
+				if (surface._drawable.constructor.name !== "HTMLCanvasElement") {
+					return surface;
+				}
 				var originalRenderer = surface.renderer;
 				var renderer = null;
 				surface.renderer = function () {
@@ -180,18 +185,20 @@ window.addEventListener("load", function() {
 					renderer.drawImage = function (surface, offsetX, offsetY, width, height, _destOffsetX, _destOffsetY) {
 						if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
 							// ref. https://github.com/akashic-games/akashic-engine/issues/349
-							throw new Error("drawImage(): out of bounds."
+							var message = "drawImage(): out of bounds."
 								+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
-								+ "This is not a bug but intentionally prohibited by akashic serve"
-								+ "to prevent platform-specific rendering trouble."
-							);
+								+ "This is not a bug but warned by akashic sandbox"
+								+ "to prevent platform-specific rendering trouble.";
+							console.warn(message);
+							window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
 						}
 						if (width <= 0 || height <= 0) {
-							throw new Error("drawImage(): nothing to draw."
+							var message = "drawImage(): nothing to draw."
 								+ "Either width or height is less than or equal to zero."
-								+ "This is not a bug but intentionally prohibited by akashic serve"
-								+ "to prevent platform-specific rendering trouble."
-							);
+								+ "This is not a bug but warned by akashic sandbox"
+								+ "to prevent platform-specific rendering trouble.";
+							console.warn(message);
+							window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
 						}
 						originalDrawImage.apply(this, arguments);
 					}
@@ -200,8 +207,10 @@ window.addEventListener("load", function() {
 				return surface;
 			};
 		}
-		pf.getPrimarySurface = createMeddlingWrappedSurfaceFactory(pf.getPrimarySurface);
-		pf._resourceFactory.createSurface = createMeddlingWrappedSurfaceFactory(pf._resourceFactory.createSurface);
+		if (!sandboxConfig.warn || sandboxConfig.warn.drawOutOfCanvas !== false) {
+			pf.getPrimarySurface = createMeddlingWrappedSurfaceFactory(pf.getPrimarySurface);
+			pf._resourceFactory.createSurface = createMeddlingWrappedSurfaceFactory(pf._resourceFactory.createSurface);
+		}
 
 		driver = new gdr.GameDriver({
 			platform: pf,

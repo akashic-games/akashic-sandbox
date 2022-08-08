@@ -56,5 +56,7 @@ interface SandboxConfig {
 	warn?: {
 		/** ES6以降でサポートされるオブジェクトが使われている場合警告を出すかどうか */
 		es6?: boolean;
+		/** 範囲外描画されている場合に警告を出すかどうか */
+		drawOutOfCanvas?: boolean;
 	};
 }
