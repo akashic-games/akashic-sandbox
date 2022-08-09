@@ -184,21 +184,25 @@ window.addEventListener("load", function() {
 					var originalDrawImage = renderer.drawImage;
 					renderer.drawImage = function (surface, offsetX, offsetY, width, height, _destOffsetX, _destOffsetY) {
 						if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
-							// ref. https://github.com/akashic-games/akashic-engine/issues/349
-							var message = "drawImage(): out of bounds."
-								+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
-								+ "This is not a bug but warned by akashic sandbox"
-								+ "to prevent platform-specific rendering trouble.";
-							console.warn(message);
-							window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
+							if (!sandboxConfig.warn || sandboxConfig.warn.drawOutOfCanvas !== false) {
+								// ref. https://github.com/akashic-games/akashic-engine/issues/349
+								var message = "drawImage(): out of bounds."
+									+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
+									+ "This is not a bug but warned by akashic sandbox"
+									+ "to prevent platform-specific rendering trouble.";
+								console.warn(message);
+								window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
+							}
 						}
 						if (width <= 0 || height <= 0) {
-							var message = "drawImage(): nothing to draw."
-								+ "Either width or height is less than or equal to zero."
-								+ "This is not a bug but warned by akashic sandbox"
-								+ "to prevent platform-specific rendering trouble.";
-							console.warn(message);
-							window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
+							if (!sandboxConfig.warn || sandboxConfig.warn.drawDestinationEmpty !== false) {
+								var message = "drawImage(): nothing to draw."
+									+ "Either width or height is less than or equal to zero."
+									+ "This is not a bug but warned by akashic sandbox"
+									+ "to prevent platform-specific rendering trouble.";
+								console.warn(message);
+								window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
+							}
 						}
 						originalDrawImage.apply(this, arguments);
 					}
@@ -207,10 +211,8 @@ window.addEventListener("load", function() {
 				return surface;
 			};
 		}
-		if (!sandboxConfig.warn || sandboxConfig.warn.drawOutOfCanvas !== false) {
-			pf.getPrimarySurface = createMeddlingWrappedSurfaceFactory(pf.getPrimarySurface);
-			pf._resourceFactory.createSurface = createMeddlingWrappedSurfaceFactory(pf._resourceFactory.createSurface);
-		}
+		pf.getPrimarySurface = createMeddlingWrappedSurfaceFactory(pf.getPrimarySurface);
+		pf._resourceFactory.createSurface = createMeddlingWrappedSurfaceFactory(pf._resourceFactory.createSurface);
 
 		driver = new gdr.GameDriver({
 			platform: pf,
