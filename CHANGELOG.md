@@ -1,7 +1,7 @@
 # CHANGELOG
 
-## Unreleased changed
-* コンテンツで範囲外描画されている場合に警告を出すように
+## 0.17.56
+* sandbox.config.jsの `warn.drawDestinationEmpty` でコンテンツで範囲外描画されている場合の警告出力を制御するように
 
 ## 0.17.55
 * 内部モジュールの更新

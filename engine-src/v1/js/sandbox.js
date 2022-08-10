@@ -183,8 +183,8 @@ window.addEventListener("load", function() {
 					renderer = originalRenderer.apply(this);
 					var originalDrawImage = renderer.drawImage;
 					renderer.drawImage = function (surface, offsetX, offsetY, width, height, _destOffsetX, _destOffsetY) {
-						if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
-							if (!sandboxConfig.warn || sandboxConfig.warn.drawOutOfCanvas !== false) {
+						if (!sandboxConfig.warn || sandboxConfig.warn.drawOutOfCanvas !== false) {
+							if (offsetX < 0 || offsetX + width > surface.width || offsetY < 0 || offsetY + height > surface.height) {
 								// ref. https://github.com/akashic-games/akashic-engine/issues/349
 								var message = "drawImage(): out of bounds."
 									+ `The source rectangle bleeds out the source surface (${surface.width}x${surface.height}).`
@@ -194,8 +194,8 @@ window.addEventListener("load", function() {
 								window.dispatchEvent(new ErrorEvent("akashicWarning", { error: { message: message } }));
 							}
 						}
-						if (width <= 0 || height <= 0) {
-							if (!sandboxConfig.warn || sandboxConfig.warn.drawDestinationEmpty !== false) {
+						if (!sandboxConfig.warn || sandboxConfig.warn.drawDestinationEmpty !== false) {
+							if (width <= 0 || height <= 0) {
 								var message = "drawImage(): nothing to draw."
 									+ "Either width or height is less than or equal to zero."
 									+ "This is not a bug but warned by akashic sandbox"
