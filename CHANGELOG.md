@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.17.57
+* @akashic/sandbox-configuration を使用するように修正
+
 ## 0.17.56
 * sandbox.config.jsの `warn.drawDestinationEmpty` でコンテンツで範囲外描画されている場合の警告出力を制御するように
 
