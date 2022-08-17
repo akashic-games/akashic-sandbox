@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.17.56",
+  "version": "0.17.57",
   "description": "Standalone runner for Akashic contents",
   "main": "index.js",
   "scripts": {
@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@akashic/akashic-engine": "~2.6.6",
+    "@akashic/sandbox-configuration": "^2.1.0",
     "@akashic/eslint-config": "^1.1.0",
     "@types/ejs": "~3.1.0",
     "@types/express": "~4.17.0",
