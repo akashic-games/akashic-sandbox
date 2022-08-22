@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.18.0
+* 内部モジュールの更新
+
 ## 0.17.57
 * @akashic/sandbox-configuration を使用するように修正
 
