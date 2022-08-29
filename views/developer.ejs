@@ -98,12 +98,6 @@
 								</label>
 							</div>
 							<div>
-								<label for="warning-es6">
-									<input id="warning-es6" type="checkbox" v-model="config.warningEs6" v-on:change="toggleWarningEs6" v-bind:disabled="config.disableWarningEs6">
-									ES5でサポートされない機能が使用された場合警告を出力<b v-if="config.disableWarningEs6">(sandbox.config.js で<span v-if="config.warningEs6">有効化</span><span v-else>無効化</span>されています)</b>
-								</label>
-							</div>
-							<div>
 								<label for="warning-medding-akashic">
 									<input id="warning-meddling-akashic" type="checkbox" v-model="config.warningMeddlingAkashic" v-on:change="toggleWarningMeddlingAkashic">
 									Akashicコンテンツで使用すべきでない機能が使用された場合警告を出力

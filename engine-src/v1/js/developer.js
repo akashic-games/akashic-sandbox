@@ -53,11 +53,6 @@ function setupDeveloperMenu(param) {
 		config.disableWarningEs6 = false;
 	}
 
-	// ES6以降でサポートされるオブジェクトが使われている場合警告を出す。
-	if (config.warningEs6) {
-		warningEs6OnConsole();
-	}
-
 	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
 	config.eventsToSend = !!sandboxConfig.autoSendEventName ? JSON.stringify(sandboxConfig.events[sandboxConfig.autoSendEventName]) : config.eventsToSend;
 
