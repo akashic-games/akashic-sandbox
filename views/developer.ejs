@@ -99,8 +99,11 @@
 							</div>
 							<div>
 								<label for="warning-medding-akashic">
-									<input id="warning-meddling-akashic" type="checkbox" v-model="config.warningMeddlingAkashic" v-on:change="toggleWarningMeddlingAkashic">
+									<input id="warning-meddling-akashic" type="checkbox" v-model="config.warningMeddlingAkashic" v-on:change="toggleWarningMeddlingAkashic"  v-bind:disabled="config.disableWarningMeddlingAkashic">
 									Akashicコンテンツで使用すべきでない機能が使用された場合警告を出力
+									<b v-if="config.disableWarningMeddlingAkashic"><br>(sandbox.config.js の
+										<span v-if="config.useDate">useDate,</span>
+										<span v-if="config.useMathRandom">useMathRandom</span> の指定により無効化されています)</b>
 								</label>
 							</div>
 						</fieldset>
@@ -396,6 +399,9 @@
 		<div class="error-dialog-title">{{dialogTitle}}</div>
 		<div class="error-dialog-name">{{dialogMessage}}</div>
 		<div class="error-dialog-body">{{dialogBody}}</div>
+		<div class="error-dialog-supplement">
+			各種警告表示の設定は<a target="_blank" href="https://akashic-games.github.io/guide/sandbox-config.html#warn">こちら</a>を参照してください。
+		</div>
 		<a v-if="!!dialogReferenceUrl" href="{{dialogReferenceUrl}}" target="_blank" {{}}>参考リンク</a>
 	</div>
 </div>

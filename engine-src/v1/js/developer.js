@@ -30,9 +30,6 @@ function setupDeveloperMenu(param) {
 	if (isNaN(parseInt(config.totalTimeLimit, 10))) {
 		config.totalTimeLimit = defaultTotalTimeLimit;
 	}
-	if (config.warningEs6 == null) {
-		config.warningEs6 = true;
-	}
 	if (config.warningMeddlingAkashic == null) {
 		config.warningMeddlingAkashic = true;
 	}
@@ -45,16 +42,24 @@ function setupDeveloperMenu(param) {
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
-	// sandbox.config.jsで設定が記述されていたら、対象のチェックボックスを押せないようにする
-	if (sandboxConfig.warn && sandboxConfig.warn.es6 !== undefined) {
-		config.disableWarningEs6 = true;
-		config.warningEs6 = !!sandboxConfig.warn.es6;
+	// sandbox.config.jsで warn 設定が記述されていたら、対象のチェックボックスを押せないようにする
+	if (sandboxConfig.warn && (sandboxConfig.warn.useDate !== undefined || sandboxConfig.warn.useMathRandom !== undefined)) {
+		config.disableWarningMeddlingAkashic = true;
+		config.warningMeddlingAkashic = false;
+
+		if (sandboxConfig.warn.useDate !== undefined) {
+			config.useDate = sandboxConfig.warn.useDate;
+		}
+		if (sandboxConfig.warn.useMathRandom !== undefined) {
+			config.useMathRandom = sandboxConfig.warn.useMathRandom;
+		}
 	} else {
-		config.disableWarningEs6 = false;
+		config.disableWarningMeddlingAkashic = false;
 	}
 
 	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
 	config.eventsToSend = !!sandboxConfig.autoSendEventName ? JSON.stringify(sandboxConfig.events[sandboxConfig.autoSendEventName]) : config.eventsToSend;
+	saveConfig();
 
 	var events = {};
 	if (sandboxConfig.events) {
@@ -1095,9 +1100,6 @@ function setupDeveloperMenu(param) {
 				document.body.style.backgroundColor = bg ? "" : "black";
 			},
 			togglePreventDefault: function() {
-				saveConfig();
-			},
-			toggleWarningEs6: function() {
 				saveConfig();
 			},
 
