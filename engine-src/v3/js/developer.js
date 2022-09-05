@@ -48,7 +48,6 @@ function setupDeveloperMenu(param) {
 	// sandbox.config.js で warn 設定が記述されていたら、対象のチェックボックスを押せないようにする
 	if (sandboxConfig.warn && (sandboxConfig.warn.useDate !== undefined || sandboxConfig.warn.useMathRandom !== undefined) ) {
 		config.disableWarningMeddlingAkashic = true;
-		config.warningMeddlingAkashic = false;
 
 		if (sandboxConfig.warn.useDate !== undefined) {
 			config.useDate = sandboxConfig.warn.useDate;
