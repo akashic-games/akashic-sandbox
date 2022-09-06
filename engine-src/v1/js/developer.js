@@ -44,16 +44,16 @@ function setupDeveloperMenu(param) {
 
 	// sandbox.config.jsで warn 設定が記述されていたら、対象のチェックボックスを押せないようにする
 	if (sandboxConfig.warn && (sandboxConfig.warn.useDate !== undefined || sandboxConfig.warn.useMathRandom !== undefined)) {
-		config.disableWarningMeddlingAkashic = true;
+		config.isWarnSpecifiedInConfig = true;
 
 		if (sandboxConfig.warn.useDate !== undefined) {
-			config.useDate = sandboxConfig.warn.useDate;
+			config.warnUseDate = sandboxConfig.warn.useDate;
 		}
 		if (sandboxConfig.warn.useMathRandom !== undefined) {
-			config.useMathRandom = sandboxConfig.warn.useMathRandom;
+			config.warnUseMathRandom = sandboxConfig.warn.useMathRandom;
 		}
 	} else {
-		config.disableWarningMeddlingAkashic = false;
+		config.isWarnSpecifiedInConfig = false;
 	}
 
 	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
@@ -145,7 +145,8 @@ function setupDeveloperMenu(param) {
 		dialogMessage: null,
 		dialogTitle: null,
 		dialogBody: "",
-		dialogReferenceUrl: null
+		dialogReferenceUrl: null,
+		isShowWarnSupplement: false
 	};
 
 	function showErrorDialog(err) {
@@ -160,6 +161,7 @@ function setupDeveloperMenu(param) {
 		data.dialogTitle = "Akashic非推奨機能が使用されました";
 		data.dialogMessage = err.message;
 		data.dialogBody = "Developer Tool などでエラー内容を確認の上修正してください。";
+		data.isShowWarnSupplement = err.isShowWarnSupplement;
 		data.dialogReferenceUrl = err.referenceUrl;
 	}
 
