@@ -149,7 +149,7 @@ function setupDeveloperMenu(param) {
 		dialogTitle: "",
 		dialogBody: "",
 		dialogReferenceUrl: null,
-		isShowWarnSupplement: false
+		dialogReferenceMessage: null
 	};
 
 	function showErrorDialog(err) {
@@ -164,7 +164,7 @@ function setupDeveloperMenu(param) {
 		data.dialogTitle = "Akashic非推奨機能が使用されました";
 		data.dialogMessage = err.message;
 		data.dialogBody = "Developer Tool などでエラー内容を確認の上修正してください。";
-		data.isShowWarnSupplement = err.isShowWarnSupplement;
+		data.dialogReferenceMessage = err.referenceMessage;
 		data.dialogReferenceUrl = err.referenceUrl;
 	}
 
