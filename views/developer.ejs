@@ -99,11 +99,9 @@
 							</div>
 							<div>
 								<label for="warning-medding-akashic">
-									<input id="warning-meddling-akashic" type="checkbox" v-model="config.warningMeddlingAkashic" v-on:change="toggleWarningMeddlingAkashic"  v-bind:disabled="isWarnSpecifiedInConfig">
+									<input id="warning-meddling-akashic" type="checkbox" v-model="config.warningMeddlingAkashic" v-on:change="toggleWarningMeddlingAkashic"  v-bind:disabled="config.isWarnSpecifiedInConfig">
 									Akashicコンテンツで使用すべきでない機能が使用された場合警告を出力
-									<b v-if="isWarnSpecifiedInConfig"><br>(sandbox.config.js の
-										<span v-if="config.warnUseDate">useDate,</span>
-										<span v-if="config.warnUseMathRandom">useMathRandom</span> の指定により無効化されています)</b>
+									<b v-if="config.isWarnSpecifiedInConfig"><br>(sandbox.config.js で warn.useDate, warn.useMathRandom が指定されているため無効化されています)</b>
 								</label>
 							</div>
 						</fieldset>
@@ -399,6 +397,6 @@
 		<div class="error-dialog-title">{{dialogTitle}}</div>
 		<div class="error-dialog-name">{{dialogMessage}}</div>
 		<div class="error-dialog-body">{{dialogBody}}</div>
-		<a v-if="!!dialogReferenceUrl" href="{{dialogReferenceUrl}}" target="_blank" {{}}>{{dialogReferenceMessage}}</a>
+		<a v-if="!!dialogReferenceUrl" href="{{dialogReferenceUrl}}" target="_blank" {{}}>{{dialogReferenceMessage ?? "参考リンク"}}</a>
 	</div>
 </div>
