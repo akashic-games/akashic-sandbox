@@ -30,9 +30,6 @@ function setupDeveloperMenu(param) {
 	if (isNaN(parseInt(config.totalTimeLimit, 10))) {
 		config.totalTimeLimit = defaultTotalTimeLimit;
 	}
-	if (config.warningEs6 == null) {
-		config.warningEs6 = true;
-	}
 	if (config.warningMeddlingAkashic == null) {
 		config.warningMeddlingAkashic = true;
 	}
@@ -45,16 +42,23 @@ function setupDeveloperMenu(param) {
 
 	var sandboxConfig = window.sandboxDeveloperProps.sandboxConfig;
 
-	// sandbox.config.jsで設定が記述されていたら、対象のチェックボックスを押せないようにする
-	if (sandboxConfig.warn && sandboxConfig.warn.es6 !== undefined) {
-		config.disableWarningEs6 = true;
-		config.warningEs6 = !!sandboxConfig.warn.es6;
+	// sandbox.config.jsで warn 設定が記述されていたら、対象のチェックボックスを押せないようにする
+	if (sandboxConfig.warn && (sandboxConfig.warn.useDate !== undefined || sandboxConfig.warn.useMathRandom !== undefined)) {
+		config.isWarnSpecifiedInConfig = true;
+
+		if (sandboxConfig.warn.useDate !== undefined) {
+			config.warnUseDate = sandboxConfig.warn.useDate;
+		}
+		if (sandboxConfig.warn.useMathRandom !== undefined) {
+			config.warnUseMathRandom = sandboxConfig.warn.useMathRandom;
+		}
 	} else {
-		config.disableWarningEs6 = false;
+		config.isWarnSpecifiedInConfig = false;
 	}
 
 	config.autoSendEvents = config.autoSendEvents || !!sandboxConfig.autoSendEventName;
 	config.eventsToSend = !!sandboxConfig.autoSendEventName ? JSON.stringify(sandboxConfig.events[sandboxConfig.autoSendEventName]) : config.eventsToSend;
+	saveConfig();
 
 	var events = {};
 	if (sandboxConfig.events) {
@@ -141,7 +145,8 @@ function setupDeveloperMenu(param) {
 		dialogMessage: null,
 		dialogTitle: null,
 		dialogBody: "",
-		dialogReferenceUrl: null
+		dialogReferenceUrl: null,
+		dialogReferenceMessage: null
 	};
 
 	function showErrorDialog(err) {
@@ -156,6 +161,7 @@ function setupDeveloperMenu(param) {
 		data.dialogTitle = "Akashic非推奨機能が使用されました";
 		data.dialogMessage = err.message;
 		data.dialogBody = "Developer Tool などでエラー内容を確認の上修正してください。";
+		data.dialogReferenceMessage = err.referenceMessage;
 		data.dialogReferenceUrl = err.referenceUrl;
 	}
 
@@ -1095,9 +1101,6 @@ function setupDeveloperMenu(param) {
 				document.body.style.backgroundColor = bg ? "" : "black";
 			},
 			togglePreventDefault: function() {
-				saveConfig();
-			},
-			toggleWarningEs6: function() {
 				saveConfig();
 			},
 

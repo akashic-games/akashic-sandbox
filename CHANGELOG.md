@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.18.3
+*  コンテンツの sandbox.config.js で `warn.useDate`, `warn.useMathRandom` が設定されていたらその設定を優先するよう対応
+
 ## 0.18.2
 * 内部モジュールの更新
 
