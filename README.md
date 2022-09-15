@@ -93,7 +93,7 @@ akashic-sandbox を用いて内部モジュール (とくに [engine-files](http
 
 ## 環境変数
 
-環境変数 `ENGINE_FILES_V3_PATH` が指定された場合、対象の engine-files を akashic-engine v3 コンテンツ実行時に利用します。
+環境変数 `ENGINE_FILES_V3_PATH` が設定された場合、対象の engine-files を akashic-engine v3 コンテンツ実行時に利用します。
 `ENGINE_FILES_V3_PATH` の値は engine-files v3 のビルド成果物のパスです。 (e.g. `./engineFilesV3_x_y.js`) <br> エンジン開発用のオプションです。通常、ゲーム開発時に利用する必要はありません。
 
 ## テスト方法

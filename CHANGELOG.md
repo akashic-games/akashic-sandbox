@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.18.4
+* 環境変数 `ENGINE_FILES_V3_PATH` が設定されていた場合、指定されたパスの engine-files を利用してコンテンツを実行するよう対応
+
 ## 0.18.3
 *  コンテンツの sandbox.config.js で `warn.useDate`, `warn.useMathRandom` が設定されていたらその設定を優先するよう対応
 
