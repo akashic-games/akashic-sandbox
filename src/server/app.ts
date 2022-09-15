@@ -178,6 +178,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/engine", (req: express.Request, res: express.Response, _next: Function) => {
 		const host = req.protocol + "://" + req.get("host");
 		res.type("application/json");
+
 		let externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
 
 		externals = Array.isArray(externals) ? externals : [externals] as string[];
