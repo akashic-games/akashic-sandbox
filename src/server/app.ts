@@ -120,7 +120,8 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
 	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		const engineFilesPath = resolveEngineFilesPath(req.params.version, req.originalUrl);
+		const version = req.params.version.replace(/^v/, "");
+		const engineFilesPath = resolveEngineFilesPath(version);
 
 		if (fs.existsSync(engineFilesPath)) {
 			const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
