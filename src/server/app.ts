@@ -7,7 +7,7 @@ import gameRoute = require("./routes/game");
 import jsRoute = require("./routes/js");
 import sandboxConfigRoute = require("./routes/sandboxConfig");
 import testRoute = require("./routes/test");
-import { resolveEngineFilesVariable } from "./utils";
+import { resolveEngineFilesPath, resolveEngineFilesVariable } from "./utils";
 
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
@@ -120,14 +120,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
 	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		let engineFilesPath: string = "";
-		if (process.env.ENGINE_FILES_V3_PATH) {
-			engineFilesPath = path.resolve(process.cwd(), process.env.ENGINE_FILES_V3_PATH);
-		} else {
-			const libName = `ae${req.params.version}`;
-			const engineFilesName = req.originalUrl.replace(`/js/${req.params.version}/`, "");
-			engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}`);
-		}
+		const engineFilesPath = resolveEngineFilesPath(req.params.version, req.originalUrl);
 
 		if (fs.existsSync(engineFilesPath)) {
 			const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
