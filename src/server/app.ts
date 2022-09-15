@@ -120,9 +120,15 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
 	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		const libName = `ae${req.params.version}`;
-		const engineFilesName = req.originalUrl.replace(`/js/${req.params.version}/`, "");
-		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}`);
+		let engineFilesPath: string = "";
+		if (process.env.ENGINE_FILES_V3_PATH) {
+			engineFilesPath = path.resolve(process.cwd(), process.env.ENGINE_FILES_V3_PATH);
+		} else {
+			const libName = `ae${req.params.version}`;
+			const engineFilesName = req.originalUrl.replace(`/js/${req.params.version}/`, "");
+			engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}`);
+		}
+
 		if (fs.existsSync(engineFilesPath)) {
 			const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
 			res.contentType("text/javascript");
@@ -172,7 +178,6 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/engine", (req: express.Request, res: express.Response, _next: Function) => {
 		const host = req.protocol + "://" + req.get("host");
 		res.type("application/json");
-
 		let externals = req.query.externals ? req.query.externals : ["audio", "xhr", "websocket"];
 
 		externals = Array.isArray(externals) ? externals : [externals] as string[];
