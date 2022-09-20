@@ -1,6 +1,8 @@
 import path = require("path");
 
-export function resolveEngineFilesVariable(version: string): string {
+export type SandboxRuntimeVersion = "1" | "2" | "3";
+
+export function resolveEngineFilesVariable(version: SandboxRuntimeVersion): string {
 	let engineFilesVariable: string = "";
 	if (version === "3" && process.env.ENGINE_FILES_V3_PATH) {
 		const filename = path.basename(process.env.ENGINE_FILES_V3_PATH, ".js");
@@ -13,7 +15,7 @@ export function resolveEngineFilesVariable(version: string): string {
 	return engineFilesVariable;
 }
 
-export function resolveEngineFilesPath(version: string): string {
+export function resolveEngineFilesPath(version: SandboxRuntimeVersion): string {
 	let engineFilesPath: string = "";
 	if (version === "3" && process.env.ENGINE_FILES_V3_PATH) {
 		engineFilesPath = path.resolve(process.cwd(), process.env.ENGINE_FILES_V3_PATH);
