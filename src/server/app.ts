@@ -7,7 +7,8 @@ import gameRoute = require("./routes/game");
 import jsRoute = require("./routes/js");
 import sandboxConfigRoute = require("./routes/sandboxConfig");
 import testRoute = require("./routes/test");
-import { resolveEngineFilesVariable } from "./utils";
+import type { SandboxRuntimeVersion } from "./utils";
+import { resolveEngineFilesPath, resolveEngineFilesVariable } from "./utils";
 
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
@@ -119,10 +120,9 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.redirect("/game/");
 	});
 	// /js/ /css/ /thirdparty/ を静的ファイルとして参照できるようにする
-	app.use("/js/:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		const libName = `ae${req.params.version}`;
-		const engineFilesName = req.originalUrl.replace(`/js/${req.params.version}/`, "");
-		const engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}`);
+	app.use("/js/v:version/engineFilesV*.js", (req: express.Request, res: express.Response, next: express.NextFunction) => {
+		const engineFilesPath = resolveEngineFilesPath(req.params.version as SandboxRuntimeVersion);
+
 		if (fs.existsSync(engineFilesPath)) {
 			const engineFilesSrc = fs.readFileSync(engineFilesPath).toString();
 			res.contentType("text/javascript");
@@ -181,7 +181,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		res.render("engine", {
 			host: host,
 			externals: JSON.stringify(externals),
-			engineFilesPath: `js/v${version}/${resolveEngineFilesVariable(version)}.js`
+			engineFilesPath: `js/v${version}/${resolveEngineFilesVariable(version as SandboxRuntimeVersion)}.js`
 		});
 	});
 

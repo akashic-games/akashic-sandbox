@@ -91,6 +91,12 @@ akashic-sandbox を用いて内部モジュール (とくに [engine-files](http
 
 * package.json で engine-files のエイリアスの `aev1`, `aev2`, `aev3` に対象のバージョンを指定し `npm install` します。インストール後に `npm run copy:engine-files`  を実行することで engine-files が `./js/vX/` へ一括コピーされ動作確認が行える状態となります。
 
+## 環境変数
+
+| 環境変数 | 説明 | 注釈 |
+|--------|-----|-----|
+| `ENGINE_FILES_V3_PATH` | engine-files v3 のビルド成果物のパス。 (e.g. `./engineFilesV3_x_y.js`) <br> この値が指定された場合、 対象の engine-files を akashic-engine v3 コンテンツ実行時に利用します。 | エンジン開発用のオプションです。通常、ゲーム開発時に利用する必要はありません。 |
+
 ## テスト方法
 
 1. [TSLint](https://github.com/palantir/tslint "TSLint")を使ったLint
