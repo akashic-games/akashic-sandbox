@@ -41,9 +41,9 @@
     "@akashic:registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "aev1": "npm:@akashic/engine-files@1.2.1",
-    "aev2": "npm:@akashic/engine-files@2.2.1",
-    "aev3": "npm:@akashic/engine-files@3.3.4",
+    "engine-files-v1": "npm:@akashic/engine-files@1.2.1",
+    "engine-files-v2": "npm:@akashic/engine-files@2.2.1",
+    "engine-files-v3": "npm:@akashic/engine-files@3.3.4",
     "commander": "^9.0.0",
     "debug": "^4.0.0",
     "ejs": "~3.1.7",

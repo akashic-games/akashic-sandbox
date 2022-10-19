@@ -13,12 +13,12 @@
     },
     {
       "matchUpdateTypes": ["patch"],
-      "excludePackagePatterns": ["aev\\d+", "@akashic/", "eslint"],
+      "excludePackagePatterns": ["engine-files-v\\d+", "@akashic/", "eslint"],
       "groupName": "patch dependencies"
     },
     {
       "matchUpdateTypes": ["minor"],
-      "excludePackagePatterns": ["aev\\d+", "@akashic/", "eslint"],
+      "excludePackagePatterns": ["engine-files-v\\d+", "@akashic/", "eslint"],
       "groupName": "minor dependencies"
     },
     {

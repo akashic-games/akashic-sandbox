@@ -9,7 +9,7 @@ export function resolveEngineFilesVariable(version: SandboxRuntimeVersion): stri
 		engineFilesVariable = filename.replace(/[\.-]/g, "_");
 	} else {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const engineFilesPkgJson = require(`aev${version}/package.json`);
+		const engineFilesPkgJson = require(`engine-files-v${version}/package.json`);
 		engineFilesVariable = `engineFilesV${engineFilesPkgJson.version.replace(/[\.-]/g, "_")}`;
 	}
 	return engineFilesVariable;
@@ -21,7 +21,7 @@ export function resolveEngineFilesPath(version: SandboxRuntimeVersion): string {
 		engineFilesPath = path.resolve(process.cwd(), process.env.ENGINE_FILES_V3_PATH);
 	} else {
 		const engineFilesName = resolveEngineFilesVariable(version);
-		const libName = `aev${version}`;
+		const libName = `engine-files-v${version}`;
 		engineFilesPath = path.join(path.dirname(require.resolve(libName)), `dist/raw/debug/full/${engineFilesName}.js`);
 	}
 	return engineFilesPath;
