@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.19.3
+* `engine-files` のエイリアス名 `aev*` を `engine-files-v*` へ変更
+
 ## 0.19.2
 * 内部モジュールの更新
 
