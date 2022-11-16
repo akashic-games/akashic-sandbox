@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.19.3",
+  "version": "0.20.0",
   "description": "Standalone runner for Akashic contents",
   "main": "index.js",
   "scripts": {
@@ -43,7 +43,7 @@
   "dependencies": {
     "engine-files-v1": "npm:@akashic/engine-files@1.2.1",
     "engine-files-v2": "npm:@akashic/engine-files@2.2.1",
-    "engine-files-v3": "npm:@akashic/engine-files@3.3.4",
+    "engine-files-v3": "npm:@akashic/engine-files@3.4.0",
     "commander": "^9.0.0",
     "debug": "^4.0.0",
     "ejs": "~3.1.7",
