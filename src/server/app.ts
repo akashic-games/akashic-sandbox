@@ -185,7 +185,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		});
 	});
 
-	// TODO: `/test/`, `/start/`, `/next/`, `finish` の　scenario オプションに関するパスは使われてないのでいずれ削除する。
+	// TODO: `/test/`, `/start/`, `/next/`, `/finish/` の　scenario オプションに関するパスは使われてないのでいずれ削除する。
 	app.use("^\/test$", (_req: express.Request, res: express.Response, _next: Function) => {
 		res.redirect("/test/");
 	});
