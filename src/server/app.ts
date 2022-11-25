@@ -10,6 +10,15 @@ import testRoute = require("./routes/test");
 import type { SandboxRuntimeVersion } from "./utils";
 import { resolveEngineFilesPath, resolveEngineFilesVariable } from "./utils";
 
+declare global {
+	namespace Express {
+		export interface Request {
+			baseDir: string;
+			useRawScript: boolean;
+		}
+	}
+}
+
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
 	cascadeBases?: string[];
