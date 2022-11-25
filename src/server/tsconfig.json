@@ -5,7 +5,9 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "types": ["express", "express-session"],
-    "outDir": "../../lib"
+    "outDir": "../../lib",
+    "useUnknownInCatchVariables": false,
+    "strict": true
   },
   "filesGlob": [
     "./**/*.ts"
