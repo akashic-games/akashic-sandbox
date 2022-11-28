@@ -10,6 +10,15 @@ import testRoute = require("./routes/test");
 import type { SandboxRuntimeVersion } from "./utils";
 import { resolveEngineFilesPath, resolveEngineFilesVariable } from "./utils";
 
+declare global {
+	namespace Express {
+		export interface Request {
+			baseDir: string;
+			useRawScript: boolean;
+		}
+	}
+}
+
 interface AkashicSandbox extends express.Express {
 	gameBase?: string;
 	cascadeBases?: string[];
@@ -46,10 +55,10 @@ function result2csv(results: any[]): string {
 	return csv;
 }
 
-function getContentModuleEnvironment(gameJsonPath: string): ModuleEnvironment {
+function getContentModuleEnvironment(gameJsonPath: string): ModuleEnvironment | null {
 	if (fs.existsSync(gameJsonPath)) {
 		const configuration: GameConfiguration = JSON.parse(fs.readFileSync(gameJsonPath, "utf8"));
-		return configuration.environment;
+		return configuration.environment ?? null;
 	}
 	return null;
 }
@@ -92,20 +101,20 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 
 	// TODO: change to middleware
 	app.use("/game/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
-		req.baseDir = app.gameBase;
+		req.baseDir = app.gameBase!;
 		next();
 	});
 	app.use("/raw_game/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
-		req.baseDir = app.gameBase;
+		req.baseDir = app.gameBase!;
 		req.useRawScript = true;
 		next();
 	});
 	app.use("/cascade/:index/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
-		req.baseDir = app.cascadeBases[Number(req.params.index)];
+		req.baseDir = app.cascadeBases![Number(req.params.index)];
 		next();
 	});
 	app.use("/raw_cascade/:index/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
-		req.baseDir = app.cascadeBases[Number(req.params.index)];
+		req.baseDir = app.cascadeBases![Number(req.params.index)];
 		req.useRawScript = true;
 		next();
 	});
@@ -136,7 +145,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 	app.use("/thirdparty/", express.static(thridpartyBase));
 
 	app.use("/sandboxconfig/", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
-		req.baseDir = app.gameBase;
+		req.baseDir = app.gameBase!;
 		next();
 	}, <express.RequestHandler>sandboxConfigRoute);
 
@@ -155,7 +164,7 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 
 	app.use("/configuration/", (req: express.Request, res: express.Response, _next: Function) => {
 		const prefix = req.query.raw ? "/raw_" : "/";
-		if (app.cascadeBases.length === 0) {
+		if (app.cascadeBases == null || app.cascadeBases.length === 0) {
 			res.redirect(prefix + "game/game.json");
 			return;
 		}
@@ -185,12 +194,13 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		});
 	});
 
+	// TODO: `/test/`, `/start/`, `/next/`, `/finish/` の　scenario オプションに関するパスは使われてないのでいずれ削除する。
 	app.use("^\/test$", (_req: express.Request, res: express.Response, _next: Function) => {
 		res.redirect("/test/");
 	});
 	app.use("/test/*.js$", (req: sr.ScriptRequest, _res: express.Response, next: Function) => {
 		const ssn: ASSession = req.session;
-		req.baseDir = app.scenario.benchmarks[ssn.cntr].target;
+		req.baseDir = app.scenario.benchmarks[ssn.cntr ?? 0].target;
 		next();
 	});
 	app.use("/start/", (req: express.Request, res: express.Response, _next: Function) => {
@@ -205,15 +215,15 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 		const ssn: ASSession = req.session;
 
 		const elapse: number = Number(req.query.elapse);
-		ssn.results.push(
+		ssn.results?.push(
 			{
-				"name": app.scenario.benchmarks[ssn.cntr].name,
+				"name": app.scenario.benchmarks[ssn.cntr ?? 0].name,
 				"elapse": elapse
 			}
 		);
 
-		ssn.cntr++;
-		if (ssn.cntr < app.scenario.benchmarks.length) {
+		ssn.cntr = Number.isInteger(ssn.cntr) ? ssn.cntr! + 1 : 0;
+		if (ssn.cntr! < app.scenario.benchmarks.length) {
 			res.redirect("/test/");
 		} else {
 			res.redirect("/finish/");
@@ -225,23 +235,23 @@ module.exports = function (options: AppOptions = {}): AkashicSandbox {
 
 		res.render("finish", {
 			"resultjson": JSON.stringify(ssn.results),
-			"resultcsv": result2csv(ssn.results),
+			"resultcsv": result2csv(ssn.results ?? []),
 			"title": "finish"
 		});
 	});
 	app.use("/test", <express.RequestHandler>jsRoute);
 	app.use("/test", (req: express.Request, res: express.Response, next: express.NextFunction) => {
 		const ssn: ASSession = req.session;
-		res.locals.maxAge = app.scenario.benchmarks[ssn.cntr].maxAge;
-		res.locals.renderPerFrame = app.scenario.benchmarks[ssn.cntr].renderPerFrame;
+		res.locals.maxAge = app.scenario.benchmarks[ssn.cntr ?? 0].maxAge;
+		res.locals.renderPerFrame = app.scenario.benchmarks[ssn.cntr ?? 0].renderPerFrame;
 		res.locals.renderPerFrame = (res.locals.renderPerFrame === undefined) ? "undefined" : res.locals.renderPerFrame;
-		res.locals.loopCount = app.scenario.benchmarks[ssn.cntr].loopCount;
+		res.locals.loopCount = app.scenario.benchmarks[ssn.cntr ?? 0].loopCount;
 		res.locals.loopCount = (res.locals.loopCount === undefined) ? "undefined" : res.locals.loopCount;
 		(<express.RequestHandler>testRoute)(req, res, next);
 	});
 	app.use("/test/", (req: express.Request, res: express.Response, next: express.NextFunction) => {
 		const ssn: ASSession = req.session;
-		express.static(app.scenario.benchmarks[ssn.cntr].target)(req, res, next);
+		express.static(app.scenario.benchmarks[ssn.cntr ?? 0].target)(req, res, next);
 	});
 
 	app.use((_req: express.Request, _res: express.Response, next: Function) => {
