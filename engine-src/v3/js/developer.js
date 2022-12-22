@@ -668,9 +668,9 @@ function setupDeveloperMenu(param) {
 		}
 		var e = null;
 		if (id < 0) {
-			e = props.game._localDb[id];
+			e = props.game._localDb.get(e.id);
 		} else {
-			e = props.game.db[id];
+			e = props.game.db.get(e.id);
 		}
 		if (!e) {
 			return;
@@ -699,9 +699,9 @@ function setupDeveloperMenu(param) {
 	function updateTargetEntity(id) {
 		var e = null;
 		if (id < 0) {
-			e = props.game._localDb[id];
+			e = props.game._localDb.get(e.id);
 		} else {
-			e = props.game.db[id];
+			e = props.game.db.get(e.id);
 		}
 		if (e) {
 			data.targetEntity = {
@@ -1185,9 +1185,9 @@ function setupDeveloperMenu(param) {
 			consoleDump: function() {
 				var e = data.targetEntity;
 				if (e.local) {
-					console.log(props.game._localDb[e.id]);
+					console.log(props.game._localDb.get(e.id));
 				} else {
-					console.log(props.game.db[e.id]);
+					console.log(props.game.db.get(e.id));
 				}
 			},
 			onEventsToSendChanged: function() {
