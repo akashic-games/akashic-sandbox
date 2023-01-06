@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased changes
+* game.jsonの `environtment.nicolive` の値を akashic-sandbox 上で反映できるように
+
 ## 0.21.0
 * 内部モジュールの更新
 

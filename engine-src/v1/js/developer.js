@@ -82,9 +82,16 @@ function setupDeveloperMenu(param) {
 	};
 
 	// game.jsonの情報
-	var environment = props.game._configuration.environment;
-	const preferredTotalTimeLimit = !environment || !environment.niconico || !environment.niconico.preferredSessionParameters || !environment.niconico.preferredSessionParameters.totalTimeLimit
-		? defaultTotalTimeLimit : environment.niconico.preferredSessionParameters.totalTimeLimit;
+	function getNicoLiveConfig() {
+		const environment = props.game._configuration.environment;
+		if (environment === undefined) {
+			return null;
+		}
+		// niconico は非推奨なので、nicolive の方を優先的に利用する
+		return environment.nicolive ?? (environment.niconico ?? null);
+	}
+	const nicoliveConfig = getNicoLiveConfig();
+	const preferredTotalTimeLimit = nicoliveConfig?.preferredSessionParameters?.totalTimeLimit ?? defaultTotalTimeLimit;
 
 	// vue.jsにバインドするデータ
 	var data = {
@@ -124,10 +131,10 @@ function setupDeveloperMenu(param) {
 		},
 		views: views,
 		isIchibaContent: function() {
-			if (!environment || !environment.niconico || !environment.niconico.supportedModes) {
+			if (!nicoliveConfig || !nicoliveConfig.supportedModes) {
 				return false;
 			}
-			return environment.niconico.supportedModes.length > 0;
+			return nicoliveConfig.supportedModes.length > 0;
 		}(),
 		rankingGameState: {
 			score: "N/A",
