@@ -706,9 +706,9 @@ function setupDeveloperMenu(param) {
 	function updateTargetEntity(id) {
 		var e = null;
 		if (id < 0) {
-			e = props.game._localDb.get(e.id);
+			e = props.game._localDb.get(id);
 		} else {
-			e = props.game.db.get(e.id);
+			e = props.game.db.get(id);
 		}
 		if (e) {
 			data.targetEntity = {
