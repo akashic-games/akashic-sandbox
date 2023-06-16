@@ -41,7 +41,7 @@
     "@akashic:registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "commander": "^10.0.0",
+    "commander": "^11.0.0",
     "debug": "^4.3.4",
     "ejs": "~3.1.8",
     "engine-files-v1": "npm:@akashic/engine-files@1.2.1",
