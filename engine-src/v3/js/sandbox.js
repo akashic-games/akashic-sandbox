@@ -165,8 +165,8 @@ window.addEventListener("load", function() {
 		});
 
 		// TODO: カスタマイズできるようにする？
-		pf._resourceFactory.createScriptAsset = function(id, assetPath) {
-			return new SandboxScriptAsset(id, assetPath);
+		pf._resourceFactory.createScriptAsset = function(...args) {
+			return new SandboxScriptAsset(...args);
 		};
 
 		// 一部のエッジケースでSafariのみ描画されないという問題が発生するので、ゲーム開発者が開発中に気づけるようにg.Renderer#drawImage()でエラーを投げる処理を差し込む

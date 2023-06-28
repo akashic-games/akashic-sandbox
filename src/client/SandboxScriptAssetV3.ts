@@ -15,10 +15,12 @@ class SandboxScriptAssetV3 {
 	originalPath: string;
 	onDestroyed: g.Trigger<g.Asset>;
 	loading: boolean;
+	exports: string[];
 
-	constructor(id: string, path: string) {
+	constructor(id: string, path: string, exports: string[] = []) {
 		this.id = id;
 		this.originalPath = path;
+		this.exports = exports;
 		this.path = this._assetPathFilter(path);
 		this.onDestroyed = new g.Trigger<g.Asset>();
 		// いきなり読んじゃう
