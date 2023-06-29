@@ -22,6 +22,12 @@ if (! gScriptContainer["<%- key %>"]) {
 		(function(exports, require, module, __filename, __dirname) {
 			<%- scriptContent %>
 
+			<% if (exports != null) { %>
+				<% for (var variableName in exports) { %>
+					exports["<%= exports[variableName] %>"] = typeof <%= exports[variableName] %> !== "undefined" ? <%= exports[variableName] %> : undefined;
+				<% } %>
+			<% } %>
+
 		})(g.module.exports, g.module.require, g.module, g.filename, g.dirname);
 	}
 }

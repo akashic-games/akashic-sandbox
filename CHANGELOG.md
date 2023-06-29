@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.24.0
+* `ScriptAsset#exports` のサポート
+
 ## 0.23.5
 * 内部モジュールの更新
 
