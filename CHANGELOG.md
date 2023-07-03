@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.24.1
+* v0.24.0 で `globalScripts` を持つコンテンツが動作しなくなった問題を修正
+
 ## 0.24.0
 * `ScriptAsset#exports` のサポート
 

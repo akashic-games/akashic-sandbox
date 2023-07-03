@@ -21,12 +21,12 @@ const controller = (req: sr.ScriptRequest, res: express.Response, next: Function
 	} else {
 		const gameJson: GameConfiguration = JSON.parse(fs.readFileSync(path.join(req.baseDir, "game.json"), { encoding: "utf-8" }));
 		const assetMap = makePathKeyObject(gameJson.assets);
-		const scriptAssetConfig = assetMap[req.params.scriptName] as ScriptAssetConfigurationBase;
+		const scriptAssetConfig = assetMap[req.params.scriptName] as (ScriptAssetConfigurationBase | undefined); // globalScripts の場合 undefined
 		res.render("script", {
 			key: req.originalUrl,
 			scriptContent: content,
 			scriptName: req.params.scriptName,
-			exports: scriptAssetConfig.exports
+			exports: scriptAssetConfig?.exports
 		});
 	}
 };
