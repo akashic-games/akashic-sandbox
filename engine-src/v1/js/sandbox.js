@@ -235,6 +235,16 @@ window.addEventListener("load", function() {
 			window.sandboxDeveloperProps.utils.defaultStyle.padding = parentElement.style.padding;
 			window.sandboxDeveloperProps.utils.defaultStyle.overflow = parentElement.style.overflow;
 
+			const environment = window.sandboxDeveloperProps.game._configuration.environment;
+			const enableWebAssembly = environment?.features?.includes("WebAssembly");
+			if (!enableWebAssembly) {
+				Object.defineProperty(window, "WebAssembly", {
+					get: function() {
+						throw new Error("If you use WebAssembly, please add \"environment.features:[\"WebAssembly\"]\" to game.json");
+					}
+				});
+			}
+
 			if (getParameterByName("bg")) {
 				document.body.style.backgroundColor = "black";
 				pf.getPrimarySurface()._drawable.style.backgroundColor = "white";
