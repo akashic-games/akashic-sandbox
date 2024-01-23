@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 0.29.0
+## 0.28.7
 * game.json の `environment.features` の値をサポート
 
 ## 0.28.6
