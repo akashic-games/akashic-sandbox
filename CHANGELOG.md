@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.28.8
+* 内部モジュールの更新
+
 ## 0.28.7
 * game.json の `environment.features` の値をサポート
 
