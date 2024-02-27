@@ -26,17 +26,8 @@
       "allowedVersions": "<3.0"  
     },
     {
-      "matchUpdateTypes": ["major"],
-      "matchDepTypes": ["devDependencies"],
-      "excludePackagePatterns": ["^@akashic/"],
-      "groupName": "dev dependencies",
-      "automerge": false
-    },
-    {
-      "matchUpdateTypes": ["major"],
-      "matchDepTypes": ["dependencies"],
-      "excludePackagePatterns": ["^@akashic/"],
-      "draftPR": true
+      "matchPackageNames": ["commander"],
+      "enabled": false
     }
   ]
 }
