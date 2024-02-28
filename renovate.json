@@ -24,6 +24,10 @@
     {
       "matchPackageNames": ["@akashic/akashic-engine"],
       "allowedVersions": "<3.0"  
+    },
+    {
+      "matchPackageNames": ["commander"],
+      "enabled": false
     }
   ]
 }
