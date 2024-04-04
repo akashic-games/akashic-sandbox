@@ -2,8 +2,7 @@
   "extends": [
     "github>akashic-games/renovate-config",
     "github>akashic-games/renovate-config:groupPatchMinor",
-    "github>akashic-games/renovate-config:bumpAkashicPatch",
-    "github>akashic-games/renovate-config//engineFilesAlias/default"
+    "github>akashic-games/renovate-config:bumpAkashicPatch"
   ],
   "automerge": true,
   "packageRules": [
@@ -13,17 +12,17 @@
     },
     {
       "matchUpdateTypes": ["patch"],
-      "excludePackagePatterns": ["engine-files-v\\d+", "@akashic/", "eslint"],
+      "excludePackagePatterns": ["@akashic/", "eslint"],
       "groupName": "patch dependencies"
     },
     {
       "matchUpdateTypes": ["minor"],
-      "excludePackagePatterns": ["engine-files-v\\d+", "@akashic/", "eslint"],
+      "excludePackagePatterns": ["@akashic/", "eslint"],
       "groupName": "minor dependencies"
     },
     {
       "matchPackageNames": ["@akashic/akashic-engine"],
-      "allowedVersions": "<3.0"  
+      "allowedVersions": "<3.0"
     },
     {
       "matchPackageNames": ["commander"],
