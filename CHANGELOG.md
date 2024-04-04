@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## unreleased
+## 0.28.12
 * `engine-files-v*` を `@akashic/headless-driver` を経由して解決するように変更
   * 利用者に影響はありません
 
