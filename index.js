@@ -90,6 +90,7 @@ exports.run = (argv) => {
 		debug("Listening on " + bind);
 	}
 
+	console.warn("[warn] akashic-sandbox has been merged into akashic-cli@2.16.64. Use `akashic sandbox` command (without '-').");
 	console.log("akashic-sandbox listen port: " + port);
 	console.log("hosting game: " + gameJsonPath);
 	if (app.settings.scenarioPath) {
