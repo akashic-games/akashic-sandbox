@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-sandbox",
-  "version": "0.28.22",
+  "version": "0.28.23",
   "description": "Standalone runner for Akashic contents",
   "main": "index.js",
   "scripts": {
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@akashic/game-configuration": "^2.0.0",
-    "@akashic/headless-driver": "2.15.8",
+    "@akashic/headless-driver": "2.15.9",
     "commander": "^11.0.0",
     "debug": "^4.3.4",
     "ejs": "^3.1.8",
