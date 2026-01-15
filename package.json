@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@akashic/akashic-engine": "~2.6.6",
-    "@akashic/eslint-config": "^2.0.0",
+    "@akashic/eslint-config": "^3.0.0",
     "@akashic/sandbox-configuration": "^2.3.0",
     "@deboxsoft/cpx": "^1.5.0",
     "@types/ejs": "^3.1.1",
@@ -62,10 +62,10 @@
     "@types/serve-static": "^2.0.0",
     "@types/superagent": "^8.0.0",
     "@types/supertest": "^6.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "eslint": "^8.54.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "eslint": "^9.0.0",
     "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-jest": "^29.0.0",
     "jasmine": "^5.0.0",
     "supertest": "^7.0.0",
     "typescript": "^5.0.0"
