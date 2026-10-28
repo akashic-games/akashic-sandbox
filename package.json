@@ -58,7 +58,7 @@
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.17.5",
     "@types/jasmine": "^7.0.0",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.0.0",
     "@types/serve-static": "^2.0.0",
     "@types/superagent": "^8.0.0",
     "@types/supertest": "^7.0.0",
